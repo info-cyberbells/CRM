@@ -1,0 +1,37 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+
+import sequelize from "./config/db.js";
+import userRoutes from "./routes/userRoute.js";
+import caseRoutes from "./routes/caseRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js"
+
+
+dotenv.config();
+const app = express();
+
+// Middleware
+app.use(cors({
+    origin: true,
+    credentials: true,
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Routes
+app.use("/api/users", userRoutes);
+app.use("/api/cases", caseRoutes);
+app.use("/api/customers", customerRoutes);
+
+// Database connection
+sequelize.authenticate().then(() => {
+    console.log("✅ Database connected");
+}).catch(err => {
+    console.error("❌ Database connection failed:", err);
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
