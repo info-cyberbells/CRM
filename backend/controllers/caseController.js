@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import Case from "../models/case.js";
 import User from "../models/user.js";
 import { Op } from 'sequelize';
+import Notification from "../models/notification.js";
 
 
 // Create new case
@@ -23,6 +24,16 @@ export const createCase = async (req, res) => {
             customerID: `CUST-${Date.now()}`,
             saleUserId: decoded.id,
         });
+
+        await Notification.create({
+            title: "New Case Created",
+            message: "New case created by Sale user",
+            type: "NEW_CASE",
+            caseId: newCase.id,
+            actorId: decoded.id,
+        });
+
+
 
         res.status(201).json({ success: true, case: newCase });
     } catch (error) {
@@ -50,56 +61,6 @@ export const getAllCases = async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to fetch cases", error });
     }
 };
-
-// Get cases by Sale User
-// export const getMyCases = async (req, res) => {
-//     try {
-//         const token =
-//             req.cookies?.authToken ||
-//             req.headers.authorization?.split(" ")[1] ||
-//             req.headers.authtoken;
-
-//         if (!token) {
-//             return res.status(401).json({ success: false, message: "No token provided" });
-//         }
-
-//         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//         const userId = decoded.id;
-
-//         const cases = await Case.findAll({
-//             where: { saleUserId: userId },
-//             include: [
-//                 { model: User, as: "techUser", attributes: ["id", "name"] },
-//                 { model: User, as: "saleUser", attributes: ["id", "name"] },
-//             ],
-//         });
-
-//         // Transform into custom response
-//         const formattedCases = cases.map((c) => ({
-//             caseId: c.id,
-//             customerName: c.customerName,   // <-- make sure this field exists in Case model
-//             plan: c.plan,                   // <-- field in Case model
-//             caseCreatedBy: c.saleUser?.name || "N/A",
-//             assignedTo: c.techUser?.name || "Unassigned",
-//             amount: c.amount || 0,
-//             deduction: c.deduction || 0,
-//             netAmount: (c.amount || 0) - (c.deduction || 0),
-//             saleAmount: c.saleAmount || 0,
-//             saleStatus: c.saleStatus || "Pending",
-//             issueStatus: c.status || "Open",
-//             date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
-//         }));
-
-//         res.json({ success: true, cases: formattedCases });
-//     } catch (error) {
-//         console.error("Error fetching cases:", error);
-//         res.status(500).json({
-//             success: false,
-//             message: "Failed to fetch user's cases",
-//             error,
-//         });
-//     }
-// };
 
 export const getMyCases = async (req, res) => {
     try {
@@ -224,13 +185,18 @@ export const updateCase = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const [rowsUpdated] = await Case.update(req.body, {
-            where: { id },
-        });
+        const token =
+            req.cookies?.authToken ||
+            req.headers.authorization?.split(" ")[1];
 
-        if (rowsUpdated === 0) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const oldCase = await Case.findByPk(id);
+        if (!oldCase) {
             return res.status(404).json({ success: false, message: "Case not found" });
         }
+
+        const [rowsUpdated] = await Case.update(req.body, { where: { id } });
 
         const updatedCase = await Case.findByPk(id, {
             include: [
@@ -239,11 +205,37 @@ export const updateCase = async (req, res) => {
             ],
         });
 
+        if (updatedCase.saleUserId) {
+            await Notification.create({
+                title: "Case Updated",
+                message: "Admin updated your case",
+                type: "CASE_UPDATED",
+                caseId: updatedCase.id,
+                actorId: decoded.id,
+            });
+
+        }
+
+        if (
+            req.body.techUserId &&
+            req.body.techUserId !== oldCase.techUserId
+        ) {
+            await Notification.create({
+                title: "New Case Assigned",
+                message: "A case has been assigned to you",
+                type: "CASE_ASSIGNED",
+                caseId: updatedCase.id,
+                recipientId: req.body.techUserId,
+                actorId: decoded.id,
+            });
+        }
+
         res.json({ success: true, case: updatedCase });
     } catch (error) {
         res.status(500).json({ success: false, message: "Failed to update case", error });
     }
 };
+
 
 // Get case by ID
 export const getCaseById = async (req, res) => {

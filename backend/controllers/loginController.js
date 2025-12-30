@@ -22,7 +22,7 @@ export const loginUser = async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const { id, name, role, phone, address, city, state, country } = user;
+        const { id, name, role } = user;
 
         // Generate JWT token
         const token = jwt.sign(

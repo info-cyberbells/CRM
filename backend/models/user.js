@@ -19,6 +19,11 @@ const User = sequelize.define("User", {
         type: DataTypes.ENUM("Sale", "Tech", "Admin", "Tech_Lead"),
         allowNull: false,
     },
+    status: {
+        type: DataTypes.ENUM("ONLINE", "ON_BREAK", "OFFLINE"),
+        allowNull: false,
+        defaultValue: "OFFLINE",
+    },
     phone: {
         type: DataTypes.STRING,
         allowNull: true,
