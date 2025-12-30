@@ -38,7 +38,7 @@ export const loginUser = async (req, res) => {
         res.cookie('authToken', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
@@ -59,32 +59,6 @@ export const loginUser = async (req, res) => {
     }
 };
 
-
-//verify token
-export const verifyToken = async (req, res) => {
-    try {
-        const token = req.cookies.authToken;
-
-        if (!token) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        const user = await User.findByPk(decoded.id);
-        if (!user) {
-            return res.status(401).json({ message: "User not found" });
-        }
-
-        const { id, name, email, role } = user;
-        res.json({
-            message: "Token valid",
-            user: { id, name, email, role }
-        });
-    } catch (error) {
-        res.status(401).json({ message: "Invalid token" });
-    }
-};
 
 //logout
 export const logoutUser = async (req, res) => {

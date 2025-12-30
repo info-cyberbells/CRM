@@ -1,18 +1,11 @@
 import express from "express";
 import { createUser, getUsers, getUserById } from "../controllers/userController.js";
-import { loginUser, verifyToken, logoutUser } from "../controllers/loginController.js";
+import roleGuard from "../middleware/roleGuard.js";
+
 
 const router = express.Router();
 
-//login user route 
-router.post("/login", loginUser);
-
-//verify token
-router.get('/verifyToken', verifyToken);
-
-//logout
-router.post('/logout', logoutUser);
-
+router.use(roleGuard("Admin"));
 
 //create user route
 router.post("/createUser", createUser);

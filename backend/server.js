@@ -4,9 +4,11 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 import sequelize from "./config/db.js";
-import userRoutes from "./routes/userRoute.js";
-import caseRoutes from "./routes/caseRoutes.js";
-import customerRoutes from "./routes/customerRoutes.js"
+import userRoutes from "./routes/adminRoutes.js";
+import saleRoutes from "./routes/SaleRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import customerRoutes from "./routes/techRoutes.js"
+import authGuard from "./middleware/authGuard.js";
 
 
 dotenv.config();
@@ -22,8 +24,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes
+app.use("/api/auth", authRoutes);
+
+app.use("/api", authGuard);
+app.use("/api/sale-user", saleRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/cases", caseRoutes);
 app.use("/api/customers", customerRoutes);
 
 // Database connection
