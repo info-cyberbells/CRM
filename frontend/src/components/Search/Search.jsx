@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     fetchSaleUserCases,
@@ -25,6 +25,8 @@ const SalesUserCases = () => {
         searchFilters
     } = useSelector((state) => state.salesCases);
 
+    const debounceRef = useRef();
+
 
     const { currentPage, pageSize, totalPages, totalCount } = pagination;
 
@@ -32,14 +34,44 @@ const SalesUserCases = () => {
         dispatch(fetchSaleUserCases({ page, limit, filters }));
     };
 
+    useEffect(() => {
+        return () => {
+            dispatch(
+                setSearchFilters({
+                    customerName: "",
+                    phone: "",
+                    customerID: "",
+                    email: "",
+                }));
+            dispatch(setCurrentPage(1));
+        }
+    }, [dispatch]);
+
+
+    // useEffect(() => {
+    //     dispatch(fetchSaleUserCases({
+    //         page: currentPage,
+    //         limit: pageSize,
+    //         filters: searchFilters
+    //     }));
+    // }, [dispatch]);
 
     useEffect(() => {
-        dispatch(fetchSaleUserCases({
-            page: currentPage,
-            limit: pageSize,
-            filters: searchFilters
-        }));
-    }, [dispatch]);
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        debounceRef.current = setTimeout(() => {
+            dispatch(setCurrentPage(1));
+            dispatch(fetchSaleUserCases({
+                page: 1,
+                limit: pageSize,
+                filters: searchFilters,
+            }))
+        }, 1000)
+
+        return () => clearTimeout(debounceRef.current);
+    }, [searchFilters, pageSize, dispatch])
 
     const handleSearch = () => {
         dispatch(setCurrentPage(1));
@@ -52,7 +84,8 @@ const SalesUserCases = () => {
 
     const handlePageSizeChange = (newPageSize) => {
         dispatch(setPageSize(newPageSize));
-        dispatch(fetchSaleUserCases({ page: 1, limit: newPageSize, filters: searchFilters }));
+        // dispatch(fetchSaleUserCases({ page: 1, limit: newPageSize, filters: searchFilters }));
+        dispatch(setCurrentPage(1));
     };
 
     const handlePageChange = (newPage) => {
@@ -414,20 +447,20 @@ const SalesUserCases = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div style={styles.container}>
-                <div style={styles.maxWidth}>
-                    <div style={styles.card}>
-                        <div style={styles.loadingContainer}>
-                            <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite', marginRight: '12px', color: '#2563eb' }} />
-                            <span style={{ fontSize: '18px', color: '#6b7280' }}>Loading cases...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // if (loading) {
+    //     return (
+    //         <div style={styles.container}>
+    //             <div style={styles.maxWidth}>
+    //                 <div style={styles.card}>
+    //                     <div style={styles.loadingContainer}>
+    //                         <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite', marginRight: '12px', color: '#2563eb' }} />
+    //                         <span style={{ fontSize: '18px', color: '#6b7280' }}>Loading cases...</span>
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     if (error) {
         return (
@@ -561,7 +594,7 @@ const SalesUserCases = () => {
                         </div>
                     </div>
 
-                    <div style={styles.searchButtonContainer}>
+                    {/* <div style={styles.searchButtonContainer}>
                         <button
                             style={{
                                 ...styles.searchButton,
@@ -588,7 +621,7 @@ const SalesUserCases = () => {
                         >
                             Search
                         </button>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Cases Table */}
@@ -613,57 +646,68 @@ const SalesUserCases = () => {
                                 </tr>
                             </thead>
                             <tbody style={styles.tbody}>
-                                {cases.map((caseItem) => (
-                                    <tr
-                                        key={caseItem.caseId || caseItem.id || index}
-                                        style={styles.tr}
-                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                                    >
-                                        <td style={styles.td}>{caseItem.caseId}</td>
-                                        <td style={styles.td}>{caseItem.customerName}</td>
-                                        <td style={styles.td}>{caseItem.plan}</td>
-                                        <td style={styles.td}>{caseItem.caseCreatedBy || 'Unknown'}</td>
-                                        <td style={styles.td}>{caseItem.assignedTo || 'Not assigned'}</td>
-                                        <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td>
-                                        <td style={styles.td}>{formatCurrency(caseItem.deduction)}</td>
-                                        <td style={styles.td}>{formatCurrency(caseItem.netAmount)}</td>
-                                        <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td>
-                                        <td style={styles.td}>
-                                            <span style={{ ...styles.statusBadge, ...getStatusStyle('completed') }}>
-                                                {caseItem.saleStatus}
-                                            </span>
-                                        </td>
-                                        <td style={styles.td}>
-                                            <span style={{ ...styles.statusBadge, ...getStatusStyle(caseItem.status) }}>
-                                                {caseItem.issueStatus}
-                                            </span>
-                                        </td>
-                                        <td style={{ ...styles.td, whiteSpace: "nowrap", width: "90px" }}>
-                                            {formatDate(caseItem.date)}
-                                        </td>
 
-                                        <td style={{ ...styles.td, width: "70px", textAlign: "center" }}>
-                                            <button
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    backgroundColor: '#2563eb',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '4px',
-                                                    fontSize: '12px',
-                                                    cursor: 'pointer'
-                                                }}
-                                                onClick={() => {
-                                                    console.log('Case item:', caseItem);
-                                                    fetchCaseDetails(caseItem.caseId);
-                                                }}
-                                            >
-                                                View
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {loading ? (<tr>
+                                    <td colSpan="13" style={{ textAlign: "center", padding: "30px" }}>
+                                        <div style={styles.loadingContainer}>
+                                            <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite', marginRight: '12px', color: '#2563eb' }} />
+                                            <span style={{ fontSize: '18px', color: '#6b7280' }}>Loading cases...</span>
+                                        </div>
+                                    </td>
+                                </tr>) : (
+
+
+                                    cases.map((caseItem) => (
+                                        <tr
+                                            key={caseItem.caseId || caseItem.id || index}
+                                            style={styles.tr}
+                                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                                        >
+                                            <td style={styles.td}>{caseItem.caseId}</td>
+                                            <td style={styles.td}>{caseItem.customerName}</td>
+                                            <td style={styles.td}>{caseItem.plan}</td>
+                                            <td style={styles.td}>{caseItem.caseCreatedBy || 'Unknown'}</td>
+                                            <td style={styles.td}>{caseItem.assignedTo || 'Not assigned'}</td>
+                                            <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td>
+                                            <td style={styles.td}>{formatCurrency(caseItem.deduction)}</td>
+                                            <td style={styles.td}>{formatCurrency(caseItem.netAmount)}</td>
+                                            <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td>
+                                            <td style={styles.td}>
+                                                <span style={{ ...styles.statusBadge, ...getStatusStyle('completed') }}>
+                                                    {caseItem.saleStatus}
+                                                </span>
+                                            </td>
+                                            <td style={styles.td}>
+                                                <span style={{ ...styles.statusBadge, ...getStatusStyle(caseItem.status) }}>
+                                                    {caseItem.issueStatus}
+                                                </span>
+                                            </td>
+                                            <td style={{ ...styles.td, whiteSpace: "nowrap", width: "90px" }}>
+                                                {formatDate(caseItem.date)}
+                                            </td>
+
+                                            <td style={{ ...styles.td, width: "70px", textAlign: "center" }}>
+                                                <button
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        backgroundColor: '#2563eb',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '4px',
+                                                        fontSize: '12px',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    onClick={() => {
+                                                        console.log('Case item:', caseItem);
+                                                        fetchCaseDetails(caseItem.caseId);
+                                                    }}
+                                                >
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )))}
                             </tbody>
                         </table>
                     </div>

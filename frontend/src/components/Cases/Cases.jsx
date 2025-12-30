@@ -1,150 +1,259 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { createCase, clearCaseState } from '../../features/CaseSlice/CaseSlice';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { createCase, clearCaseState } from "../../features/CaseSlice/CaseSlice";
 
 const CaseForm = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { loading, success, error } = useSelector((state) => state.cases);
     const [activeStep, setActiveStep] = useState(0);
-    const isNoSaleCase = window.location.href.includes('/create-case/no-sale');
+    const isNoSaleCase = window.location.href.includes("/create-case/no-sale");
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
-        customerName: '',
-        phone: '',
-        altPhone: '',
-        email: '',
-        address: '',
-        city: '',
-        state: '',
-        country: 'USA',
-        remoteAccess: [{
-            remoteID: '',
-            remotePass: '',
-            operatingSystem: '',
-            computerPass: ''
-        }],
-        issue: '',
-        modelNo: '',
-        workToBeDone: '',
-        specialNotes: '',
-        securitySoftware: '',
-        plan: '',
-        planDuration: '',
-        validity: '',
-        saleAmount: '',
-        status: 'Open',
+        customerName: "",
+        phone: "",
+        altPhone: "",
+        email: "",
+        address: "",
+        city: "",
+        state: "",
+        country: "",
+        remoteAccess: [
+            {
+                remoteID: "",
+                remotePass: "",
+                operatingSystem: "",
+                computerPass: "",
+            },
+        ],
+        issue: "",
+        modelNo: "",
+        workToBeDone: "",
+        specialNotes: "",
+        securitySoftware: "",
+        plan: "",
+        planDuration: "",
+        validity: "",
+        saleAmount: "",
+        status: "Open",
     });
 
     const usStates = [
-        'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
-        'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
-        'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan',
-        'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
-        'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio',
-        'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
-        'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia',
-        'Wisconsin', 'Wyoming'
+        "Alabama",
+        "Alaska",
+        "Arizona",
+        "Arkansas",
+        "California",
+        "Colorado",
+        "Connecticut",
+        "Delaware",
+        "Florida",
+        "Georgia",
+        "Hawaii",
+        "Idaho",
+        "Illinois",
+        "Indiana",
+        "Iowa",
+        "Kansas",
+        "Kentucky",
+        "Louisiana",
+        "Maine",
+        "Maryland",
+        "Massachusetts",
+        "Michigan",
+        "Minnesota",
+        "Mississippi",
+        "Missouri",
+        "Montana",
+        "Nebraska",
+        "Nevada",
+        "New Hampshire",
+        "New Jersey",
+        "New Mexico",
+        "New York",
+        "North Carolina",
+        "North Dakota",
+        "Ohio",
+        "Oklahoma",
+        "Oregon",
+        "Pennsylvania",
+        "Rhode Island",
+        "South Carolina",
+        "South Dakota",
+        "Tennessee",
+        "Texas",
+        "Utah",
+        "Vermont",
+        "Virginia",
+        "Washington",
+        "West Virginia",
+        "Wisconsin",
+        "Wyoming",
     ];
 
-    const operatingSystems = ['Windows 10', 'Windows 11', 'macOS', 'Linux Ubuntu', 'Linux Mint'];
-    const securitySoftwareOptions = ['Norton', 'McAfee', 'Kaspersky', 'Bitdefender', 'Avast'];
-    const planOptions = ['Basic', 'Premium', 'Enterprise'];
+    const operatingSystems = [
+        "Windows 10",
+        "Windows 11",
+        "macOS",
+        "Linux Ubuntu",
+        "Linux Mint",
+    ];
+    const securitySoftwareOptions = [
+        "Norton",
+        "McAfee",
+        "Kaspersky",
+        "Bitdefender",
+        "Avast",
+    ];
+    const planOptions = ["Basic", "Premium", "Enterprise"];
 
     useEffect(() => {
         if (formData.planDuration) {
             const currentDate = new Date();
             let validityDate;
 
-            if (formData.planDuration === 'Lifetime') {
-                validityDate = 'Lifetime';
+            if (formData.planDuration === "Lifetime") {
+                validityDate = "Lifetime";
             } else {
                 const years = parseInt(formData.planDuration);
-                validityDate = new Date(currentDate.getFullYear() + years, currentDate.getMonth(), currentDate.getDate());
-                validityDate = validityDate.toISOString().split('T')[0];
+                validityDate = new Date(
+                    currentDate.getFullYear() + years,
+                    currentDate.getMonth(),
+                    currentDate.getDate()
+                );
+                validityDate = validityDate.toISOString().split("T")[0];
             }
 
-            setFormData(prev => ({ ...prev, validity: validityDate }));
+            setFormData((prev) => ({ ...prev, validity: validityDate }));
         }
     }, [formData.planDuration]);
 
     useEffect(() => {
         return () => {
             setFormData({
-                customerName: '',
-                phone: '',
-                altPhone: '',
-                email: '',
-                address: '',
-                city: '',
-                state: '',
-                country: 'USA',
-                remoteAccess: [{
-                    remoteID: '',
-                    remotePass: '',
-                    operatingSystem: '',
-                    computerPass: ''
-                }],
-                issue: '',
-                modelNo: '',
-                workToBeDone: '',
-                specialNotes: '',
-                securitySoftware: '',
-                plan: '',
-                planDuration: '',
-                validity: '',
-                saleAmount: '',
-                status: 'Open',
+                customerName: "",
+                phone: "",
+                altPhone: "",
+                email: "",
+                address: "",
+                city: "",
+                state: "",
+                country: "",
+                remoteAccess: [
+                    {
+                        remoteID: "",
+                        remotePass: "",
+                        operatingSystem: "",
+                        computerPass: "",
+                    },
+                ],
+                issue: "",
+                modelNo: "",
+                workToBeDone: "",
+                specialNotes: "",
+                securitySoftware: "",
+                plan: "",
+                planDuration: "",
+                validity: "",
+                saleAmount: "",
+                status: "Open",
             });
         };
     }, []);
 
-
     const handleInputChange = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
     const handleRemoteAccessChange = (index, field, value) => {
         const newRemoteAccess = [...formData.remoteAccess];
         newRemoteAccess[index] = { ...newRemoteAccess[index], [field]: value };
-        setFormData(prev => ({ ...prev, remoteAccess: newRemoteAccess }));
+        setFormData((prev) => ({ ...prev, remoteAccess: newRemoteAccess }));
     };
 
     const addRemoteAccess = () => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            remoteAccess: [...prev.remoteAccess, {
-                remoteID: '',
-                remotePass: '',
-                operatingSystem: '',
-                computerPass: ''
-            }]
+            remoteAccess: [
+                ...prev.remoteAccess,
+                {
+                    remoteID: "",
+                    remotePass: "",
+                    operatingSystem: "",
+                    computerPass: "",
+                },
+            ],
         }));
     };
 
     const removeRemoteAccess = (index) => {
         if (formData.remoteAccess.length > 1) {
-            const newRemoteAccess = formData.remoteAccess.filter((_, i) => i !== index);
-            setFormData(prev => ({ ...prev, remoteAccess: newRemoteAccess }));
+            const newRemoteAccess = formData.remoteAccess.filter(
+                (_, i) => i !== index
+            );
+            setFormData((prev) => ({ ...prev, remoteAccess: newRemoteAccess }));
         }
     };
 
-    const validateStep1 = () => {
-        return formData.customerName && formData.phone && formData.email &&
-            formData.city && formData.state && formData.address;
+    // const validateStep1 = () => {
+    //     return formData.customerName && formData.phone && formData.email &&
+    //         formData.city && formData.state && formData.address;
+    // };
+
+    // const validateStep2 = () => {
+    //     const firstRemote = formData.remoteAccess[0];
+    //     return firstRemote.remoteID && firstRemote.remotePass &&
+    //         firstRemote.operatingSystem && firstRemote.computerPass &&
+    //         formData.issue && formData.modelNo && formData.workToBeDone &&
+    //         formData.securitySoftware && formData.plan && formData.planDuration &&
+    //         formData.saleAmount;
+    // };
+
+
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     };
 
-    const validateStep2 = () => {
-        const firstRemote = formData.remoteAccess[0];
-        return firstRemote.remoteID && firstRemote.remotePass &&
-            firstRemote.operatingSystem && firstRemote.computerPass &&
-            formData.issue && formData.modelNo && formData.workToBeDone &&
-            formData.securitySoftware && formData.plan && formData.planDuration &&
-            formData.saleAmount;
+    const validateAndSetErrors = (step) => {
+        const newErrors = {};
+
+        if (step === 0) {
+            if (!formData.customerName) newErrors.customerName = true;
+            if (!formData.phone) newErrors.phone = true;
+            if (!formData.email || !isValidEmail(formData.email)) newErrors.email = true;
+            if (!formData.country) newErrors.country = true;
+            if (!formData.city) newErrors.city = true;
+            if (!formData.state) newErrors.state = true;
+            if (!formData.address) newErrors.address = true;
+        } else if (step === 1) {
+            const firstRemote = formData.remoteAccess[0];
+            if (!firstRemote.remoteID) newErrors.remoteID = true;
+            if (!firstRemote.remotePass) newErrors.remotePass = true;
+            if (!firstRemote.operatingSystem) newErrors.operatingSystem = true;
+            if (!firstRemote.computerPass) newErrors.computerPass = true;
+            if (!formData.issue) newErrors.issue = true;
+            if (!formData.modelNo) newErrors.modelNo = true;
+            if (!formData.workToBeDone) newErrors.workToBeDone = true;
+            if (!formData.securitySoftware) newErrors.securitySoftware = true;
+            if (!formData.plan) newErrors.plan = true;
+            if (!formData.planDuration) newErrors.planDuration = true;
+            if (!formData.saleAmount) newErrors.saleAmount = true;
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
+
+    // const handleNext = () => {
+    //     if (activeStep === 0 && validateStep1()) {
+    //         setActiveStep(1);
+    //     }
+    // };
 
     const handleNext = () => {
-        if (activeStep === 0 && validateStep1()) {
+        if (validateAndSetErrors(0)) {
             setActiveStep(1);
         }
     };
@@ -154,71 +263,104 @@ const CaseForm = () => {
     };
 
     const handleSubmit = async () => {
-        const isValid = isNoSaleCase ? validateStep1() : validateStep2();
+        const step = isNoSaleCase ? 0 : 1;
 
-        if (isValid) {
-            let submitData;
+        if (!validateAndSetErrors(step)) {
+            return;
+        }
 
-            if (isNoSaleCase) {
-                submitData = {
-                    ...formData,
-                };
-                delete submitData.remoteAccess;
-            } else {
-                submitData = {
-                    ...formData,
-                    remoteID: formData.remoteAccess[0].remoteID,
-                    remotePass: formData.remoteAccess[0].remotePass,
-                    operatingSystem: formData.remoteAccess[0].operatingSystem,
-                    computerPass: formData.remoteAccess[0].computerPass
-                };
-                delete submitData.remoteAccess;
-            }
+        let submitData;
 
-            console.log('Form Data to Submit:', submitData);
-
-            try {
-                console.log('Dispatching createCase...');
-                const result = await dispatch(createCase(submitData)).unwrap();
-                console.log('Success result:', result);
-                alert('Form submitted successfully!');
-
-                setFormData({
-                    customerName: '',
-                    phone: '',
-                    altPhone: '',
-                    email: '',
-                    address: '',
-                    city: '',
-                    state: '',
-                    country: 'USA',
-                    remoteAccess: [{
-                        remoteID: '',
-                        remotePass: '',
-                        operatingSystem: '',
-                        computerPass: ''
-                    }],
-                    issue: '',
-                    modelNo: '',
-                    workToBeDone: '',
-                    specialNotes: '',
-                    securitySoftware: '',
-                    plan: '',
-                    planDuration: '',
-                    validity: '',
-                    saleAmount: '',
-                    status: 'Open',
-                });
-                setActiveStep(0);
-
-            } catch (error) {
-                console.error('Submit error:', error);
-                alert(`Error: ${error}`);
-            }
+        if (isNoSaleCase) {
+            submitData = {
+                ...formData,
+            };
+            delete submitData.remoteAccess;
         } else {
-            console.log('Validation failed');
+            submitData = {
+                ...formData,
+                remoteID: formData.remoteAccess[0].remoteID,
+                remotePass: formData.remoteAccess[0].remotePass,
+                operatingSystem: formData.remoteAccess[0].operatingSystem,
+                computerPass: formData.remoteAccess[0].computerPass,
+            };
+            delete submitData.remoteAccess;
+        }
+
+        console.log("Form Data to Submit:", submitData);
+
+        try {
+            console.log("Dispatching createCase...");
+            const result = await dispatch(createCase(submitData)).unwrap();
+            console.log("Success result:", result);
+            alert("Form submitted successfully!");
+
+            setFormData({
+                customerName: "",
+                phone: "",
+                altPhone: "",
+                email: "",
+                address: "",
+                city: "",
+                state: "",
+                country: "",
+                remoteAccess: [
+                    {
+                        remoteID: "",
+                        remotePass: "",
+                        operatingSystem: "",
+                        computerPass: "",
+                    },
+                ],
+                issue: "",
+                modelNo: "",
+                workToBeDone: "",
+                specialNotes: "",
+                securitySoftware: "",
+                plan: "",
+                planDuration: "",
+                validity: "",
+                saleAmount: "",
+                status: "Open",
+            });
+            setErrors({}); // Also clear errors after successful submit
+            setActiveStep(0);
+        } catch (error) {
+            console.error("Submit error:", error);
+            alert(`Error: ${error}`);
         }
     };
+
+    // Add this function to clear errors on input change
+    const handleInputChangeWithErrorClear = (field, value) => {
+        handleInputChange(field, value);
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: false }));
+        }
+    };
+
+    const handleRemoteAccessChangeWithErrorClear = (index, field, value) => {
+        handleRemoteAccessChange(index, field, value);
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: false }));
+        }
+    };
+
+    // Update the input style to include error state
+    const getInputStyle = (fieldName) => ({
+        ...styles.input,
+        borderColor: errors[fieldName] ? "#ef4444" : "#e5e7eb",
+    });
+
+    const getSelectStyle = (fieldName) => ({
+        ...styles.select,
+        borderColor: errors[fieldName] ? "#ef4444" : "#e5e7eb",
+    });
+
+    const getTextareaStyle = (fieldName) => ({
+        ...styles.textarea,
+        borderColor: errors[fieldName] ? "#ef4444" : "#e5e7eb",
+    });
 
     useEffect(() => {
         return () => {
@@ -235,14 +377,24 @@ const CaseForm = () => {
                     {/* Step Indicator */}
                     <div style={styles.stepIndicator}>
                         <div style={styles.stepContainer}>
-                            <div style={{ ...styles.stepCircle, ...(activeStep >= 0 ? styles.stepActive : {}) }}>
+                            <div
+                                style={{
+                                    ...styles.stepCircle,
+                                    ...(activeStep >= 0 ? styles.stepActive : {}),
+                                }}
+                            >
                                 1
                             </div>
                             <span style={styles.stepLabel}>Customer Information</span>
                         </div>
                         <div style={styles.stepLine}></div>
                         <div style={styles.stepContainer}>
-                            <div style={{ ...styles.stepCircle, ...(activeStep >= 1 ? styles.stepActive : {}) }}>
+                            <div
+                                style={{
+                                    ...styles.stepCircle,
+                                    ...(activeStep >= 1 ? styles.stepActive : {}),
+                                }}
+                            >
                                 2
                             </div>
                             <span style={styles.stepLabel}>Case Details</span>
@@ -258,20 +410,27 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Customer Name *</label>
                                 <input
-                                    style={styles.input}
+                                    style={getInputStyle("customerName")}
                                     type="text"
                                     value={formData.customerName}
-                                    onChange={(e) => handleInputChange('customerName', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear(
+                                            "customerName",
+                                            e.target.value
+                                        )
+                                    }
                                     placeholder="Enter customer name"
                                 />
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Phone Number *</label>
                                 <input
-                                    style={styles.input}
+                                    style={getInputStyle("phone")}
                                     type="tel"
                                     value={formData.phone}
-                                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("phone", e.target.value)
+                                    }
                                     placeholder="Enter phone number"
                                 />
                             </div>
@@ -281,20 +440,24 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Alternate Phone Number</label>
                                 <input
-                                    style={styles.input}
+                                    style={getInputStyle("altPhone")}
                                     type="tel"
                                     value={formData.altPhone}
-                                    onChange={(e) => handleInputChange('altPhone', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange("altPhone", e.target.value)
+                                    }
                                     placeholder="Enter alternate phone number"
                                 />
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Email Address *</label>
                                 <input
-                                    style={styles.input}
+                                    style={getInputStyle("email")}
                                     type="email"
                                     value={formData.email}
-                                    onChange={(e) => handleInputChange('email', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("email", e.target.value)
+                                    }
                                     placeholder="Enter email address"
                                 />
                             </div>
@@ -304,26 +467,26 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Country *</label>
                                 <input
-                                    style={{ ...styles.input, backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+                                    style={getInputStyle("country")}
                                     type="text"
                                     value={formData.country}
-                                    disabled
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("country", e.target.value)
+                                    }
+                                    placeholder="Enter country"
                                 />
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>State *</label>
-                                <select
-                                    style={styles.select}
+                                <input
+                                    style={getInputStyle("state")}
+                                    type="text"
                                     value={formData.state}
-                                    onChange={(e) => handleInputChange('state', e.target.value)}
-                                >
-                                    <option value="">Select State</option>
-                                    {usStates.map((state) => (
-                                        <option key={state} value={state}>
-                                            {state}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("state", e.target.value)
+                                    }
+                                    placeholder="Enter state"
+                                />
                             </div>
                         </div>
 
@@ -331,34 +494,40 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>City *</label>
                                 <input
-                                    style={styles.input}
+                                    style={getInputStyle("city")}
                                     type="text"
                                     value={formData.city}
-                                    onChange={(e) => handleInputChange('city', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("city", e.target.value)
+                                    }
                                     placeholder="Enter city"
                                 />
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Street Address *</label>
                                 <input
-                                    style={styles.input}
+                                    style={getInputStyle("address")}
                                     type="text"
                                     value={formData.address}
-                                    onChange={(e) => handleInputChange('address', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("address", e.target.value)
+                                    }
                                     placeholder="Enter street address"
                                 />
                             </div>
                         </div>
 
-                        <div style={{
-                            ...styles.buttonContainer,
-                            justifyContent: isNoSaleCase ? 'center' : 'space-between'
-                        }}>
+                        <div
+                            style={{
+                                ...styles.buttonContainer,
+                                justifyContent: isNoSaleCase ? "center" : "space-between",
+                            }}
+                        >
                             {isNoSaleCase ? (
                                 <button
                                     style={{ ...styles.button, ...styles.successButton }}
                                     onClick={handleSubmit}
-                                    disabled={!validateStep1()}
+                                // disabled={!validateStep1()}
                                 >
                                     Submit Case
                                 </button>
@@ -366,7 +535,7 @@ const CaseForm = () => {
                                 <button
                                     style={{ ...styles.button, ...styles.primaryButton }}
                                     onClick={handleNext}
-                                    disabled={!validateStep1()}
+                                // disabled={!validateStep1()}
                                 >
                                     Next →
                                 </button>
@@ -400,20 +569,32 @@ const CaseForm = () => {
                                     <div style={styles.formGroup}>
                                         <label style={styles.label}>Remote ID *</label>
                                         <input
-                                            style={styles.input}
+                                            style={getInputStyle("remoteID")}
                                             type="text"
                                             value={remote.remoteID}
-                                            onChange={(e) => handleRemoteAccessChange(index, 'remoteID', e.target.value)}
+                                            onChange={(e) =>
+                                                handleRemoteAccessChangeWithErrorClear(
+                                                    index,
+                                                    "remoteID",
+                                                    e.target.value
+                                                )
+                                            }
                                             placeholder="Enter remote ID"
                                         />
                                     </div>
                                     <div style={styles.formGroup}>
                                         <label style={styles.label}>Remote Password *</label>
                                         <input
-                                            style={styles.input}
+                                            style={getInputStyle("remotePass")}
                                             type="password"
                                             value={remote.remotePass}
-                                            onChange={(e) => handleRemoteAccessChange(index, 'remotePass', e.target.value)}
+                                            onChange={(e) =>
+                                                handleRemoteAccessChangeWithErrorClear(
+                                                    index,
+                                                    "remotePass",
+                                                    e.target.value
+                                                )
+                                            }
                                             placeholder="Enter remote password"
                                         />
                                     </div>
@@ -423,9 +604,15 @@ const CaseForm = () => {
                                     <div style={styles.formGroup}>
                                         <label style={styles.label}>Operating System *</label>
                                         <select
-                                            style={styles.select}
+                                            style={getSelectStyle("operatingSystem")}
                                             value={remote.operatingSystem}
-                                            onChange={(e) => handleRemoteAccessChange(index, 'operatingSystem', e.target.value)}
+                                            onChange={(e) =>
+                                                handleRemoteAccessChangeWithErrorClear(
+                                                    index,
+                                                    "operatingSystem",
+                                                    e.target.value
+                                                )
+                                            }
                                         >
                                             <option value="">Select OS</option>
                                             {operatingSystems.map((os) => (
@@ -438,10 +625,16 @@ const CaseForm = () => {
                                     <div style={styles.formGroup}>
                                         <label style={styles.label}>Computer Password *</label>
                                         <input
-                                            style={styles.input}
+                                            style={getInputStyle("computerPass")}
                                             type="password"
                                             value={remote.computerPass}
-                                            onChange={(e) => handleRemoteAccessChange(index, 'computerPass', e.target.value)}
+                                            onChange={(e) =>
+                                                handleRemoteAccessChangeWithErrorClear(
+                                                    index,
+                                                    "computerPass",
+                                                    e.target.value
+                                                )
+                                            }
                                             placeholder="Enter computer password"
                                         />
                                     </div>
@@ -464,20 +657,24 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Issue *</label>
                                 <textarea
-                                    style={styles.textarea}
+                                    style={getTextareaStyle("issue")}
                                     rows="3"
                                     value={formData.issue}
-                                    onChange={(e) => handleInputChange('issue', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("issue", e.target.value)
+                                    }
                                     placeholder="Describe the issue"
                                 />
                             </div>
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Model No *</label>
                                 <input
-                                    style={styles.input}
+                                    style={getInputStyle("modelNo")}
                                     type="text"
                                     value={formData.modelNo}
-                                    onChange={(e) => handleInputChange('modelNo', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("modelNo", e.target.value)
+                                    }
                                     placeholder="Enter model number"
                                 />
                             </div>
@@ -486,10 +683,15 @@ const CaseForm = () => {
                         <div style={styles.formGroupFull}>
                             <label style={styles.label}>Work To Be Done *</label>
                             <textarea
-                                style={styles.textarea}
+                                style={getTextareaStyle("workToBeDone")}
                                 rows="3"
                                 value={formData.workToBeDone}
-                                onChange={(e) => handleInputChange('workToBeDone', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChangeWithErrorClear(
+                                        "workToBeDone",
+                                        e.target.value
+                                    )
+                                }
                                 placeholder="Describe work to be done"
                             />
                         </div>
@@ -497,10 +699,15 @@ const CaseForm = () => {
                         <div style={styles.formGroupFull}>
                             <label style={styles.label}>Special Notes</label>
                             <textarea
-                                style={styles.textarea}
+                                style={getTextareaStyle("specialNotes")}
                                 rows="2"
                                 value={formData.specialNotes}
-                                onChange={(e) => handleInputChange('specialNotes', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChangeWithErrorClear(
+                                        "specialNotes",
+                                        e.target.value
+                                    )
+                                }
                                 placeholder="Any special notes"
                             />
                         </div>
@@ -509,9 +716,14 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Security Software *</label>
                                 <select
-                                    style={styles.select}
+                                    style={getSelectStyle("securitySoftware")}
                                     value={formData.securitySoftware}
-                                    onChange={(e) => handleInputChange('securitySoftware', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear(
+                                            "securitySoftware",
+                                            e.target.value
+                                        )
+                                    }
                                 >
                                     <option value="">Select Security Software</option>
                                     {securitySoftwareOptions.map((software) => (
@@ -524,9 +736,11 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Plan *</label>
                                 <select
-                                    style={styles.select}
+                                    style={getSelectStyle("plan")}
                                     value={formData.plan}
-                                    onChange={(e) => handleInputChange('plan', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear("plan", e.target.value)
+                                    }
                                 >
                                     <option value="">Select Plan</option>
                                     {planOptions.map((plan) => (
@@ -542,14 +756,22 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Plan Duration *</label>
                                 <select
-                                    style={styles.select}
+                                    style={getSelectStyle("planDuration")}
                                     value={formData.planDuration}
-                                    onChange={(e) => handleInputChange('planDuration', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear(
+                                            "planDuration",
+                                            e.target.value
+                                        )
+                                    }
                                 >
                                     <option value="">Select Duration</option>
                                     {[...Array(10)].map((_, i) => (
-                                        <option key={i + 1} value={`${i + 1} Year${i > 0 ? 's' : ''}`}>
-                                            {i + 1} Year{i > 0 ? 's' : ''}
+                                        <option
+                                            key={i + 1}
+                                            value={`${i + 1} Year${i > 0 ? "s" : ""}`}
+                                        >
+                                            {i + 1} Year{i > 0 ? "s" : ""}
                                         </option>
                                     ))}
                                     <option value="Lifetime">Lifetime</option>
@@ -558,7 +780,11 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Validity</label>
                                 <input
-                                    style={{ ...styles.input, backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+                                    style={{
+                                        ...styles.input,
+                                        backgroundColor: "#f5f5f5",
+                                        cursor: "not-allowed",
+                                    }}
                                     type="text"
                                     value={formData.validity}
                                     disabled
@@ -570,11 +796,16 @@ const CaseForm = () => {
                             <div style={styles.formGroup}>
                                 <label style={styles.label}>Sale Amount *</label>
                                 <input
-                                    style={styles.input}
+                                    style={getInputStyle("saleAmount")}
                                     type="number"
                                     step="0.01"
                                     value={formData.saleAmount}
-                                    onChange={(e) => handleInputChange('saleAmount', e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChangeWithErrorClear(
+                                            "saleAmount",
+                                            e.target.value
+                                        )
+                                    }
                                     placeholder="Enter sale amount"
                                 />
                             </div>
@@ -590,7 +821,7 @@ const CaseForm = () => {
                             <button
                                 style={{ ...styles.button, ...styles.successButton }}
                                 onClick={handleSubmit}
-                                disabled={!validateStep2()}
+                            // disabled={!validateStep2()}
                             >
                                 Submit Case
                             </button>
@@ -604,213 +835,214 @@ const CaseForm = () => {
 
 const styles = {
     container: {
-        minHeight: '100vh',
-        backgroundColor: '#f8fafc',
-        paddingTop: '100px',
-        paddingBottom: '40px',
-        paddingLeft: '20px',
-        paddingRight: '20px',
-        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        minHeight: "100vh",
+        backgroundColor: "#f8fafc",
+        paddingTop: "100px",
+        paddingBottom: "40px",
+        paddingLeft: "20px",
+        paddingRight: "20px",
+        fontFamily:
+            '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
     formCard: {
-        maxWidth: '900px',
-        margin: '0 auto',
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        overflow: 'hidden'
+        maxWidth: "900px",
+        margin: "0 auto",
+        backgroundColor: "white",
+        borderRadius: "12px",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        overflow: "hidden",
     },
     header: {
-        backgroundColor: '#2563eb',
-        color: 'white',
-        padding: '30px',
-        textAlign: 'center'
+        backgroundColor: "#2563eb",
+        color: "white",
+        padding: "30px",
+        textAlign: "center",
     },
     title: {
-        margin: '0 0 30px 0',
-        fontSize: '28px',
-        fontWeight: '600'
+        margin: "0 0 30px 0",
+        fontSize: "28px",
+        fontWeight: "600",
     },
     stepIndicator: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '20px'
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "20px",
     },
     stepContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '8px'
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "8px",
     },
     stepCircle: {
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: 'bold',
-        fontSize: '16px',
-        transition: 'all 0.3s ease'
+        width: "40px",
+        height: "40px",
+        borderRadius: "50%",
+        backgroundColor: "rgba(255, 255, 255, 0.3)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: "bold",
+        fontSize: "16px",
+        transition: "all 0.3s ease",
     },
     stepActive: {
-        backgroundColor: 'white',
-        color: '#2563eb'
+        backgroundColor: "white",
+        color: "#2563eb",
     },
     stepLabel: {
-        fontSize: '14px',
-        fontWeight: '500'
+        fontSize: "14px",
+        fontWeight: "500",
     },
     stepLine: {
-        width: '60px',
-        height: '2px',
-        backgroundColor: 'rgba(255, 255, 255, 0.3)'
+        width: "60px",
+        height: "2px",
+        backgroundColor: "rgba(255, 255, 255, 0.3)",
     },
     formSection: {
-        padding: '40px'
+        padding: "40px",
     },
     sectionTitle: {
-        fontSize: '24px',
-        fontWeight: '600',
-        color: '#1e293b',
-        marginBottom: '30px',
-        borderBottom: '2px solid #e2e8f0',
-        paddingBottom: '10px'
+        fontSize: "24px",
+        fontWeight: "600",
+        color: "#1e293b",
+        marginBottom: "30px",
+        borderBottom: "2px solid #e2e8f0",
+        paddingBottom: "10px",
     },
     subSectionTitle: {
-        fontSize: '20px',
-        fontWeight: '600',
-        color: '#475569',
-        marginTop: '30px',
-        marginBottom: '20px'
+        fontSize: "20px",
+        fontWeight: "600",
+        color: "#475569",
+        marginTop: "30px",
+        marginBottom: "20px",
     },
     formRow: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '20px',
-        marginBottom: '20px'
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "20px",
+        marginBottom: "20px",
     },
     formGroup: {
-        display: 'flex',
-        flexDirection: 'column'
+        display: "flex",
+        flexDirection: "column",
     },
     formGroupFull: {
-        display: 'flex',
-        flexDirection: 'column',
-        marginBottom: '20px'
+        display: "flex",
+        flexDirection: "column",
+        marginBottom: "20px",
     },
     label: {
-        fontSize: '14px',
-        fontWeight: '600',
-        color: '#374151',
-        marginBottom: '8px'
+        fontSize: "14px",
+        fontWeight: "600",
+        color: "#374151",
+        marginBottom: "8px",
     },
     input: {
-        padding: '12px 16px',
-        border: '2px solid #e5e7eb',
-        borderRadius: '8px',
-        fontSize: '16px',
-        transition: 'all 0.2s ease',
-        outline: 'none',
-        ':focus': {
-            borderColor: '#2563eb',
-            boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)'
-        }
+        padding: "12px 16px",
+        border: "2px solid #e5e7eb",
+        borderRadius: "8px",
+        fontSize: "16px",
+        transition: "all 0.2s ease",
+        outline: "none",
+        ":focus": {
+            borderColor: "#2563eb",
+            boxShadow: "0 0 0 3px rgba(37, 99, 235, 0.1)",
+        },
     },
     select: {
-        padding: '12px 16px',
-        border: '2px solid #e5e7eb',
-        borderRadius: '8px',
-        fontSize: '16px',
-        backgroundColor: 'white',
-        cursor: 'pointer',
-        outline: 'none'
+        padding: "12px 16px",
+        border: "2px solid #e5e7eb",
+        borderRadius: "8px",
+        fontSize: "16px",
+        backgroundColor: "white",
+        cursor: "pointer",
+        outline: "none",
     },
     textarea: {
-        padding: '12px 16px',
-        border: '2px solid #e5e7eb',
-        borderRadius: '8px',
-        fontSize: '16px',
-        fontFamily: 'inherit',
-        resize: 'vertical',
-        outline: 'none'
+        padding: "12px 16px",
+        border: "2px solid #e5e7eb",
+        borderRadius: "8px",
+        fontSize: "16px",
+        fontFamily: "inherit",
+        resize: "vertical",
+        outline: "none",
     },
     remoteAccessCard: {
-        border: '2px solid #e5e7eb',
-        borderRadius: '8px',
-        padding: '20px',
-        marginBottom: '20px',
-        backgroundColor: '#f8fafc'
+        border: "2px solid #e5e7eb",
+        borderRadius: "8px",
+        padding: "20px",
+        marginBottom: "20px",
+        backgroundColor: "#f8fafc",
     },
     cardHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px'
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "20px",
     },
     cardTitle: {
-        fontSize: '18px',
-        fontWeight: '600',
-        color: '#475569',
-        margin: 0
+        fontSize: "18px",
+        fontWeight: "600",
+        color: "#475569",
+        margin: 0,
     },
     removeButton: {
-        background: '#ef4444',
-        color: 'white',
-        border: 'none',
-        borderRadius: '50%',
-        width: '30px',
-        height: '30px',
-        cursor: 'pointer',
-        fontSize: '16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        background: "#ef4444",
+        color: "white",
+        border: "none",
+        borderRadius: "50%",
+        width: "30px",
+        height: "30px",
+        cursor: "pointer",
+        fontSize: "16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
     },
     addButton: {
-        background: '#10b981',
-        color: 'white',
-        border: 'none',
-        padding: '12px 24px',
-        borderRadius: '8px',
-        fontSize: '16px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        marginBottom: '30px',
-        transition: 'all 0.2s ease'
+        background: "#10b981",
+        color: "white",
+        border: "none",
+        padding: "12px 24px",
+        borderRadius: "8px",
+        fontSize: "16px",
+        fontWeight: "600",
+        cursor: "pointer",
+        marginBottom: "30px",
+        transition: "all 0.2s ease",
     },
     buttonContainer: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: '40px',
-        paddingTop: '20px',
-        borderTop: '2px solid #e2e8f0'
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: "40px",
+        paddingTop: "20px",
+        borderTop: "2px solid #e2e8f0",
     },
     button: {
-        padding: '14px 28px',
-        borderRadius: '8px',
-        fontSize: '16px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        border: 'none',
-        transition: 'all 0.2s ease',
-        minWidth: '120px'
+        padding: "14px 28px",
+        borderRadius: "8px",
+        fontSize: "16px",
+        fontWeight: "600",
+        cursor: "pointer",
+        border: "none",
+        transition: "all 0.2s ease",
+        minWidth: "120px",
     },
     primaryButton: {
-        background: '#2563eb',
-        color: 'white'
+        background: "#2563eb",
+        color: "white",
     },
     secondaryButton: {
-        background: '#6b7280',
-        color: 'white'
+        background: "#6b7280",
+        color: "white",
     },
     successButton: {
-        background: '#059669',
-        color: 'white'
-    }
+        background: "#059669",
+        color: "white",
+    },
 };
 
 export default CaseForm;
