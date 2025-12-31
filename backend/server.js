@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 
 import sequelize from "./config/db.js";
 import userRoutes from "./routes/adminRoutes.js";
-import saleRoutes from "./routes/SaleRoutes.js";
+import saleRoutes from "./routes/saleRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import customerRoutes from "./routes/techRoutes.js"
 import authGuard from "./middleware/authGuard.js";

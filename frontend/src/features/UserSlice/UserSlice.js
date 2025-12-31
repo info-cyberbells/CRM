@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { createUser, loginUser, verifyTokenAPI, logoutUserAPI } from "../../services/services";
+import { createUser, loginUser, logoutUserAPI } from "../../services/services";
 
 const initialState = {
     user: null,
@@ -32,20 +32,6 @@ export const loginUserThunk = createAsyncThunk(
         } catch (error) {
             const message =
                 error.response?.data?.message || error.message || "Something went wrong";
-            return thunkAPI.rejectWithValue(message);
-        }
-    }
-);
-
-//verify token
-export const verifyTokenThunk = createAsyncThunk(
-    "users/verifyToken",
-    async (_, thunkAPI) => {
-        try {
-            return await verifyTokenAPI();
-        } catch (error) {
-            const message =
-                error.response?.data?.message || error.message || "Token verification failed";
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -119,30 +105,14 @@ const userSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 state.user = action.payload.user;
+
+                localStorage.setItem('Role', action.payload.user.role);
             })
             .addCase(loginUserThunk.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;
                 state.user = null;
-            })
-
-            //verify token builder
-            .addCase(verifyTokenThunk.pending, (state) => {
-                state.isLoading = true;
-                state.isError = false;
-                state.message = "";
-            })
-            .addCase(verifyTokenThunk.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.isSuccess = true;
-                state.user = action.payload.user;
-            })
-            .addCase(verifyTokenThunk.rejected, (state, action) => {
-                state.isLoading = false;
-                state.isError = true;
-                state.user = null;
-                state.message = action.payload;
             })
 
             //logout builder
@@ -156,6 +126,7 @@ const userSlice = createSlice({
                 state.isSuccess = true;
                 state.user = null;
                 state.message = action.payload.message;
+                localStorage.removeItem("Role");
             })
             .addCase(logoutUserThunk.rejected, (state, action) => {
                 state.isLoading = false;

@@ -34,6 +34,26 @@ const SalesUserCases = () => {
         dispatch(fetchSaleUserCases({ page, limit, filters }));
     };
 
+    const handleRefresh = ()=>{
+        dispatch(setSearchFilters({
+            customerName:"",
+            phone:"",
+            customerID: "",
+            email: "",
+        }));
+        dispatch(setCurrentPage(1));
+        dispatch(fetchSaleUserCases({
+            page: 1,
+            limit: pageSize,
+            filters: {
+            customerName: "",
+            phone: "",
+            customerID: "",
+            email: "",
+            }
+        }));
+    }
+
     useEffect(() => {
         return () => {
             dispatch(
@@ -99,9 +119,22 @@ const SalesUserCases = () => {
     };
 
 
-    const updateCaseHandler = (caseId, updatedData) => {
-        dispatch(updateCase({ caseId, caseData: updatedData }));
-    };
+    const updateCaseHandler = async (caseId, updatedData) => {
+        try {
+            await dispatch(updateCase({ caseId, caseData: updatedData })).unwrap();
+
+            dispatch(setCurrentPage(1));
+
+            dispatch(fetchSaleUserCases({
+            page: 1,
+            limit: pageSize,
+            filters: searchFilters,
+            }));
+        } catch (error) {
+            console.error("Update failed:", error);
+        }
+        };
+
 
     const hasSearchFilters = () => {
         return searchFilters.customerName.trim() !== '' ||
@@ -495,7 +528,8 @@ const SalesUserCases = () => {
                         <div>
                         </div>
                         <button
-                            onClick={() => fetchCases()}
+                            // onClick={() => fetchCases()}
+                            onClick={handleRefresh}
                             style={styles.refreshButton}
                             onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
                             onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
@@ -956,7 +990,15 @@ const SalesUserCases = () => {
 
                                     {/* Issue / Notes */}
                                     <div style={{ gridColumn: "1 / span 2", ...styles.formGroup }}>
-                                        <label style={styles.label}>Issue / Notes</label>
+                                        <label style={styles.label}>Issue </label>
+                                        <textarea
+                                            style={styles.textarea}
+                                            value={selectedCase.issue || ""}
+                                            onChange={(e) => dispatch(updateSelectedCase({ issue: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div style={{ gridColumn: "1 / span 2", ...styles.formGroup }}>
+                                        <label style={styles.label}>Notes</label>
                                         <textarea
                                             style={styles.textarea}
                                             value={selectedCase.issue || ""}

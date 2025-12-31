@@ -37,15 +37,6 @@ export const loginUser = async (userData) => {
     return response.data;
 };
 
-// Verify Token
-export const verifyTokenAPI = async () => {
-    try {
-        const response = await axios.get(USER_ENDPOINTS.VERIFY_TOKEN);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
-};
 
 // Logout User
 export const logoutUserAPI = async () => {
@@ -134,14 +125,15 @@ export const updateSearchedCase = async (caseId, caseData) => {
 };
 
 //search sale users cases
-export const searchSaleUserOngoingCases = async (page, limit, filters) => {
+export const searchSaleUserOngoingCases = async (page, limit) => {
     try {
         const queryParams = new URLSearchParams({
             page: page.toString(),
-            limit: limit.toString()
+            limit: limit.toString(),
+              status: "ongoing"
         });
 
-        if (filters.status?.trim()) queryParams.append('status', filters.status.trim());
+        // if (filters.status?.trim()) queryParams.append('status', filters.status.trim());
 
         const response = await axios.get(`${USER_ENDPOINTS.SEARCH_SALE_USER_CASES}?${queryParams}`, {
             withCredentials: true,
@@ -153,3 +145,15 @@ export const searchSaleUserOngoingCases = async (page, limit, filters) => {
     }
 };
 
+// SALE USER NOTIFICATION API
+export const saleUserNotificationService = async ()=>{
+    const response = await axios.get(
+        USER_ENDPOINTS.SALE_USER_NOTIFICATION, {
+            withCredentials: true,
+            headers: {
+                "Content-Type": "application/json"
+            },
+        },
+    );
+    return response.data;
+}

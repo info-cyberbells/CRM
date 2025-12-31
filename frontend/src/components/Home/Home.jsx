@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUserThunk, reset } from '../../features/UserSlice/UserSlice';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import cyberHub_Logo from '../../assets/images/cyberhub_Logo.png'
+
 
 const Home = () => {
     const dispatch = useDispatch();
@@ -9,6 +12,7 @@ const Home = () => {
     const { user, isLoading, isError, isSuccess, message } = useSelector(state => state.user);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -64,6 +68,7 @@ const Home = () => {
     };
 
     const inputGroupStyle = {
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         gap: '5px'
@@ -77,6 +82,7 @@ const Home = () => {
 
     const inputStyle = {
         padding: '12px',
+        paddingLeft: '40px',
         border: '1px solid #ddd',
         borderRadius: '4px',
         fontSize: '16px',
@@ -109,10 +115,22 @@ const Home = () => {
     return (
         <div style={containerStyle}>
             <div style={formContainerStyle}>
+                <img
+                    src={cyberHub_Logo}
+                    alt="Logo"
+                    style={{
+                        display: "block",
+                        margin: "0 auto 20px",
+                        width: "100px",
+                        height: "auto"
+                    }}
+                    />
+
                 <h1 style={titleStyle}>Login</h1>
                 <div style={formStyle}>
                     <div style={inputGroupStyle}>
                         <label style={labelStyle} htmlFor="email">Email</label>
+                        <Mail size={20} style={{ position: "absolute", left: "12px", top: "40px", color: "#9ca3af" }} />
                         <input
                             style={inputStyle}
                             type="email"
@@ -126,9 +144,10 @@ const Home = () => {
                     </div>
                     <div style={inputGroupStyle}>
                         <label style={labelStyle} htmlFor="password">Password</label>
+                       <Lock size={20} style={{ position: "absolute", left: "12px", top: "38px", color: "#9ca3af" }}/>
                         <input
                             style={inputStyle}
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -136,6 +155,22 @@ const Home = () => {
                             onFocus={(e) => e.target.style.borderColor = '#007bff'}
                             onBlur={(e) => e.target.style.borderColor = '#ddd'}
                         />
+                       <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{
+                                position: "absolute",
+                                right: "12px",
+                                top: "40px",
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "#9ca3af"
+                            }}
+                            >
+                            {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                            </button>
+
                     </div>
                     <button
                         style={{
