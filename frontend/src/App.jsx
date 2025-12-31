@@ -1,13 +1,13 @@
 import react, { useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { verifyTokenThunk } from './features/UserSlice/UserSlice';
 import Home from './components/Home/Home'
 import Navbar from './components/Navbar/Navbar/Navbar';
 import Dashboard from './components/Dashboard/dashboard';
 import Cases from './components/Cases/Cases';
 import Search from './components/Search/Search';
 import Notes from './/components/Notes/Notes';
+import NotificationCenter from './components/NotificationPage/NotificationPage';
 
 
 
@@ -15,20 +15,27 @@ function App() {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.user);
 
-  useEffect(() => {
-    dispatch(verifyTokenThunk());
-  }, [dispatch]);
+  const role = localStorage.getItem("Role");
 
   return (
     <>
-      {user && <Navbar />}
+      {role && <Navbar />}
 
       <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/dashboard' element={<Dashboard />} />
+        {/* <Route path='/' element={<Home />} /> */}
+        {/* <Route path='/dashboard' element={<Dashboard />} /> */}
+         <Route
+            path="/"
+            element={role ? <Navigate to="/dashboard" replace /> : <Home />}
+          />
+            <Route
+    path="/dashboard"
+    element={role ? <Dashboard /> : <Navigate to="/" replace />}
+  />
         <Route path='/create-case/:id' element={<Cases />} />
         <Route path='/search' element={<Search />} />
         <Route path='/notes' element={<Notes />} />
+        <Route path='/notifications' element={<NotificationCenter />} />
       </Routes>
     </>
   )

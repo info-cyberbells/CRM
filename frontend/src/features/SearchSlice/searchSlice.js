@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { searchSaleUserCases, searchCaseById, updateSearchedCase } from '../../services/services';
+import { searchSaleUserCases, searchCaseById, updateSearchedCase, searchSaleUserOngoingCases } from '../../services/services';
 
 // Async thunks
 export const fetchSaleUserCases = createAsyncThunk(
@@ -41,12 +41,12 @@ export const updateCase = createAsyncThunk(
             const response = await updateSearchedCase(caseId, caseData);
 
             // Refresh the cases list after update
-            const { pagination, searchFilters } = getState().salesCases;
-            dispatch(fetchSaleUserCases({
-                page: pagination.currentPage,
-                limit: pagination.pageSize,
-                filters: searchFilters
-            }));
+            // const { pagination, searchFilters } = getState().salesCases;
+            // dispatch(fetchSaleUserCases({
+            //     page: pagination.currentPage,
+            //     limit: pagination.pageSize,
+            //     filters: searchFilters
+            // }));
 
             return response;
         } catch (error) {
@@ -57,17 +57,17 @@ export const updateCase = createAsyncThunk(
 
 // Async thunks
 export const fetchSaleUserOngoingCases = createAsyncThunk(
-    'salesCases/fetchSaleUserCases',
-    async ({ page = 1, limit = 10, filters = {} }, { rejectWithValue }) => {
+    'salesCases/fetchSaleUserOngoingCases',
+    async ({ page = 1, limit = 10}, { rejectWithValue }) => {
         try {
-            const response = await searchSaleUserCases(page, limit, { ...filters, status: 'ongoing' });
+            const response = await searchSaleUserOngoingCases(page, limit);
             return {
                 cases: response.cases,
                 pagination: {
                     currentPage: response.pagination.currentPage,
                     totalPages: response.pagination.totalPages,
                     totalCount: response.pagination.total,
-                    pageSize: limit
+                    pageSize: response.pagination.pageSize
                 }
             };
         } catch (error) {
@@ -78,6 +78,7 @@ export const fetchSaleUserOngoingCases = createAsyncThunk(
 
 const initialState = {
     cases: [],
+    ongoingCases: [],
     selectedCase: null,
     loading: false,
     modalLoading: false,
@@ -167,7 +168,24 @@ const salesCasesSlice = createSlice({
             .addCase(updateCase.rejected, (state, action) => {
                 state.modalLoading = false;
                 state.error = action.payload;
+            })
+
+            // fetchSaleUserOngoingCases
+            .addCase(fetchSaleUserOngoingCases.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            })
+            .addCase(fetchSaleUserOngoingCases.fulfilled, (state, action) => {
+            state.loading = false;
+            state.ongoingCases = action.payload.cases;
+            state.pagination = { ...state.pagination, ...action.payload.pagination };
+            })
+            .addCase(fetchSaleUserOngoingCases.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
             });
+
+            
     }
 });
 

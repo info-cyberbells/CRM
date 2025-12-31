@@ -16,7 +16,7 @@ import { RefreshCw, User, AlertCircle } from 'lucide-react';
 const SalesUserCases = () => {
     const dispatch = useDispatch();
     const {
-        cases,
+        ongoingCases: cases,
         selectedCase,
         loading,
         modalLoading,
@@ -29,8 +29,8 @@ const SalesUserCases = () => {
 
     const { currentPage, pageSize, totalPages, totalCount } = pagination;
 
-    const fetchCases = (page = currentPage, limit = pageSize, filters = searchFilters) => {
-        dispatch(fetchSaleUserOngoingCases({ page, limit, filters }));
+    const fetchCases = (page = currentPage, limit = pageSize) => {
+        dispatch(fetchSaleUserOngoingCases({ page, limit}));
     };
 
 
@@ -38,7 +38,7 @@ const SalesUserCases = () => {
         dispatch(fetchSaleUserOngoingCases({
             page: currentPage,
             limit: pageSize,
-            filters: searchFilters
+            // filters: searchFilters
         }));
     }, [dispatch]);
 
@@ -58,8 +58,19 @@ const SalesUserCases = () => {
     };
 
 
-    const updateCaseHandler = (caseId, updatedData) => {
-        dispatch(updateCase({ caseId, caseData: updatedData }));
+    const updateCaseHandler = async(caseId, updatedData) => {
+        try {
+            await dispatch(updateCase({ caseId, caseData: updatedData })).unwrap();
+
+            dispatch(setCurrentPage(currentPage));
+
+                dispatch(fetchSaleUserOngoingCases({
+                    page: currentPage,
+                    limit: pageSize,
+                    }));
+        } catch (error) {
+            console.error("Update failed:", error);
+        }
     };
 
 
@@ -456,13 +467,14 @@ const SalesUserCases = () => {
                                     <th style={styles.th}>Case ID</th>
                                     <th style={styles.th}>Customer Name</th>
                                     <th style={styles.th}>Plan</th>
-                                    <th style={styles.th}>Created By</th>
+                                    {/* <th style={styles.th}>Created By</th> */}
                                     <th style={styles.th}>Assigned To</th>
-                                    <th style={styles.th}>Amount</th>
+                                    <th style={styles.th}>Note</th>
+                                    {/* <th style={styles.th}>Amount</th>
                                     <th style={styles.th}>Deduction</th>
                                     <th style={styles.th}>Net Amount</th>
-                                    <th style={styles.th}>Sale Amount</th>
-                                    <th style={styles.th}>Sale Status</th>
+                                    <th style={styles.th}>Sale Amount</th> */}
+                                    {/* <th style={styles.th}>Sale Status</th> */}
                                     <th style={styles.th}>Issue Status</th>
                                     <th style={styles.th}>Date</th>
                                     <th style={styles.th}>Action</th>
@@ -479,17 +491,18 @@ const SalesUserCases = () => {
                                         <td style={styles.td}>{caseItem.caseId}</td>
                                         <td style={styles.td}>{caseItem.customerName}</td>
                                         <td style={styles.td}>{caseItem.plan}</td>
-                                        <td style={styles.td}>{caseItem.caseCreatedBy || 'Unknown'}</td>
+                                        {/* <td style={styles.td}>{caseItem.caseCreatedBy || 'Unknown'}</td> */}
                                         <td style={styles.td}>{caseItem.assignedTo || 'Not assigned'}</td>
-                                        <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td>
+                                        <td style={styles.td}>Hello there is na issue arrived here</td>
+                                        {/* <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td>
                                         <td style={styles.td}>{formatCurrency(caseItem.deduction)}</td>
                                         <td style={styles.td}>{formatCurrency(caseItem.netAmount)}</td>
-                                        <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td>
-                                        <td style={styles.td}>
+                                        <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td> */}
+                                        {/* <td style={styles.td}>
                                             <span style={{ ...styles.statusBadge, ...getStatusStyle('completed') }}>
                                                 {caseItem.saleStatus}
                                             </span>
-                                        </td>
+                                        </td> */}
                                         <td style={styles.td}>
                                             <span style={{ ...styles.statusBadge, ...getStatusStyle(caseItem.status) }}>
                                                 {caseItem.issueStatus}
@@ -768,11 +781,20 @@ const SalesUserCases = () => {
 
                                     {/* Issue / Notes */}
                                     <div style={{ gridColumn: "1 / span 2", ...styles.formGroup }}>
-                                        <label style={styles.label}>Issue / Notes</label>
+                                        <label style={styles.label}>Issue</label>
                                         <textarea
                                             style={styles.textarea}
                                             value={selectedCase.issue || ""}
                                             onChange={(e) => dispatch(updateSelectedCase({ issue: e.target.value }))}
+                                        />
+                                    </div>
+
+                                    <div style={{ gridColumn: "1 / span 2", ...styles.formGroup }}>
+                                        <label style={styles.label}>Note</label>
+                                        <textarea
+                                            style={styles.textarea}
+                                            value={selectedCase.issue || ""}
+                                            // onChange={(e) => dispatch(updateSelectedCase({ issue: e.target.value }))}
                                         />
                                     </div>
 
