@@ -4,10 +4,11 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 import sequelize from "./config/db.js";
-import userRoutes from "./routes/adminRoutes.js";
 import saleRoutes from "./routes/saleRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-import customerRoutes from "./routes/techRoutes.js"
+
+import techRoutes from "./routes/techRoutes.js"
+
 import authGuard from "./middleware/authGuard.js";
 
 
@@ -28,8 +29,8 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api", authGuard);
 app.use("/api/sale-user", saleRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/customers", customerRoutes);
+app.use("/api/tech-user", techRoutes);
+// app.use("/api/customers", customerRoutes);
 
 // Database connection
 sequelize.authenticate().then(() => {
