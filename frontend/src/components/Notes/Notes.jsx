@@ -493,7 +493,7 @@ const SalesUserCases = () => {
                                         <td style={styles.td}>{caseItem.plan}</td>
                                         {/* <td style={styles.td}>{caseItem.caseCreatedBy || 'Unknown'}</td> */}
                                         <td style={styles.td}>{caseItem.assignedTo || 'Not assigned'}</td>
-                                        <td style={styles.td}>Hello there is na issue arrived here</td>
+                                        <td style={styles.td}>{caseItem.specialNotes || "N/A"}</td>
                                         {/* <td style={styles.td}>{formatCurrency(caseItem.saleAmount)}</td>
                                         <td style={styles.td}>{formatCurrency(caseItem.deduction)}</td>
                                         <td style={styles.td}>{formatCurrency(caseItem.netAmount)}</td>
@@ -793,8 +793,8 @@ const SalesUserCases = () => {
                                         <label style={styles.label}>Note</label>
                                         <textarea
                                             style={styles.textarea}
-                                            value={selectedCase.issue || ""}
-                                            // onChange={(e) => dispatch(updateSelectedCase({ issue: e.target.value }))}
+                                            value={selectedCase.specialNotes || ""}
+                                            onChange={(e) => dispatch(updateSelectedCase({specialNotes: e.target.value }))}
                                         />
                                     </div>
 

@@ -219,7 +219,7 @@ const NotificationCenter = () => {
 
                       {/* Right: Interaction Toggle */}
                       <div className="flex-shrink-0 self-center flex items-center gap-3">
-                        <button
+                        {/* <button
                           onClick={(e) => toggleReadStatus(e, notif.id)}
                           className={`p-2 rounded-xl transition-all ${
                             notif.isRead 
@@ -229,7 +229,7 @@ const NotificationCenter = () => {
                           title={notif.isRead ? "Mark as unread" : "Mark as read"}
                         >
                           {notif.isRead ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5 fill-[#2c3e50]" />}
-                        </button>
+                        </button> */}
                         <div className={`text-slate-300 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-[#2c3e50]' : ''}`}>
                           <ChevronDown className="w-5 h-5" />
                         </div>

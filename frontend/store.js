@@ -4,6 +4,7 @@ import dashboardReducer from './src/features/DashboardSlice/dashboardSlice';
 import caseReducer from './src/features/CaseSlice/CaseSlice'
 import salesCasesReducer from './src/features/SearchSlice/searchSlice';
 import notificationReducer from './src/features/NotificationSlice/notificationSlice'
+import techUserReducer from './src/features/TechUserSlice/TechUserSlice'
 
 
 export const store = configureStore({
@@ -13,5 +14,6 @@ export const store = configureStore({
         cases: caseReducer,
         salesCases: salesCasesReducer,
         notification: notificationReducer,
+        techUser: techUserReducer,
     },
 });
