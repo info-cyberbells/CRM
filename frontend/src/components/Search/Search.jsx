@@ -1001,8 +1001,8 @@ const SalesUserCases = () => {
                                         <label style={styles.label}>Notes</label>
                                         <textarea
                                             style={styles.textarea}
-                                            value={selectedCase.issue || ""}
-                                            onChange={(e) => dispatch(updateSelectedCase({ issue: e.target.value }))}
+                                            value={selectedCase.specialNotes || ""}
+                                            onChange={(e) => dispatch(updateSelectedCase({ specialNotes: e.target.value }))}
                                         />
                                     </div>
 

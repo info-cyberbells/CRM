@@ -153,6 +153,7 @@ export const getMyCases = async (req, res) => {
             deduction: c.deduction || 0,
             netAmount: (c.amount || 0) - (c.deduction || 0),
             saleAmount: c.saleAmount || 0,
+            specialNotes: c.specialNotes || "N/A",
             saleStatus: c.saleStatus || "Pending",
             issueStatus: c.status || "Open",
             date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,

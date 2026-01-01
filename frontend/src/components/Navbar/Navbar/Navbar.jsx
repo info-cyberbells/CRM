@@ -19,6 +19,8 @@ const Navbar = () => {
   const [isCreateCaseDropdownOpen, setIsCreateCaseDropdownOpen] = useState(false);
   const [isMobileCreateCaseDropdownOpen, setIsMobileCreateCaseDropdownOpen] = useState(false);
 
+  const userRole = localStorage.getItem("Role").toLowerCase();
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -42,6 +44,7 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Navigation */}
+        {userRole == "sale" && 
         <ul style={styles.navLinks}>
           <li style={styles.navItem}>
             <Link to="/dashboard" style={styles.navLink}>
@@ -100,6 +103,46 @@ const Navbar = () => {
             </Link>
           </li>
         </ul>
+          }
+
+           {userRole == "tech" && <ul style={styles.navLinks}>
+          <li style={styles.navItem}>
+            <Link to="/dashboard" style={styles.navLink}>
+              <HomeIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Home</div>
+            </Link>
+          </li>
+          <li style={styles.navItem}>
+            <Link style={styles.navLink}>
+                <AssignmentIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+                <div>My Cases</div>
+            </Link>
+          </li>
+          <li style={styles.navItem}>
+            <Link to="/search" style={styles.navLink}>
+              <SearchIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Search</div>
+            </Link>
+          </li>
+          <li style={styles.navItem}>
+            <Link style={styles.navLink}>
+                <AssignmentIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+                <div>Update Case</div>
+            </Link>
+          </li>
+          <li style={styles.navItem}>
+            <Link to="/notes" style={styles.navLink}>
+              <NoteAltIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Notes</div>
+            </Link>
+          </li>
+           <li style={styles.navItem}>
+            <Link to="/notifications" style={styles.navLink}>
+              <NotificationsIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Notifications</div>
+            </Link>
+          </li>
+          </ul>}
 
         {/* Login Button & Mobile Menu Button */}
         <div style={styles.rightSection}>
@@ -130,6 +173,8 @@ const Navbar = () => {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
+        <div>
+          {userRole == "sale" &&
         <div style={styles.mobileMenu}>
           <Link to="/dashboard" style={styles.mobileNavLink}>
             <HomeIcon style={styles.mobileNavIcon} />
@@ -177,6 +222,35 @@ const Navbar = () => {
             <NotificationsIcon style={styles.mobileNavIcon} />
             <span>Notifications</span>
           </Link>
+          </div>}
+
+          {userRole == "tech" && <div style={styles.mobileMenu}>
+          <Link to="/dashboard" style={styles.mobileNavLink}>
+            <HomeIcon style={styles.mobileNavIcon} />
+            <span>Home</span>
+          </Link>
+          <Link to="/my-cases" style={styles.mobileNavLink}>
+            <AssignmentIcon style={styles.mobileNavIcon} />
+            <span>My Cases</span>
+          </Link>
+          
+          <Link to="/search" style={styles.mobileNavLink}>
+            <SearchIcon style={styles.mobileNavIcon} />
+            <span>Search</span>
+          </Link>
+           <Link to="/update-cases" style={styles.mobileNavLink}>
+            <AssignmentIcon style={styles.mobileNavIcon} />
+            <span>Update Cases</span>
+          </Link>
+          <Link to="/notes" style={styles.mobileNavLink}>
+            <NoteAltIcon style={styles.mobileNavIcon} />
+            <span>Notes</span>
+          </Link>
+          <Link to="/notifications" style={styles.mobileNavLink}>
+            <NotificationsIcon style={styles.mobileNavIcon} />
+            <span>Notifications</span>
+          </Link>
+          </div>}
 
           <button
             style={styles.mobileLogoutBtn}

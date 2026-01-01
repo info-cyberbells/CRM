@@ -2,16 +2,25 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { fetchDashboardData } from "../../features/DashboardSlice/dashboardSlice";
 import { User, DollarSign, FileText, TrendingUp, Bell, RefreshCw, Phone, Mail, MapPin, AlertCircle } from 'lucide-react';
+import { techUserDashboard } from '../../features/TechUserSlice/TechUserSlice';
 
 const Dashboard = () => {
     const dispatch = useDispatch();
     const { data: dashboardData, loading, error } = useSelector(
         (state) => state.dashboard
     );
+    const {dashboardData: techDashboardData} = useSelector((state)=> state.techUser);
+
+    const userRole = localStorage.getItem("Role").toLowerCase();
 
     useEffect(() => {
+        if(userRole == "sale"){
         dispatch(fetchDashboardData());
-    }, [dispatch]);
+        }
+        if(userRole == "tech"){
+            dispatch(techUserDashboard());
+        }
+    }, [dispatch, userRole]);
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', {
@@ -44,6 +53,16 @@ const Dashboard = () => {
         return { date, time };
     };
 
+    const handleRetry = () => {
+  if (userRole === "sale") {
+    dispatch(fetchDashboardData());
+  }
+  if (userRole === "tech") {
+    dispatch(techUserDashboard());
+  }
+};
+
+
     if (loading) {
         return (
             <div style={styles.pageContainer}>
@@ -63,7 +82,7 @@ const Dashboard = () => {
                         <AlertCircle size={32} color="#dc3545" style={{ marginBottom: '16px' }} />
                         <h3 style={styles.errorTitle}>Unable to Load Dashboard</h3>
                         <p style={styles.errorText}>{error}</p>
-                        <button onClick={fetchDashboardData} style={styles.retryButton}>
+                        <button onClick={handleRetry} style={styles.retryButton}>
                             <RefreshCw size={16} style={{ marginRight: '8px' }} />
                             Retry
                         </button>
@@ -73,7 +92,9 @@ const Dashboard = () => {
         );
     }
 
-    const { user = {}, cases = [] } = dashboardData || {};
+    const finalDashboardData = userRole == "tech" ? techDashboardData : dashboardData;
+
+    const { user = {}, cases = [] } = finalDashboardData || {};
 
     // Role-based metrics
     const getMetricCards = () => {
@@ -114,7 +135,7 @@ const Dashboard = () => {
                 }
             ];
         } else if (user.role === 'Tech') {
-            const { totalAssignedCases, statusCounts } = dashboardData;
+            const { totalAssignedCases, statusCounts } = finalDashboardData;
             return [
                 {
                     title: 'Total Assigned',

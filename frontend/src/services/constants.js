@@ -11,4 +11,6 @@ export const USER_ENDPOINTS = {
     SEARCH_CASE_BY_ID: `${API_BASE_URL}/sale-user/getCaseById`,
     UPDATE_SEARCHED_CASE: `${API_BASE_URL}/sale-user/updateCase`,
     SALE_USER_NOTIFICATION: `${API_BASE_URL}/sale-user/notifications`,
+
+    TECH_USER_DASHBOARD: `${API_BASE_URL}/tech-user/dashboard`,
 };

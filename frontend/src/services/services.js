@@ -157,3 +157,13 @@ export const saleUserNotificationService = async ()=>{
     );
     return response.data;
 }
+
+export const getTechDashboardData = async () => {
+    const response = await axios.get(USER_ENDPOINTS.TECH_USER_DASHBOARD, {
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+    return response.data;
+};
