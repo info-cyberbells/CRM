@@ -1,4 +1,5 @@
 import react, { useEffect } from 'react'
+import './App.css'
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Home from './components/Home/Home'
@@ -8,6 +9,8 @@ import Cases from './components/Cases/Cases';
 import Search from './components/Search/Search';
 import Notes from './/components/Notes/Notes';
 import NotificationCenter from './components/NotificationPage/NotificationPage';
+import MyCases from './components/TechUserPages/MyCases';
+import UpdateCaseStatus from './components/TechUserPages/UpdateCaseTech';
 
 
 
@@ -36,6 +39,8 @@ function App() {
         <Route path='/search' element={<Search />} />
         <Route path='/notes' element={<Notes />} />
         <Route path='/notifications' element={<NotificationCenter />} />
+        <Route path='/my-cases' element={<MyCases />}/>
+        <Route path='/update-status' element={<UpdateCaseStatus/>}/>
       </Routes>
     </>
   )

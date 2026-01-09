@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import sequelize from "./config/db.js";
 import saleRoutes from "./routes/saleRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-
+import adminRoutes from "./routes/adminRoutes.js";
 import techRoutes from "./routes/techRoutes.js"
 
 import authGuard from "./middleware/authGuard.js";
@@ -31,6 +31,7 @@ app.use("/api", authGuard);
 app.use("/api/sale-user", saleRoutes);
 app.use("/api/tech-user", techRoutes);
 // app.use("/api/customers", customerRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Database connection
 sequelize.authenticate().then(() => {

@@ -40,6 +40,8 @@ export const getDashboardData = async (req, res) => {
             //admin dashboard
             if (userRole === "Admin") {
                 const allCases = await Case.findAll({
+                     limit: 50,                          
+                        order: [["createdAt", "DESC"]],
                     include: [
                         { model: User, as: "saleUser", attributes: ["id", "name", "email"] },
                         { model: User, as: "techUser", attributes: ["id", "name", "email"] },

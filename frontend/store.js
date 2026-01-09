@@ -5,6 +5,7 @@ import caseReducer from './src/features/CaseSlice/CaseSlice'
 import salesCasesReducer from './src/features/SearchSlice/searchSlice';
 import notificationReducer from './src/features/NotificationSlice/notificationSlice'
 import techUserReducer from './src/features/TechUserSlice/TechUserSlice'
+import adminSliceReducer from './src/features/ADMIN/adminSlice';
 
 
 export const store = configureStore({
@@ -15,5 +16,6 @@ export const store = configureStore({
         salesCases: salesCasesReducer,
         notification: notificationReducer,
         techUser: techUserReducer,
+        admin: adminSliceReducer,
     },
 });

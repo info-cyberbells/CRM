@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchDashboardData } from "../../features/DashboardSlice/dashboardSlice";
 import { User, DollarSign, FileText, TrendingUp, Bell, RefreshCw, Phone, Mail, MapPin, AlertCircle } from 'lucide-react';
 import { techUserDashboard } from '../../features/TechUserSlice/TechUserSlice';
+import { adminDashboard } from '../../features/ADMIN/adminSlice';
 
 const Dashboard = () => {
     const dispatch = useDispatch();
@@ -10,6 +11,7 @@ const Dashboard = () => {
         (state) => state.dashboard
     );
     const {dashboardData: techDashboardData} = useSelector((state)=> state.techUser);
+    const {dashboardData: admindashboardData} = useSelector((state)=>state.admin);
 
     const userRole = localStorage.getItem("Role").toLowerCase();
 
@@ -19,6 +21,9 @@ const Dashboard = () => {
         }
         if(userRole == "tech"){
             dispatch(techUserDashboard());
+        }
+        if (userRole == "admin"){
+            dispatch(adminDashboard());
         }
     }, [dispatch, userRole]);
 
@@ -92,7 +97,7 @@ const Dashboard = () => {
         );
     }
 
-    const finalDashboardData = userRole == "tech" ? techDashboardData : dashboardData;
+    const finalDashboardData = userRole == "tech" ? techDashboardData : userRole == "admin" ? admindashboardData : dashboardData;
 
     const { user = {}, cases = [] } = finalDashboardData || {};
 
