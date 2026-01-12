@@ -167,3 +167,167 @@ export const getTechDashboardData = async () => {
     });
     return response.data;
 };
+
+//GET USER ASSIGNED CASES
+export const getTechUserCasesService = async (page, limit, filters) => {
+    try {
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString()
+        });
+
+        if (filters.customerName?.trim()) queryParams.append('customerName', filters.customerName.trim());
+        if (filters.phone?.trim()) queryParams.append('phone', filters.phone.trim());
+        if (filters.customerID?.trim()) queryParams.append('customerID', filters.customerID.trim());
+        if (filters.email?.trim()) queryParams.append('email', filters.email.trim());
+
+        const response = await axios.get(`${USER_ENDPOINTS.TECH_USER_MY_CASES}?${queryParams}`, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// GET NOTIFICATIONS FOR TECH USER
+export const getTechUserNotificationService = async ()=>{
+    try {
+        const response = await axios.get(
+            USER_ENDPOINTS.TECH_USER_NOTIFICATIONS, {
+                withCredentials: true,
+                headers: { 'Content-Type': 'application/json'}
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Search case details by ID tech user
+export const getCaseByIdService = async (caseId) => {
+    try {
+        const response = await axios.get(`${USER_ENDPOINTS.TECH_USER_GET_CASE_BY_ID}/${caseId}`, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// updated Cases by tech user
+export const updateCaseByTechUserService = async (caseId, caseData) => {
+    try {
+        const response = await axios.put(`${USER_ENDPOINTS.TECH_USER_UPDATE_CASE}/${caseId}`, caseData, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+//tech user onging cases cases
+export const getTechUserOngoingCasesService = async (page, limit) => {
+    try {
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+              status: "ongoing"
+        });
+
+        const response = await axios.get(`${USER_ENDPOINTS.TECH_USER_MY_CASES}?${queryParams}`, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+//  ADMIN DASHBOARD SERVICE
+export const getAdminDashboardDataService = async () => {
+    const response = await axios.get(USER_ENDPOINTS.ADMIN_DASHBOARD, {
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+    return response.data;
+};
+
+
+// ADMIN GET ALL CASE WITH SEARCH
+export const adminSearchAllCasesService = async(page, limit, filters) =>{
+    try {
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+        });
+
+        if (filters.customerName?.trim()) queryParams.append('customerName', filters.customerName.trim());
+        if (filters.customerID?.trim()) queryParams.append('customerID', filters.customerID.trim());
+        if (filters.email?.trim()) queryParams.append('email', filters.email.trim());
+        if (filters.phone?.trim()) queryParams.append('phone', filters.phone.trim());
+
+        const response = await axios.get(
+            `${USER_ENDPOINTS.ADMIN_SEARCH_CASES}?${queryParams}`,{
+                withCredentials: true,
+                headers: {
+                    'Content-Type' : 'application/json',
+                }
+            }
+        );
+         return response.data;
+
+    } catch (error) {
+        throw error;
+    }
+};
+
+// ADMIN VIEW CASE IN DETAILS
+export const adminViewCaseDetailService = async(caseId)=>{
+    try {
+        const response = await axios.get(
+            `${USER_ENDPOINTS.ADMIN_VIEW_CASE_DETAILS}/${caseId}`,{
+                withCredentials: true,
+                headers: {
+                    'Content-Type' : 'application/json', 
+                }
+            }
+        );
+        return response.data
+    } catch (error) {
+        throw error;
+    }
+};
+
+// updated Cases by ADMIN
+export const updateCaseByAdminService = async (caseId, caseData) => {
+    try {
+        const response = await axios.put(`${USER_ENDPOINTS.ADMIN_UPDATE_CASE_DETAILS}/${caseId}`, caseData, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

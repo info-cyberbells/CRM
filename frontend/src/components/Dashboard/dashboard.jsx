@@ -175,6 +175,42 @@ const Dashboard = () => {
                     iconColor: '#388e3c'
                 }
             ];
+        } else if (user.role === 'Admin'){
+            const {totalCases, totalSales, monthlySales, todayRefunds} = admindashboardData;
+            return [
+{
+                    title: 'Total Cases',
+                    value: totalCases,
+                    subtitle: 'cases',
+                    icon: <FileText size={20} />,
+                    iconBg: '#e3f2fd',
+                    iconColor: '#1976d2'
+                },
+                {
+                    title: 'Total Sales',
+                    value: totalSales.toFixed(2),
+                    // subtitle: 'pending work',
+                    icon: <AlertCircle size={20} />,
+                    iconBg: '#fff3cd',
+                    iconColor: '#856404'
+                },
+                {
+                    title: 'Monthly Sales',
+                    value: monthlySales,
+                    subtitle: 'completed',
+                    icon: <RefreshCw size={20} />,
+                    iconBg: '#d1edff',
+                    iconColor: '#0c5460'
+                },
+                {
+                    title: 'Today Refunds',
+                    value: todayRefunds,
+                    // subtitle: 'working on',
+                    icon: <TrendingUp size={20} />,
+                    iconBg: '#e8f5e9',
+                    iconColor: '#388e3c'
+                }                
+            ]
         }
         return [];
     };

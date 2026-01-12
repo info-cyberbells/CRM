@@ -48,6 +48,10 @@ export const getDashboardData = async (req, res) => {
                     ],
                 });
 
+                const totalCases = await Case.count();
+                const totalSales = await Case.sum("saleAmount");
+
+
                 // 📊 Monthly sales - use the specific query result
                 const monthlySales = await Case.findAll({
                     where: {
@@ -65,8 +69,9 @@ export const getDashboardData = async (req, res) => {
 
                 return res.json({
                     user,
-                    totalCases: allCases.length,
-                    totalSales: allCases.reduce((sum, c) => sum + c.saleAmount, 0),
+                    totalCases: totalCases,
+                    // totalSales: allCases.reduce((sum, c) => sum + c.saleAmount, 0),
+                    totalSales: totalSales,
                     monthlySales: monthlySales.reduce((sum, c) => sum + c.saleAmount, 0), // ✅ Use monthlySales query
                     todayRefunds: todayRefunds.reduce((sum, c) => sum + c.saleAmount, 0), // ✅ Use todayRefunds query
                     cases: allCases,
