@@ -11,6 +11,8 @@ import Notes from './/components/Notes/Notes';
 import NotificationCenter from './components/NotificationPage/NotificationPage';
 import MyCases from './components/TechUserPages/MyCases';
 import UpdateCaseStatus from './components/TechUserPages/UpdateCaseTech';
+import AdminNoticePage from './components/AdminNoticePage/AdminNoticePage';
+import Login from './components/LoginSignup/Login';
 
 
 
@@ -35,12 +37,14 @@ function App() {
     path="/dashboard"
     element={role ? <Dashboard /> : <Navigate to="/" replace />}
   />
+        <Route path='/login' element={<Login />}/>
         <Route path='/create-case/:id' element={<Cases />} />
         <Route path='/search' element={<Search />} />
         <Route path='/notes' element={<Notes />} />
         <Route path='/notifications' element={<NotificationCenter />} />
         <Route path='/my-cases' element={<MyCases />}/>
         <Route path='/update-status' element={<UpdateCaseStatus/>}/>
+        <Route path='/notices' element={<AdminNoticePage />} />
       </Routes>
     </>
   )

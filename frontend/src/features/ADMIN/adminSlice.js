@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { adminSearchAllCasesService, adminViewCaseDetailService, getAdminDashboardDataService, updateCaseByAdminService } from "../../services/services";
+import { adminSearchAllCasesService, adminSearchTechUserService, adminViewCaseDetailService, getAdminDashboardDataService, updateCaseByAdminService } from "../../services/services";
 
 // ADMIN DASBOARD THUNK
 export const adminDashboard = createAsyncThunk(
@@ -62,6 +62,18 @@ export const updateCaseDetailsByAdmin = createAsyncThunk(
     }
 );
 
+//ADMIN SEARCH TECH USER
+export const searchTechUser  = createAsyncThunk(
+    'admin/searchTechUser',
+    async(keyword, thunkAPI) => {
+        try {
+            const response = await adminSearchTechUserService(keyword);
+            return response;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to get tech user details");
+        }
+    }
+)
 
 const adminSlice = createSlice({
     name : "admin",
@@ -69,6 +81,8 @@ const adminSlice = createSlice({
         dashboardData: null,
         cases: [],
         selectedCase: null,
+        searchTechusers: [],
+        searchLoading: false,
         modalLoading: false,
         showModal: false,
         isLoading: false,
@@ -176,6 +190,16 @@ const adminSlice = createSlice({
         .addCase(updateCaseDetailsByAdmin.rejected, (state)=>{
             state.modalLoading = false;
             state.error = action.payload;
+        })
+        .addCase(searchTechUser.pending, (state)=>{
+            state.searchLoading = true;
+        })
+        .addCase(searchTechUser.fulfilled, (state, action)=>{
+            state.searchLoading = false;
+            state.searchTechusers = action.payload.users;
+        })
+        .addCase(searchTechUser.rejected, (state)=>{
+            state.isLoading = false;
         })
     }
 })

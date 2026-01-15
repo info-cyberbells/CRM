@@ -114,6 +114,9 @@ const SalesUserCases = () => {
             minHeight: '100vh',
             background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
             paddingTop: '100px',
+            paddingLeft: '20px',
+            paddingRight: '20px',
+            paddingBottom: '20px',
             fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         },
         maxWidth: {
@@ -461,7 +464,7 @@ const SalesUserCases = () => {
         <div style={styles.container}>
             <div style={styles.maxWidth}>
 
-                <h1 style={styles.title}>Ongoing Cases</h1>
+                <h1 style={styles.title}>Ongoing Cases Notes</h1>
 
                 {/* Cases Table */}
                 <div style={styles.tableContainer}>

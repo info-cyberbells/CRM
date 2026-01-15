@@ -22,7 +22,17 @@ import {
   updateCaseByTech,
   updateTechSelectedCase,
 } from "../../features/TechUserSlice/TechUserSlice";
-import { fetchAllCasesAdmin, setAdminSearchFilters, setAdminCurrentPage, setAdminShowModal, setAdminPageSize, adminViewCase, updateAdminSelectedCase, updateCaseDetailsByAdmin } from "../../features/ADMIN/adminSlice";
+import {
+  fetchAllCasesAdmin,
+  setAdminSearchFilters,
+  setAdminCurrentPage,
+  setAdminShowModal,
+  setAdminPageSize,
+  adminViewCase,
+  updateAdminSelectedCase,
+  updateCaseDetailsByAdmin,
+  searchTechUser,
+} from "../../features/ADMIN/adminSlice";
 
 const SalesUserCases = () => {
   const dispatch = useDispatch();
@@ -55,6 +65,8 @@ const SalesUserCases = () => {
     showModal: adminShowModal,
     searchFilters: adminSearchFilters,
     selectedCase: adminSelectedCase,
+    searchLoading,
+    searchTechusers,
   } = useSelector((state) => state.admin);
 
   const [showConfirm, setShowConfirm] = useState(false);
@@ -69,6 +81,25 @@ const SalesUserCases = () => {
 
   const debounceRef = useRef();
   const isInitialMount = useRef(true);
+
+  const [techSearch, setTechSearch] = useState("");
+  const [showTechDropdown, setShowTechDropDown] = useState(false);
+
+  const operatingSystems = [
+    "Windows 10",
+    "Windows 11",
+    "macOS",
+    "Linux Ubuntu",
+    "Linux Mint",
+  ];
+  const securitySoftwareOptions = [
+    "Norton",
+    "McAfee",
+    "Kaspersky",
+    "Bitdefender",
+    "Avast",
+  ];
+  const planOptions = ["Basic", "Premium", "Enterprise"];
 
   const cases =
     role === "tech" ? techCases : role === "admin" ? adminCases : salesCases;
@@ -96,9 +127,19 @@ const SalesUserCases = () => {
       ? adminSearchFilters
       : salesSearchFilters;
 
-      const selectedCase = role === "tech" ? techSelectedCase : role === "admin" ? adminSelectedCase : salesSelectedCase;
+  const selectedCase =
+    role === "tech"
+      ? techSelectedCase
+      : role === "admin"
+      ? adminSelectedCase
+      : salesSelectedCase;
 
-      const showModal = role === "tech" ? techShowModal : role === "admin" ? adminShowModal : saleShowModal; 
+  const showModal =
+    role === "tech"
+      ? techShowModal
+      : role === "admin"
+      ? adminShowModal
+      : saleShowModal;
 
   const { currentPage, pageSize, totalPages, totalCount } = pagination;
 
@@ -114,39 +155,44 @@ const SalesUserCases = () => {
     }
   };
 
+  useEffect(() => {
+    if (!selectedCase || !selectedCase.planDuration) return;
+
+    const currentDate = new Date();
+    let validityDate;
+
+    if (selectedCase.planDuration === "Lifetime") {
+      validityDate = "Lifetime";
+    } else {
+      const years = parseInt(selectedCase.planDuration, 10);
+
+      const expiryDate = new Date(
+        currentDate.getFullYear() + years,
+        currentDate.getMonth(),
+        currentDate.getDate()
+      );
+
+      validityDate = expiryDate.toISOString().split("T")[0];
+    }
+
+    handleModalFieldChange("validity", validityDate);
+  }, [selectedCase?.planDuration]);
+
+  useEffect(() => {
+    if (techSearch.length < 2) {
+      setShowTechDropDown(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      dispatch(searchTechUser(techSearch));
+      setShowTechDropDown(true);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [techSearch]);
+
   const handleRefresh = () => {
-    const emptyFilters = {
-      customerName: "",
-      phone: "",
-      customerID: "",
-      email: "",
-    };
-
-    
-      if (isTech) dispatch(setTechSearchFilters(emptyFilters));
-      else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
-      else dispatch(setSearchFilters(emptyFilters));
-
-    // dispatch(isTech ? setTechCurrentPage(1) : setCurrentPage(1));
-
-    if(isTech){
-      dispatch(setTechCurrentPage(1));
-    }
-    if(isAdmin){
-      dispatch(setAdminCurrentPage(1));
-    }
-    if(isSale){
-      dispatch(setCurrentPage(1));
-    }
-
-    fetchCases({
-      page: 1,
-      limit: pageSize,
-      filters: emptyFilters,
-    });
-  };
-
- useEffect(() => {
     const emptyFilters = {
       customerName: "",
       phone: "",
@@ -158,13 +204,44 @@ const SalesUserCases = () => {
     else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
     else dispatch(setSearchFilters(emptyFilters));
 
-    if(isTech){
+    // dispatch(isTech ? setTechCurrentPage(1) : setCurrentPage(1));
+
+    if (isTech) {
       dispatch(setTechCurrentPage(1));
     }
-    if(isAdmin){
+    if (isAdmin) {
       dispatch(setAdminCurrentPage(1));
     }
-    if(isSale){
+    if (isSale) {
+      dispatch(setCurrentPage(1));
+    }
+
+    fetchCases({
+      page: 1,
+      limit: pageSize,
+      filters: emptyFilters,
+    });
+  };
+
+  useEffect(() => {
+    const emptyFilters = {
+      customerName: "",
+      phone: "",
+      customerID: "",
+      email: "",
+    };
+
+    if (isTech) dispatch(setTechSearchFilters(emptyFilters));
+    else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
+    else dispatch(setSearchFilters(emptyFilters));
+
+    if (isTech) {
+      dispatch(setTechCurrentPage(1));
+    }
+    if (isAdmin) {
+      dispatch(setAdminCurrentPage(1));
+    }
+    if (isSale) {
       dispatch(setCurrentPage(1));
     }
 
@@ -176,23 +253,20 @@ const SalesUserCases = () => {
     // });
 
     return () => {
-       if (isTech){
+      if (isTech) {
         dispatch(setTechSearchFilters(emptyFilters));
         dispatch(setTechCurrentPage(1));
-        }
-    else if (isAdmin){ 
-          dispatch(setAdminSearchFilters(emptyFilters));
-          dispatch(setAdminCurrentPage(1));
-    }
-    else if (isSale) {
-      dispatch(setSearchFilters(emptyFilters));
-      dispatch(setCurrentPage(1));
-    }
-     };
-}, []); 
+      } else if (isAdmin) {
+        dispatch(setAdminSearchFilters(emptyFilters));
+        dispatch(setAdminCurrentPage(1));
+      } else if (isSale) {
+        dispatch(setSearchFilters(emptyFilters));
+        dispatch(setCurrentPage(1));
+      }
+    };
+  }, []);
 
-
-useEffect(() => {
+  useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -212,8 +286,7 @@ useEffect(() => {
     }, 1000);
 
     return () => clearTimeout(debounceRef.current);
-}, [searchFilters]); // Remove pageSize from here
-
+  }, [searchFilters]); // Remove pageSize from here
 
   const handleFilterChange = (field, value) => {
     if (isTech) dispatch(setTechSearchFilters({ [field]: value }));
@@ -222,40 +295,40 @@ useEffect(() => {
   };
 
   const handlePageSizeChange = (newPageSize) => {
-  if (isTech) {
-    dispatch(setTechPageSize(newPageSize));
-    dispatch(setTechCurrentPage(1));
-  } else if (isAdmin) {
-    dispatch(setAdminPageSize(newPageSize));
-    dispatch(setAdminCurrentPage(1));
-  } else {
-    dispatch(setPageSize(newPageSize));
-    dispatch(setCurrentPage(1));
-  }
+    if (isTech) {
+      dispatch(setTechPageSize(newPageSize));
+      dispatch(setTechCurrentPage(1));
+    } else if (isAdmin) {
+      dispatch(setAdminPageSize(newPageSize));
+      dispatch(setAdminCurrentPage(1));
+    } else {
+      dispatch(setPageSize(newPageSize));
+      dispatch(setCurrentPage(1));
+    }
 
-  // Fetch with new page size and reset to page 1
-  fetchCases({
-    page: 1,
-    limit: newPageSize,
-    filters: searchFilters,
-  });
-};
+    // Fetch with new page size and reset to page 1
+    fetchCases({
+      page: 1,
+      limit: newPageSize,
+      filters: searchFilters,
+    });
+  };
 
   const handlePageChange = (newPage) => {
     if (isTech) dispatch(setTechCurrentPage(newPage));
     else if (isAdmin) dispatch(setAdminCurrentPage(newPage));
     else dispatch(setCurrentPage(newPage));
-       fetchCases({
-        page: newPage,
-        limit: pageSize,
-        filters: searchFilters,
-      })
+    fetchCases({
+      page: newPage,
+      limit: pageSize,
+      filters: searchFilters,
+    });
   };
 
   const fetchCaseDetails = (caseId) => {
     if (isTech) {
       dispatch(getSingleCaseById(caseId));
-    } else if (isAdmin){
+    } else if (isAdmin) {
       dispatch(adminViewCase(caseId));
     } else {
       dispatch(fetchCaseById(caseId));
@@ -267,10 +340,9 @@ useEffect(() => {
   const handleModalFieldChange = (field, value) => {
     if (isTech) {
       dispatch(updateTechSelectedCase({ [field]: value }));
-    } else if (isAdmin){
-      dispatch(updateAdminSelectedCase({ [field]: value}));
-    } 
-    else {
+    } else if (isAdmin) {
+      dispatch(updateAdminSelectedCase({ [field]: value }));
+    } else {
       dispatch(updateSelectedCase({ [field]: value }));
     }
   };
@@ -281,10 +353,11 @@ useEffect(() => {
         await dispatch(
           updateCaseByTech({ caseId, caseData: updatedData })
         ).unwrap();
-      } else if (isAdmin){
-        await dispatch(updateCaseDetailsByAdmin({ caseId, caseData: updatedData})).unwrap();
-      }
-      else {
+      } else if (isAdmin) {
+        await dispatch(
+          updateCaseDetailsByAdmin({ caseId, caseData: updatedData })
+        ).unwrap();
+      } else {
         await dispatch(updateCase({ caseId, caseData: updatedData })).unwrap();
       }
 
@@ -303,15 +376,16 @@ useEffect(() => {
   };
 
   const closeModal = () => {
-  if (isTech) {
-    dispatch(setTechShowModal(false));
-  } else if (isAdmin) {
-    dispatch(setAdminShowModal(false));
-  } else {
-    dispatch(setShowModal(false));
-  }
-};
-
+    if (isTech) {
+      dispatch(setTechShowModal(false));
+    } else if (isAdmin) {
+      dispatch(setAdminShowModal(false));
+      setShowTechDropDown(false);
+      setTechSearch("");
+    } else {
+      dispatch(setShowModal(false));
+    }
+  };
 
   const hasSearchFilters = () => {
     return (
@@ -359,6 +433,7 @@ useEffect(() => {
       paddingTop: "100px",
       paddingLeft: "20px",
       paddingRight: "20px",
+      paddingBottom: "20px",
       fontFamily:
         '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
@@ -583,7 +658,7 @@ useEffect(() => {
       fontWeight: "bold",
       transition: "0.3s",
     },
-   
+
     tableContainer: {
       backgroundColor: "white",
       borderRadius: "12px",
@@ -1145,6 +1220,91 @@ useEffect(() => {
                       disabled
                     />
                   </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Customer ID</label>
+                    <input
+                      style={{ ...styles.input, background: "#f9fafb" }}
+                      type="text"
+                      value={selectedCase.customerID}
+                      disabled
+                    />
+                  </div>
+
+                  {/* Case Created By - read only */}
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Created By</label>
+                    <input
+                      style={{ ...styles.input, background: "#f9fafb" }}
+                      type="text"
+                      value={selectedCase?.saleUser?.name || ""}
+                      disabled
+                    />
+                  </div>
+
+                  {!isTech && (
+                    <div style={{ ...styles.formGroup, position: "relative" }}>
+                      <label style={styles.label}>Assigned To</label>
+
+                      <input
+                        style={styles.input}
+                        type="text"
+                        value={techSearch || selectedCase?.techUser?.name || ""}
+                        disabled={isSale}
+                        onChange={(e) => {
+                          setTechSearch(e.target.value);
+                          handleModalFieldChange("techUserId", null);
+                        }}
+                        placeholder={
+                          isAdmin ? "Search Tech User" : "Not assigned yet"
+                        }
+                        autoComplete="off"
+                      />
+
+                      {showTechDropdown && techSearch.length >= 2 && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            right: 0,
+                            background: "#fff",
+                            border: "1px solid #ddd",
+                            borderRadius: "6px",
+                            zIndex: 50,
+                            maxHeight: "200px",
+                            overflowY: "auto",
+                          }}
+                        >
+                          {searchLoading ? (
+                            <div style={{ padding: "8px" }}>Loading...</div>
+                          ) : searchTechusers.length === 0 ? (
+                            <div style={{ padding: "8px", color: "#666" }}>
+                              No tech user found with this keyword
+                            </div>
+                          ) : (
+                            searchTechusers.map((user) => (
+                              <div
+                                key={user.id}
+                                style={{ padding: "8px", cursor: "pointer" }}
+                                onClick={() => {
+                                  handleModalFieldChange("techUserId", user.id); // send ID only
+                                  setTechSearch(user.name); // show name
+                                  setShowTechDropDown(false);
+                                }}
+                              >
+                                <strong>{user.name}</strong>
+                                <div
+                                  style={{ fontSize: "12px", color: "#666" }}
+                                >
+                                  {user.email}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Customer Name */}
                   <div style={styles.formGroup}>
@@ -1184,52 +1344,74 @@ useEffect(() => {
                       }
                     />
                   </div>
-
-                  {/* Plan */}
                   <div style={styles.formGroup}>
-                    <label style={styles.label}>Plan</label>
+                    <label style={styles.label}>Alt Phone</label>
                     <input
                       style={styles.input}
                       type="text"
-                      value={selectedCase.plan}
+                      placeholder="Not Provided"
+                      value={selectedCase.altphone}
                       onChange={(e) =>
-                        handleModalFieldChange("plan", e.target.value)
+                        handleModalFieldChange("altphone", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Address</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      value={selectedCase.address}
+                      onChange={(e) =>
+                        handleModalFieldChange("address", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>City</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      placeholder="Not Provided"
+                      value={selectedCase.city}
+                      onChange={(e) =>
+                        handleModalFieldChange("city", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>State</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      placeholder="Not Provided"
+                      value={selectedCase.state}
+                      onChange={(e) =>
+                        handleModalFieldChange("state", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Country</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      placeholder="Not Provided"
+                      value={selectedCase.country}
+                      onChange={(e) =>
+                        handleModalFieldChange("country", e.target.value)
                       }
                     />
                   </div>
 
-                  {/* Case Created By - read only */}
-                  <div style={styles.formGroup}>
-                    <label style={styles.label}>Created By</label>
-                    <input
-                      style={{ ...styles.input, background: "#f9fafb" }}
-                      type="text"
-                      value={selectedCase?.saleUser?.name || ""}
-                      disabled
-                    />
-                  </div>
-
-                  {/* Assigned To */}
-                  {!isTech && (
-                    <div style={styles.formGroup}>
-                      <label style={styles.label}>Assigned To</label>
-                      <input
-                        style={styles.input}
-                        type="text"
-                        value={selectedCase?.techUser?.name || ""}
-                        onChange={(e) =>
-                          handleModalFieldChange("assignedTo", e.target.value)
-                        }
-                      />
-                    </div>
-                  )}
+                  
 
                   {/* Amounts */}
                   <div style={styles.formGroup}>
                     <label style={styles.label}>Sale Amount</label>
                     <input
                       style={styles.input}
-                      type="number"
+                      type="text"
                       value={selectedCase?.saleAmount || 0}
                       onChange={(e) =>
                         handleModalFieldChange("saleAmount", e.target.value)
@@ -1241,10 +1423,32 @@ useEffect(() => {
                     <label style={styles.label}>Deduction</label>
                     <input
                       style={styles.input}
-                      type="number"
-                      value={0}
+                      type="text"
+                      value={selectedCase?.deductions || 0}
                       onChange={(e) =>
-                        handleModalFieldChange("deduction", e.target.value)
+                        handleModalFieldChange("deductions", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Chargeback</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      value={selectedCase?.chargeBack || 0}
+                      onChange={(e) =>
+                        handleModalFieldChange("chargeBack", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Device Amount</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      value={selectedCase?.deviceAmount || 0}
+                      onChange={(e) =>
+                        handleModalFieldChange("deviceAmount", e.target.value)
                       }
                     />
                   </div>
@@ -1258,22 +1462,6 @@ useEffect(() => {
                       disabled
                     />
                   </div>
-
-                  {/* Sale Status */}
-                  {/* <div style={styles.formGroup}>
-                                        <label style={styles.label}>Sale Status</label>
-                                        <select
-                                            style={styles.input}
-                                            value={selectedCase.saleStatus}
-                                            onChange={(e) =>
-                                                setSelectedCase({ ...selectedCase, saleStatus: e.target.value })
-                                            }
-                                        >
-                                            <option value="Pending">Pending</option>
-                                            <option value="Completed">Completed</option>
-                                            <option value="Failed">Failed</option>
-                                        </select>
-                                    </div> */}
 
                   {/* Issue Status */}
                   <div style={styles.formGroup}>
@@ -1293,14 +1481,155 @@ useEffect(() => {
                       <option value="Open">Open</option>
                       <option value="Pending">Pending</option>
                       <option value="Closed">Closed</option>
-                       {isAdmin && (
-                          <>
-                            <option value="Void">Void</option>
-                            <option value="Refund">Refund</option>
-                            <option value="Chargeback">Chargeback</option>
-                          </>
-                        )}
+                      {isAdmin && (
+                        <>
+                          <option value="Void">Void</option>
+                          <option value="Refund">Refund</option>
+                          <option value="Chargeback">Chargeback</option>
+                        </>
+                      )}
                     </select>
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Remote ID</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      placeholder="Not Provided"
+                      value={selectedCase.remoteID}
+                      onChange={(e) =>
+                        handleModalFieldChange("remoteID", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Remote Pass</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      placeholder="Not Provided"
+                      value={selectedCase.remotePass}
+                      onChange={(e) =>
+                        handleModalFieldChange("remotePass", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Operating System</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      placeholder="Not Provided"
+                      value={selectedCase.operatingSystem}
+                      onChange={(e) =>
+                        handleModalFieldChange(
+                          "operatingSystem",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Computer Pass</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      placeholder="Not Provided"
+                      value={selectedCase.computerPass}
+                      onChange={(e) =>
+                        handleModalFieldChange("computerPass", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Model No</label>
+                    <input
+                      style={styles.input}
+                      type="text"
+                      placeholder="Not Provided"
+                      value={selectedCase.modelNo}
+                      onChange={(e) =>
+                        handleModalFieldChange("modelNo", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Security Software</label>
+                    <select
+                      style={styles.input}
+                      value={selectedCase.securitySoftware}
+                      onChange={(e) =>
+                        handleModalFieldChange(
+                          "securitySoftware",
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="">Select Security Software</option>
+                      {securitySoftwareOptions.map((software) => (
+                        <option key={software} value={software}>
+                          {software}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Plan */}
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Plan Name</label>
+                    <select
+                      style={styles.input}
+                      value={selectedCase.plan}
+                      onChange={(e) =>
+                        handleModalFieldChange("plan", e.target.value)
+                      }
+                    >
+                      <option value="">Select Plan</option>
+                      {planOptions.map((plan) => (
+                        <option key={plan} value={plan}>
+                          {plan}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Plan Duration </label>
+                    <select
+                      style={styles.input}
+                      value={selectedCase.planDuration}
+                      onChange={(e) =>
+                        handleModalFieldChange("planDuration", e.target.value)
+                      }
+                    >
+                      <option value="">Select Duration</option>
+                      {[...Array(10)].map((_, i) => (
+                        <option
+                          key={i + 1}
+                          value={`${i + 1} Year${i > 0 ? "s" : ""}`}
+                        >
+                          {i + 1} Year{i > 0 ? "s" : ""}
+                        </option>
+                      ))}
+                      <option value="Lifetime">Lifetime</option>
+                    </select>
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Validity</label>
+                    <input
+                      style={{
+                        ...styles.input,
+                        backgroundColor: "#f5f5f5",
+                        cursor: "not-allowed",
+                      }}
+                      type="text"
+                      value={selectedCase.validity}
+                      disabled
+                    />
                   </div>
 
                   {/* Issue / Notes */}
@@ -1395,7 +1724,10 @@ useEffect(() => {
                     }
                     setShowConfirm(false);
                     setPendingStatus(null);
-                    showToast("Click save button to complete the process.","info");
+                    showToast(
+                      "Click save button to complete the process.",
+                      "info"
+                    );
                   }}
                   className="px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >

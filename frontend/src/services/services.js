@@ -331,3 +331,97 @@ export const updateCaseByAdminService = async (caseId, caseData) => {
         throw error;
     }
 };
+
+// ADMIN CREATE NOTICE SERVICE
+export const adminCreateNoticeService = async(noticeData)=>{
+    try {
+        const response = await axios.post(
+            USER_ENDPOINTS.ADMIN_CREATE_NOTICE, noticeData, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type' : 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// ADMIN GET ALL NOTICES
+export const adminGetAllNoticeService = async(page, limit)=>{
+    try {
+
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+        });
+
+        const response = await axios.get(
+            `${USER_ENDPOINTS.ADMIN_GET_ALL_NOTICES}?${queryParams}`, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type' : 'application/json'
+                }
+            } 
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// UPADTE NOTICE ADMIN
+export const adminUpdateNoticeService = async(id, noticeData)=>{
+    try {
+        const response = await axios.put(
+            `${USER_ENDPOINTS.ADMIN_UPDATE_NOTICE}/${id}`,noticeData,{
+                withCredentials: true,
+                headers:{
+                    'Content-Type' : 'application/json'
+                }
+            }
+        );
+        return response.data
+    } catch (error) {
+        throw error;
+    }
+}
+
+// DELETE NOTICE BY AMDIN
+export const adminDeleteNoticeService = async(id)=>{
+    try {
+        const response = await axios.delete(
+            `${USER_ENDPOINTS.ADMIN_DELETE_NOTICE}/${id}`,{
+                withCredentials: true,
+                headers: {
+                    'Content-type' : 'application/json' 
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// SEARCH TECH USER BY ADMIN
+export const adminSearchTechUserService = async(keyword)=>{
+    try {
+         const queryParams = new URLSearchParams({
+            keyword: keyword.toString(),
+            });
+        const response = await axios.get(
+            `${USER_ENDPOINTS.ADMIN_SEARCH_TECH_USER}?${queryParams}`, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

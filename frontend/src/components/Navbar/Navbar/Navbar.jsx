@@ -158,6 +158,13 @@ const Navbar = () => {
               <div>Search My Cases</div>
             </Link>
           </li>
+
+           <li style={styles.navItem}>
+            <Link to='/notices' style={styles.navLink}>
+                <AssignmentIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+                <div>Manage Notice</div>
+            </Link>
+          </li>
           
             <li style={styles.navItem}>
             <Link to="/chat" style={styles.navLink}>

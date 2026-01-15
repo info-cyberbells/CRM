@@ -25,6 +25,9 @@ const Case = sequelize.define("Case", {
     planDuration: { type: DataTypes.STRING, allowNull: true },
     validity: { type: DataTypes.DATE, allowNull: true },
     saleAmount: { type: DataTypes.FLOAT, allowNull: true },
+    deductions: {type: DataTypes.FLOAT, allowNull: true},
+    chargeBack: {type: DataTypes.FLOAT, allowNull: true},
+    deviceAmount: {type: DataTypes.FLOAT, allowNull: true},
     status: {
         type: DataTypes.ENUM("Open", "Pending", "Closed", "Void", "Refund", "Chargeback"),
         defaultValue: "Open"

@@ -184,6 +184,7 @@ const techUserSlice = createSlice({
       })
       .addCase(getTechUserAssignedCases.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.showModal = false;
         state.isSuccess = true;
         state.cases = action.payload.cases;
         state.pagination = {

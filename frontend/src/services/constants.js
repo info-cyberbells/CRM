@@ -26,4 +26,10 @@ export const USER_ENDPOINTS = {
     ADMIN_SEARCH_CASES: `${API_BASE_URL}/admin/all-cases`,
     ADMIN_VIEW_CASE_DETAILS: `${API_BASE_URL}/admin/getCaseById`,
     ADMIN_UPDATE_CASE_DETAILS: `${API_BASE_URL}/admin/updateCase`,
+    ADMIN_SEARCH_TECH_USER: `${API_BASE_URL}/admin/searchTechUser`,
+
+    ADMIN_CREATE_NOTICE: `${API_BASE_URL}/admin/notice`,
+    ADMIN_GET_ALL_NOTICES: `${API_BASE_URL}/admin/notices`,
+    ADMIN_UPDATE_NOTICE: `${API_BASE_URL}/admin/notice`, 
+    ADMIN_DELETE_NOTICE: `${API_BASE_URL}/admin/notice`,
 };

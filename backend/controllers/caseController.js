@@ -490,4 +490,46 @@ export const getCaseById = async (req, res) => {
     }
 };
 
+// Search tech user 
+export const searchTechUser = async (req, res)=>{
+    try {
+        const token = req.cookies?.authToken || req.headers.authorization?.split(" ")[1];
 
+        if(!token){
+            return res.status(401).json({success: false, message: "No token provided"});
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const keyword = req.query.keyword ? req.query.keyword?.trim() : "";
+
+        if(!keyword){
+            return res.status(200).json({success: true, users:[]});
+        }
+
+        const techUsers = await User.findAll({
+            where: {
+                role: "Tech",
+                isActive: true,
+                [Op.or]: [ 
+                    {name: {[Op.like]: `%${keyword}%`}},
+                    {id: {[Op.like]: `%${keyword}%`}},
+            ]
+            },
+            attributes: ["id", "name", "email"],
+            limit: 10,
+            order: [["name", "ASC"]]
+        });
+
+        res.status(200).json({
+            success: true,
+            users: techUsers,
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            success: true,
+            message: "Failed to fetch tech Users",
+        });
+    }
+};

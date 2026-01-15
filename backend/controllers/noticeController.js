@@ -18,7 +18,7 @@ export const createAdminNotice = async (req, res) => {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
 
-        const { title, message } = req.body;
+        const { title, message, noticeType, isActive } = req.body;
 
         if (!title || !message) {
             return res.status(400).json({
@@ -30,6 +30,8 @@ export const createAdminNotice = async (req, res) => {
         const notice = await AdminNotice.create({
             title,
             message,
+            noticeType,
+            isActive,
             createdById: decoded.id,
         });
 
@@ -102,7 +104,7 @@ export const updateAdminNotice = async (req, res) => {
         }
 
         const { id } = req.params;
-        const { title, message, isActive } = req.body;
+        const { title, message, noticeType,isActive } = req.body;
 
         const notice = await AdminNotice.findByPk(id);
 
@@ -110,13 +112,15 @@ export const updateAdminNotice = async (req, res) => {
             return res.status(404).json({ success: false, message: "Notice not found" });
         }
 
-        await notice.update({
+        const updatedNotice = await notice.update({
             title,
             message,
+            noticeType,
             isActive,
         });
 
         res.json({
+            updatedNotice,
             success: true,
             message: "Notice updated successfully",
         });

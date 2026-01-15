@@ -101,6 +101,8 @@ const Dashboard = () => {
 
     const { user = {}, cases = [] } = finalDashboardData || {};
 
+    const notices = Array.isArray(finalDashboardData?.notices) ? finalDashboardData.notices : [];
+
     // Role-based metrics
     const getMetricCards = () => {
         if (user.role === 'Sale') {
@@ -230,34 +232,26 @@ const Dashboard = () => {
                         <h3 style={styles.noticeBoardTitle}>Notice Board</h3>
                     </div>
                     <div style={styles.noticeContent}>
-                        {user.role === 'Sale' ? (
-                            <div style={styles.noticeItem}>
-                                <div style={styles.noticeDate}>Today's Goals</div>
-                                <div style={styles.noticeText}>
-                                    🎯 Create 5 new cases today<br />
-                                    💡 Focus on premium plans<br />
-                                    📞 Follow up pending customers<br />
-                                    💰 Target: $50K in sales
-                                </div>
-                            </div>
-                        ) : (
-                            <div style={styles.noticeItem}>
-                                <div style={styles.noticeDate}>Today's Tasks</div>
-                                <div style={styles.noticeText}>
-                                    🔧 Close pending cases<br />
-                                    ⚡ Update case status<br />
-                                    📋 Complete daily reports<br />
-                                    ✅ Team sync at 3 PM
-                                </div>
-                            </div>
-                        )}
-                        <div style={styles.noticeItem}>
-                            <div style={styles.noticeDate}>Reminder</div>
-                            <div style={styles.noticeText}>
-                                📅 Monthly review meeting tomorrow<br />
-                                🎉 Team lunch on Friday
-                            </div>
-                        </div>
+                      {notices.length > 0 ? (
+    notices.map((notice) => (
+      <div key={notice.id} style={styles.noticeItem}>
+        <div style={styles.noticeDate}>
+          {notice.title}
+        </div>
+
+        <div style={styles.noticeText}>
+          {notice.message.split("\n").map((line, index) => (
+            <div key={index}>{line}</div>
+          ))}
+        </div>
+      </div>
+    ))
+  ) : (
+    <div style={styles.noticeItem}>
+      <div style={styles.noticeText}>No notices available</div>
+    </div>
+  )}
+                        
                     </div>
                 </div>
 

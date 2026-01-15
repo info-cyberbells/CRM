@@ -11,6 +11,11 @@ const AdminNotice = sequelize.define("AdminNotice", {
         type: DataTypes.TEXT,
         allowNull: false,
     },
+    noticeType: {
+        type: DataTypes.ENUM("ALL","TECH","SALE"),
+        allowNull: false,
+        defaultValue: "ALL",
+    },
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,

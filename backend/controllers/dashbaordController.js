@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import Case from "../models/case.js";
 import User from "../models/user.js";
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
+import AdminNotice from "../models/notice.js";
 
 
 //Get dashboard data of user/admin
@@ -84,6 +85,15 @@ export const getDashboardData = async (req, res) => {
                     where: { saleUserId: userId },
                 });
 
+                const notices = await AdminNotice.findAll({
+                    where: {
+                        noticeType: {
+                            [Op.in] : ["SALE", "ALL"],
+                        },
+                        isActive: true,
+                    }
+                })
+
                 // Cases created today
                 const todayCases = saleCases.filter(c =>
                     new Date(c.createdAt) >= startOfToday && new Date(c.createdAt) < endOfToday
@@ -105,6 +115,8 @@ export const getDashboardData = async (req, res) => {
 
                 return res.json({
                     user,
+                    // admin notices
+                    notices,
                     // Today's metrics
                     todayCases: todayCases.length,
                     todaySales: todaySales,
@@ -132,6 +144,15 @@ export const getDashboardData = async (req, res) => {
                     where: { techUserId: userId },
                 });
 
+                
+                const notices = await AdminNotice.findAll({
+                    where: { noticeType: {
+                        [Op.in]: ["Tech","ALL"]
+                    },
+                    isActive: true,
+                },
+                });
+
                 // Group cases by status
                 const casesByStatus = techCases.reduce((acc, case_) => {
                     const status = case_.status || 'Unknown';
@@ -153,6 +174,7 @@ export const getDashboardData = async (req, res) => {
 
                 return res.json({
                     user,
+                    notices,
                     totalAssignedCases: techCases.length,
                     statusCounts: statusCounts,
                     casesByStatus: casesByStatus, // Full breakdown of all statuses
