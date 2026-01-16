@@ -149,6 +149,7 @@ export const getAllCases = async (req, res) => {
         const formattedCases = cases.map((c) => ({
             caseId: c.id,
             customerName: c.customerName,
+            email: c.email,
             customerID: c.customerID,
             plan: c.plan,
             caseCreatedBy: c.saleUser?.name || "N/A",

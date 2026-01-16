@@ -13,6 +13,9 @@ import MyCases from './components/TechUserPages/MyCases';
 import UpdateCaseStatus from './components/TechUserPages/UpdateCaseTech';
 import AdminNoticePage from './components/AdminNoticePage/AdminNoticePage';
 import Login from './components/LoginSignup/Login';
+import Sidebar from './components/Sidebar/Sidebar';
+import AdminDashboard from './components/Dashboard/AdminDashBoard';
+import SearchCase from './components/Search/SearchCase';
 
 
 
@@ -24,12 +27,13 @@ function App() {
 
   return (
     <>
-      {role && <Navbar />}
+      {/* {role && <Navbar />} */}
 
-      <Routes>
+
+      {/* <Routes> */}
         {/* <Route path='/' element={<Home />} /> */}
         {/* <Route path='/dashboard' element={<Dashboard />} /> */}
-         <Route
+         {/* <Route
             path="/"
             element={role ? <Navigate to="/dashboard" replace /> : <Home />}
           />
@@ -45,7 +49,37 @@ function App() {
         <Route path='/my-cases' element={<MyCases />}/>
         <Route path='/update-status' element={<UpdateCaseStatus/>}/>
         <Route path='/notices' element={<AdminNoticePage />} />
-      </Routes>
+      </Routes> */}
+
+      <Routes>
+  {/* Public Routes */}
+  <Route
+  path="/login"
+  element={
+    role === "Admin"
+      ? <Navigate to="/admin-dashboard" replace />
+      : role
+      ? <Navigate to="/dashboard" replace />
+      : <Login />
+  }
+/>
+  <Route path="/login" element={<Login />} />
+
+  {/* Protected Layout */}
+  <Route element={role ? <Sidebar /> : <Navigate to="/" replace />}>
+    <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/admin-dashboard" element={<AdminDashboard />} />
+    <Route path="/search" element={<Search />} />
+    <Route path="/search-cases" element={<SearchCase />} />
+    <Route path="/notes" element={<Notes />} />
+    <Route path="/notifications" element={<NotificationCenter />} />
+    <Route path="/my-cases" element={<MyCases />} />
+    <Route path="/update-status" element={<UpdateCaseStatus />} />
+    <Route path="/notices" element={<AdminNoticePage />} />
+    <Route path="/create-case/:id" element={<Cases />} />
+  </Route>
+</Routes>
+
     </>
   )
 }

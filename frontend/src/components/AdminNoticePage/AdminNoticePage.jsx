@@ -40,7 +40,6 @@ const AdminNoticePage = () => {
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState(null);
 
   // Custom Modal States
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null });
@@ -49,10 +48,7 @@ const AdminNoticePage = () => {
     dispatch(fetchAllNotices({ page: 1, limit: 10 }));
   }, []);
 
-  const notify = (msg, type = "success") => {
-    setNotification({ msg, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
+  
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -110,7 +106,7 @@ const AdminNoticePage = () => {
   const handleEdit = (notice) => {
     setFormData(notice);
     setIsEditing(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.querySelector("main")?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Trigger the custom delete modal
@@ -145,36 +141,22 @@ const AdminNoticePage = () => {
   };
 
   return (
-    <div className="min-h-screen lg:mt-20 bg-gray-50 flex flex-col font-sans text-gray-900">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
       <main className="flex-1 overflow-y-auto p-4 md:p-6">
         {/* Simple Page Header */}
-        <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 mb-8 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500"></div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold text-[#1e40af] tracking-tight">
-              Notice Management
-            </h1>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Notice Manager</h1>
+            <p className="text-slate-400 font-medium text-sm mt-1">Configure and broadcast system-wide alerts to specific departments.</p>
           </div>
         </div>
+      </div>
 
-        {/* Notification Toast */}
-        {notification && (
-          <div
-            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-3 rounded-2xl shadow-2xl border animate-in slide-in-from-bottom-4 duration-300 ${
-              notification.type === "error"
-                ? "bg-red-600 text-white border-red-500"
-                : "bg-gray-900 text-white border-gray-800"
-            }`}
-          >
-            {notification.type === "error" ? (
-              <AlertCircle size={18} />
-            ) : (
-              <CheckCircle size={18} className="text-green-400" />
-            )}
-            <span className="font-medium">{notification.msg}</span>
-          </div>
-        )}
+       
 
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className=" mx-auto space-y-8">
           {/* Form Card */}
           <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-8 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
@@ -182,7 +164,7 @@ const AdminNoticePage = () => {
                 {isEditing ? (
                   <Pencil size={20} className="text-amber-500" />
                 ) : (
-                  <Plus size={20} className="text-indigo-600" />
+                  <Plus size={20} className="text-emerald-600" />
                 )}
                 {isEditing ? "Edit Existing Notice" : "Add New Notice"}
               </h2>
@@ -201,7 +183,7 @@ const AdminNoticePage = () => {
                     onChange={handleInputChange}
                     type="text"
                     placeholder="e.g. Server Maintenance"
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 bg-gray-50/30 outline-none transition-all text-gray-800 placeholder:text-gray-400"
+                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 bg-gray-50/30 outline-none transition-all text-gray-800 placeholder:text-gray-400"
                   />
                 </div>
 
@@ -215,7 +197,7 @@ const AdminNoticePage = () => {
                       name="noticeType"
                       value={formData.noticeType}
                       onChange={handleInputChange}
-                      className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 bg-gray-50/30 outline-none appearance-none transition-all font-medium"
+                      className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 bg-gray-50/30 outline-none appearance-none transition-all font-medium"
                     >
                       <option value="ALL">ALL USERS</option>
                       <option value="TECH">TECH USERS</option>
@@ -236,7 +218,7 @@ const AdminNoticePage = () => {
                       name="isActive"
                       checked={formData.isActive}
                       onChange={handleInputChange}
-                      className="w-5 h-5 rounded-lg text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      className="w-5 h-5 rounded-lg text-emerald-600 focus:ring-emerald-500 border-gray-300"
                     />
                     <span className="text-sm font-bold text-gray-700">
                       Mark as Active
@@ -256,7 +238,7 @@ const AdminNoticePage = () => {
                   onChange={handleInputChange}
                   rows="4"
                   placeholder="Provide clear details for the users..."
-                  className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 bg-gray-50/30 outline-none transition-all resize-none text-gray-800"
+                  className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 bg-gray-50/30 outline-none transition-all resize-none text-gray-800"
                 ></textarea>
               </div>
 
@@ -272,10 +254,10 @@ const AdminNoticePage = () => {
                   </button>
                   <button
                     type="submit"
-                    className={`flex-1 cursor-pointer md:flex-none px-10 py-3.5 rounded-2xl text-sm font-black tracking-wide transition-all flex items-center justify-center gap-2 ${
+                    className={`flex-1 cursor-pointer md:flex-none px-10 py-3.5 rounded-2xl text-sm font-black tracking-wide hover:scale-[1.02] ease-in-out active:scale-[0.95] transition-all duration-300 flex items-center justify-center gap-2 ${
                       isEditing
                         ? "bg-amber-500 hover:bg-amber-600 text-white "
-                        : "bg-indigo-600 hover:bg-indigo-700 text-white "
+                        : "bg-emerald-600 shadow-emerald-200 text-white "
                     }`}
                   >
                     {isEditing ? <Pencil size={18} /> : <Plus size={18} />}

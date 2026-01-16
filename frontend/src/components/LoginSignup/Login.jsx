@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, 
   Mail, 
@@ -12,40 +12,54 @@ import {
   EyeOff,
   Building2
 } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../ToastContext/ToastContext';
+import { loginUserThunk, reset } from '../../features/UserSlice/UserSlice';
 
 const Login = () => {
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const {showToast} = useToast();
+
+  const { user, isLoading, isSuccess, isError, message } = useSelector((state)=> state.user);
+
   const [isLogin, setIsLogin] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
-    company: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    setSuccess('');
+    dispatch(loginUserThunk(formData));
+  };
+
+useEffect(() => {
+  if (isSuccess && user) {
+    showToast("Login successful", "success");
 
     setTimeout(() => {
-      setIsLoading(false);
-      if (isLogin && formData.email === 'error@example.com') {
-        setError('Invalid credentials. Please try again.');
-      } else {
-        setSuccess(isLogin ? 'Welcome back! Redirecting...' : 'Account created successfully!');
-      }
-    }, 1500);
-  };
+      dispatch(reset());
+      navigate("/dashboard");
+    }, 800);
+  }
+
+  if (isError) {
+    showToast(message || "Login failed", "error");
+    dispatch(reset());
+  }
+}, [isSuccess, isError, user, message, dispatch, navigate]);
+
 
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row font-[Poppins] selection:bg-[#17394D]/10">
@@ -58,7 +72,7 @@ const Login = () => {
           <div className="flex items-center justify-center gap-2">
             <div className=" rounded-2xl  ">
               {/* <ShieldCheck className="w-10 h-10 text-[#17394D]" /> */}
-              <img src="/cyberhub_Logo.png" alt="" srcset="" className='w-60 ' />
+              <img src="/cyberhub_Logo.png" alt="" className='w-60 ' />
               
             </div>
             {/* <span className="text-4xl font-extrabold tracking-wide">CYBERHUB</span> */}
@@ -97,13 +111,6 @@ const Login = () => {
             </p>
           </div>
 
-          {(error || success) && (
-            <div className={`mb-6 p-4 rounded-xl border ${error ? 'bg-red-50 border-red-100 text-red-700' : 'bg-emerald-50 border-emerald-100 text-emerald-700'} flex items-center gap-3 animate-in slide-in-from-top-2`}>
-              {error ? <AlertCircle className="w-5 h-5 flex-shrink-0" /> : <CheckCircle2 className="w-5 h-5 flex-shrink-0" />}
-              <p className="text-sm font-semibold">{error || success}</p>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
             
 
@@ -117,6 +124,7 @@ const Login = () => {
                   required
                   placeholder="name@company.com"
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-[#17394D]/5 focus:border-[#17394D] outline-none transition-all placeholder:text-slate-300 font-medium"
+                  value={formData.email}
                   onChange={handleChange}
                 />
               </div>
@@ -138,6 +146,7 @@ const Login = () => {
                   name="password"
                   required
                   placeholder="••••••••"
+                  value={formData.password}
                   className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-[#17394D]/5 focus:border-[#17394D] outline-none transition-all placeholder:text-slate-300 font-medium"
                   onChange={handleChange}
                 />
