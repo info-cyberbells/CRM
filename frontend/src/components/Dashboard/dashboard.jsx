@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchDashboardData } from "../../features/DashboardSlice/dashboardSlice";
 import { User, DollarSign, FileText, TrendingUp, Bell, RefreshCw, Phone, Mail, MapPin, AlertCircle } from 'lucide-react';
 import { techUserDashboard } from '../../features/TechUserSlice/TechUserSlice';
+import { adminDashboard } from '../../features/ADMIN/adminSlice';
 
 const Dashboard = () => {
     const dispatch = useDispatch();
@@ -10,6 +11,7 @@ const Dashboard = () => {
         (state) => state.dashboard
     );
     const {dashboardData: techDashboardData} = useSelector((state)=> state.techUser);
+    const {dashboardData: admindashboardData} = useSelector((state)=>state.admin);
 
     const userRole = localStorage.getItem("Role").toLowerCase();
 
@@ -19,6 +21,9 @@ const Dashboard = () => {
         }
         if(userRole == "tech"){
             dispatch(techUserDashboard());
+        }
+        if (userRole == "admin"){
+            dispatch(adminDashboard());
         }
     }, [dispatch, userRole]);
 
@@ -92,9 +97,11 @@ const Dashboard = () => {
         );
     }
 
-    const finalDashboardData = userRole == "tech" ? techDashboardData : dashboardData;
+    const finalDashboardData = userRole == "tech" ? techDashboardData : userRole == "admin" ? admindashboardData : dashboardData;
 
     const { user = {}, cases = [] } = finalDashboardData || {};
+
+    const notices = Array.isArray(finalDashboardData?.notices) ? finalDashboardData.notices : [];
 
     // Role-based metrics
     const getMetricCards = () => {
@@ -170,6 +177,42 @@ const Dashboard = () => {
                     iconColor: '#388e3c'
                 }
             ];
+        } else if (user.role === 'Admin'){
+            const {totalCases, totalSales, monthlySales, todayRefunds} = admindashboardData;
+            return [
+{
+                    title: 'Total Cases',
+                    value: totalCases,
+                    subtitle: 'cases',
+                    icon: <FileText size={20} />,
+                    iconBg: '#e3f2fd',
+                    iconColor: '#1976d2'
+                },
+                {
+                    title: 'Total Sales',
+                    value: totalSales.toFixed(2),
+                    // subtitle: 'pending work',
+                    icon: <AlertCircle size={20} />,
+                    iconBg: '#fff3cd',
+                    iconColor: '#856404'
+                },
+                {
+                    title: 'Monthly Sales',
+                    value: monthlySales,
+                    subtitle: 'completed',
+                    icon: <RefreshCw size={20} />,
+                    iconBg: '#d1edff',
+                    iconColor: '#0c5460'
+                },
+                {
+                    title: 'Today Refunds',
+                    value: todayRefunds,
+                    // subtitle: 'working on',
+                    icon: <TrendingUp size={20} />,
+                    iconBg: '#e8f5e9',
+                    iconColor: '#388e3c'
+                }                
+            ]
         }
         return [];
     };
@@ -189,34 +232,26 @@ const Dashboard = () => {
                         <h3 style={styles.noticeBoardTitle}>Notice Board</h3>
                     </div>
                     <div style={styles.noticeContent}>
-                        {user.role === 'Sale' ? (
-                            <div style={styles.noticeItem}>
-                                <div style={styles.noticeDate}>Today's Goals</div>
-                                <div style={styles.noticeText}>
-                                    🎯 Create 5 new cases today<br />
-                                    💡 Focus on premium plans<br />
-                                    📞 Follow up pending customers<br />
-                                    💰 Target: $50K in sales
-                                </div>
-                            </div>
-                        ) : (
-                            <div style={styles.noticeItem}>
-                                <div style={styles.noticeDate}>Today's Tasks</div>
-                                <div style={styles.noticeText}>
-                                    🔧 Close pending cases<br />
-                                    ⚡ Update case status<br />
-                                    📋 Complete daily reports<br />
-                                    ✅ Team sync at 3 PM
-                                </div>
-                            </div>
-                        )}
-                        <div style={styles.noticeItem}>
-                            <div style={styles.noticeDate}>Reminder</div>
-                            <div style={styles.noticeText}>
-                                📅 Monthly review meeting tomorrow<br />
-                                🎉 Team lunch on Friday
-                            </div>
-                        </div>
+                      {notices.length > 0 ? (
+    notices.map((notice) => (
+      <div key={notice.id} style={styles.noticeItem}>
+        <div style={styles.noticeDate}>
+          {notice.title}
+        </div>
+
+        <div style={styles.noticeText}>
+          {notice.message.split("\n").map((line, index) => (
+            <div key={index}>{line}</div>
+          ))}
+        </div>
+      </div>
+    ))
+  ) : (
+    <div style={styles.noticeItem}>
+      <div style={styles.noticeText}>No notices available</div>
+    </div>
+  )}
+                        
                     </div>
                 </div>
 

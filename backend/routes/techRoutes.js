@@ -8,6 +8,8 @@ import {
     deleteCustomer
 } from "../controllers/customerController.js";
 import { getDashboardData } from "../controllers/dashbaordController.js";
+import { getAssignedCases, getCaseById, updateCase } from "../controllers/caseController.js";
+import { getTechUserNotifications } from "../controllers/notificationController.js";
 
 
 const router = express.Router();
@@ -15,6 +17,12 @@ router.use(roleGuard("Tech"));
 
 
 router.get("/dashboard", getDashboardData);
+router.get('/my-cases', getAssignedCases);
+router.get('/getCaseByID/:id', getCaseById);
+router.put('/updateCase/:id', updateCase);
+
+
+router.get('/notifications', getTechUserNotifications);
 
 
 // router.post("/createCustomer", createCustomer);         //create customer

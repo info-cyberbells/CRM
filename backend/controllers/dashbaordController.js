@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import Case from "../models/case.js";
 import User from "../models/user.js";
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
+import AdminNotice from "../models/notice.js";
 
 
 //Get dashboard data of user/admin
@@ -40,11 +41,17 @@ export const getDashboardData = async (req, res) => {
             //admin dashboard
             if (userRole === "Admin") {
                 const allCases = await Case.findAll({
+                     limit: 50,                          
+                        order: [["createdAt", "DESC"]],
                     include: [
                         { model: User, as: "saleUser", attributes: ["id", "name", "email"] },
                         { model: User, as: "techUser", attributes: ["id", "name", "email"] },
                     ],
                 });
+
+                const totalCases = await Case.count();
+                const totalSales = await Case.sum("saleAmount");
+
 
                 // 📊 Monthly sales - use the specific query result
                 const monthlySales = await Case.findAll({
@@ -63,8 +70,9 @@ export const getDashboardData = async (req, res) => {
 
                 return res.json({
                     user,
-                    totalCases: allCases.length,
-                    totalSales: allCases.reduce((sum, c) => sum + c.saleAmount, 0),
+                    totalCases: totalCases,
+                    // totalSales: allCases.reduce((sum, c) => sum + c.saleAmount, 0),
+                    totalSales: totalSales,
                     monthlySales: monthlySales.reduce((sum, c) => sum + c.saleAmount, 0), // ✅ Use monthlySales query
                     todayRefunds: todayRefunds.reduce((sum, c) => sum + c.saleAmount, 0), // ✅ Use todayRefunds query
                     cases: allCases,
@@ -76,6 +84,15 @@ export const getDashboardData = async (req, res) => {
                 const saleCases = await Case.findAll({
                     where: { saleUserId: userId },
                 });
+
+                const notices = await AdminNotice.findAll({
+                    where: {
+                        noticeType: {
+                            [Op.in] : ["SALE", "ALL"],
+                        },
+                        isActive: true,
+                    }
+                })
 
                 // Cases created today
                 const todayCases = saleCases.filter(c =>
@@ -98,6 +115,8 @@ export const getDashboardData = async (req, res) => {
 
                 return res.json({
                     user,
+                    // admin notices
+                    notices,
                     // Today's metrics
                     todayCases: todayCases.length,
                     todaySales: todaySales,
@@ -125,6 +144,15 @@ export const getDashboardData = async (req, res) => {
                     where: { techUserId: userId },
                 });
 
+                
+                const notices = await AdminNotice.findAll({
+                    where: { noticeType: {
+                        [Op.in]: ["Tech","ALL"]
+                    },
+                    isActive: true,
+                },
+                });
+
                 // Group cases by status
                 const casesByStatus = techCases.reduce((acc, case_) => {
                     const status = case_.status || 'Unknown';
@@ -146,6 +174,7 @@ export const getDashboardData = async (req, res) => {
 
                 return res.json({
                     user,
+                    notices,
                     totalAssignedCases: techCases.length,
                     statusCounts: statusCounts,
                     casesByStatus: casesByStatus, // Full breakdown of all statuses

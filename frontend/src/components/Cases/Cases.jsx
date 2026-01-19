@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createCase, clearCaseState } from "../../features/CaseSlice/CaseSlice";
+import { useToast } from "../../ToastContext/ToastContext";
 
 const CaseForm = () => {
+
+    const {showToast} = useToast();
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { loading, success, error } = useSelector((state) => state.cases);
@@ -39,58 +43,6 @@ const CaseForm = () => {
         status: "Open",
     });
 
-    const usStates = [
-        "Alabama",
-        "Alaska",
-        "Arizona",
-        "Arkansas",
-        "California",
-        "Colorado",
-        "Connecticut",
-        "Delaware",
-        "Florida",
-        "Georgia",
-        "Hawaii",
-        "Idaho",
-        "Illinois",
-        "Indiana",
-        "Iowa",
-        "Kansas",
-        "Kentucky",
-        "Louisiana",
-        "Maine",
-        "Maryland",
-        "Massachusetts",
-        "Michigan",
-        "Minnesota",
-        "Mississippi",
-        "Missouri",
-        "Montana",
-        "Nebraska",
-        "Nevada",
-        "New Hampshire",
-        "New Jersey",
-        "New Mexico",
-        "New York",
-        "North Carolina",
-        "North Dakota",
-        "Ohio",
-        "Oklahoma",
-        "Oregon",
-        "Pennsylvania",
-        "Rhode Island",
-        "South Carolina",
-        "South Dakota",
-        "Tennessee",
-        "Texas",
-        "Utah",
-        "Vermont",
-        "Virginia",
-        "Washington",
-        "West Virginia",
-        "Wisconsin",
-        "Wyoming",
-    ];
 
     const operatingSystems = [
         "Windows 10",
@@ -243,7 +195,14 @@ const CaseForm = () => {
         }
 
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        // return Object.keys(newErrors).length === 0;
+
+        if(Object.keys(newErrors).length > 0){
+            showToast("All * feilds are required", "error");
+            return false;
+        }
+
+        return true;
     };
 
     // const handleNext = () => {
@@ -293,7 +252,7 @@ const CaseForm = () => {
             console.log("Dispatching createCase...");
             const result = await dispatch(createCase(submitData)).unwrap();
             console.log("Success result:", result);
-            alert("Form submitted successfully!");
+            showToast("Form submitted successfully!", "success");
 
             setFormData({
                 customerName: "",
@@ -327,7 +286,8 @@ const CaseForm = () => {
             setActiveStep(0);
         } catch (error) {
             console.error("Submit error:", error);
-            alert(`Error: ${error}`);
+            // alert(`Error: ${error}`);
+            showToast("Failed to submit the form", "error")
         }
     };
 

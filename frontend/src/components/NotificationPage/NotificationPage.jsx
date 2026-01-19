@@ -18,7 +18,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getSaleUserNotifications } from '../../features/NotificationSlice/notificationSlice';
+import { getSaleUserNotifications, getTechUserNotifications } from '../../features/NotificationSlice/notificationSlice';
 
 
 
@@ -29,10 +29,17 @@ const NotificationCenter = () => {
   const [filter, setFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('ALL');
   const [expandedId, setExpandedId] = useState(null);
+
+  const userRole = localStorage.getItem("Role").toLowerCase();
   
     useEffect(()=>{
-      dispatch(getSaleUserNotifications());
-    },[dispatch])
+      if(userRole == "sale"){
+        dispatch(getSaleUserNotifications());
+      }
+      if(userRole == "tech"){
+        dispatch(getTechUserNotifications());
+      }
+    },[userRole, dispatch])
   
   const {notifications = [], isLoading, isError, isSuccess} = useSelector((state)=> state.notification);
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -61,6 +68,7 @@ const NotificationCenter = () => {
       case 'NEW_CASE': return 'bg-blue-50 text-blue-600 border-blue-100';
       case 'SYSTEM_UPDATE': return 'bg-amber-50 text-amber-600 border-amber-100';
       case 'UPDATE': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'CASE_ASSIGNED': return 'bg-blue-50 text-blue-600 border-blue-100';
       default: return 'bg-slate-50 text-slate-600 border-slate-100';
     }
   };
@@ -76,14 +84,14 @@ const NotificationCenter = () => {
   // const uniqueTypes = ['ALL', ...new Set(notifications.map(n => n.type))];
 
   return (
-    <div className="min-h-screen mt-16 bg-[#f8fafc] p-4 md:p-10 font-sans text-[#2c3e50]">
+    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-6 font-sans text-[#2c3e50]">
       <div className="max-w-4xl mx-auto">
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 border-b border-slate-200">
           <div className="space-y-2">
             <h1 className="text-4xl font-extrabold tracking-tight text-[#2c3e50]">Notifications</h1>
-            <p className="text-slate-500 font-medium">You have {unreadCount} unread updates.</p>
+            {/* <p className="text-slate-500 font-medium">You have {unreadCount} unread updates.</p> */}
           </div>
           
         </div>
@@ -91,7 +99,7 @@ const NotificationCenter = () => {
         {/* Filters */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
           <div className="flex bg-slate-200/50 p-1 rounded-xl w-full md:w-auto">
-            {['all', 'unread', 'read'].map((f) => (
+            {['all notifications',].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -106,21 +114,7 @@ const NotificationCenter = () => {
             ))}
           </div>
 
-          {/* <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto">
-            {uniqueTypes.map(type => (
-              <button
-                key={type}
-                onClick={() => setActiveTab(type)}
-                className={`whitespace-nowrap px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                  activeTab === type
-                  ? 'bg-[#2c3e50] text-white shadow-md'
-                  : 'bg-transparent text-slate-400 hover:text-[#2c3e50] hover:bg-slate-100'
-                }`}
-              >
-                {type.replace('_', ' ')}
-              </button>
-            ))}
-          </div> */}
+        
         </div>
 
         {/* Notifications List */}
@@ -146,6 +140,8 @@ const NotificationCenter = () => {
                           {notif.type === 'NEW_CASE' && <Briefcase className="w-6 h-6" />}
                           {notif.type === 'SYSTEM_UPDATE' && <AlertCircle className="w-6 h-6" />}
                           {notif.type === 'UPDATE' && <Info className="w-6 h-6" />}
+                          {notif.type === 'CASE_ASSIGNED' && <Briefcase className="w-6 h-6" />}
+
                         </div>
                         {!notif.isRead && (
                           <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-sm" />
@@ -189,18 +185,18 @@ const NotificationCenter = () => {
                               </div>
                               <div className="space-y-1">
                                 <span className="text-[10px] uppercase font-black text-slate-400">Case ID</span>
-                                <div className="text-sm font-bold text-[#2c3e50]">#{notif.caseId}</div>
+                                <div className="text-sm font-bold text-[#2c3e50]">{notif.caseId}</div>
                               </div>
                               <div className="space-y-1">
                                 <span className="text-[10px] uppercase font-black text-slate-400">Status</span>
                                 <div className={`text-sm font-bold flex items-center gap-2 ${notif.status === 'Open' ? 'text-emerald-600' : 'text-amber-600'}`}>
                                   <div className={`w-1.5 h-1.5 rounded-full ${notif.status === 'Open' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                                  {notif.status}
+                                  {notif.status || " "}
                                 </div>
                               </div>
                               <div className="space-y-1">
                                 <span className="text-[10px] uppercase font-black text-slate-400">Actor</span>
-                                <div className="text-sm font-bold text-slate-500 truncate italic">{notif.actor}</div>
+                                <div className="text-sm font-bold text-slate-500 truncate italic">{notif.actor || " "}</div>
                               </div>
                             </div>
                           )}

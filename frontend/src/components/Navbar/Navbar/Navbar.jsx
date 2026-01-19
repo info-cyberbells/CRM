@@ -113,29 +113,66 @@ const Navbar = () => {
             </Link>
           </li>
           <li style={styles.navItem}>
-            <Link style={styles.navLink}>
-                <AssignmentIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
-                <div>My Cases</div>
+            <Link to="/search" style={styles.navLink}>
+              <SearchIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Search My Cases</div>
             </Link>
           </li>
+          <li style={styles.navItem}>
+            <Link to='/update-status' style={styles.navLink}>
+                <AssignmentIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+                <div>Update My Case</div>
+            </Link>
+          </li>
+            <li style={styles.navItem}>
+            <Link to="/chat" style={styles.navLink}>
+              <ChatIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Chat</div>
+            </Link>
+          </li>
+         
+           <li style={styles.navItem}>
+            <Link to="/notifications" style={styles.navLink}>
+              <NotificationsIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Notifications</div>
+            </Link>
+          </li>
+          </ul>}
+
+          {userRole == "admin" && <ul style={styles.navLinks}>
+          <li style={styles.navItem}>
+            <Link to="/dashboard" style={styles.navLink}>
+              <HomeIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Home</div>
+            </Link>
+          </li>
+          {/* <li style={styles.navItem}>
+            <Link to='/update-status' style={styles.navLink}>
+                <AssignmentIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+                <div>Manage Cases</div>
+            </Link>
+          </li> */}
           <li style={styles.navItem}>
             <Link to="/search" style={styles.navLink}>
               <SearchIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
-              <div>Search</div>
+              <div>Search My Cases</div>
             </Link>
           </li>
-          <li style={styles.navItem}>
-            <Link style={styles.navLink}>
+
+           <li style={styles.navItem}>
+            <Link to='/notices' style={styles.navLink}>
                 <AssignmentIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
-                <div>Update Case</div>
+                <div>Manage Notice</div>
             </Link>
           </li>
-          <li style={styles.navItem}>
-            <Link to="/notes" style={styles.navLink}>
-              <NoteAltIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
-              <div>Notes</div>
+          
+            <li style={styles.navItem}>
+            <Link to="/chat" style={styles.navLink}>
+              <ChatIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
+              <div>Chat</div>
             </Link>
           </li>
+         
            <li style={styles.navItem}>
             <Link to="/notifications" style={styles.navLink}>
               <NotificationsIcon style={{ display: "block", margin: "0 auto", fontSize: "28px" }} />
@@ -229,23 +266,28 @@ const Navbar = () => {
             <HomeIcon style={styles.mobileNavIcon} />
             <span>Home</span>
           </Link>
-          <Link to="/my-cases" style={styles.mobileNavLink}>
+          {/* <Link to="/my-cases" style={styles.mobileNavLink}>
             <AssignmentIcon style={styles.mobileNavIcon} />
             <span>My Cases</span>
-          </Link>
+          </Link> */}
           
           <Link to="/search" style={styles.mobileNavLink}>
             <SearchIcon style={styles.mobileNavIcon} />
-            <span>Search</span>
+            <span>Search My Cases</span>
           </Link>
-           <Link to="/update-cases" style={styles.mobileNavLink}>
+           <Link to="/update-status" style={styles.mobileNavLink}>
             <AssignmentIcon style={styles.mobileNavIcon} />
-            <span>Update Cases</span>
+            <span>Update My Cases</span>
           </Link>
-          <Link to="/notes" style={styles.mobileNavLink}>
+            <Link to="/chat" style={styles.mobileNavLink}>
+            <ChatIcon style={styles.mobileNavIcon} />
+            <span>Chat</span>
+          </Link>
+          {/* <Link to="/notes" style={styles.mobileNavLink}>
             <NoteAltIcon style={styles.mobileNavIcon} />
             <span>Notes</span>
-          </Link>
+          </Link> */}
+          
           <Link to="/notifications" style={styles.mobileNavLink}>
             <NotificationsIcon style={styles.mobileNavIcon} />
             <span>Notifications</span>

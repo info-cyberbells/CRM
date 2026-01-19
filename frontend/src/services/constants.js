@@ -13,4 +13,23 @@ export const USER_ENDPOINTS = {
     SALE_USER_NOTIFICATION: `${API_BASE_URL}/sale-user/notifications`,
 
     TECH_USER_DASHBOARD: `${API_BASE_URL}/tech-user/dashboard`,
+
+    TECH_USER_MY_CASES: `${API_BASE_URL}/tech-user/my-cases`,
+    TECH_USER_GET_CASE_BY_ID: `${API_BASE_URL}/tech-user/getCaseById`,
+    TECH_USER_UPDATE_CASE: `${API_BASE_URL}/tech-user/updateCase`,
+
+
+    TECH_USER_NOTIFICATIONS: `${API_BASE_URL}/tech-user/notifications`,
+
+
+    ADMIN_DASHBOARD: `${API_BASE_URL}/admin/dashboard`,
+    ADMIN_SEARCH_CASES: `${API_BASE_URL}/admin/all-cases`,
+    ADMIN_VIEW_CASE_DETAILS: `${API_BASE_URL}/admin/getCaseById`,
+    ADMIN_UPDATE_CASE_DETAILS: `${API_BASE_URL}/admin/updateCase`,
+    ADMIN_SEARCH_TECH_USER: `${API_BASE_URL}/admin/searchTechUser`,
+
+    ADMIN_CREATE_NOTICE: `${API_BASE_URL}/admin/notice`,
+    ADMIN_GET_ALL_NOTICES: `${API_BASE_URL}/admin/notices`,
+    ADMIN_UPDATE_NOTICE: `${API_BASE_URL}/admin/notice`, 
+    ADMIN_DELETE_NOTICE: `${API_BASE_URL}/admin/notice`,
 };

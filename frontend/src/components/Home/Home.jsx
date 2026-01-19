@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUserThunk, reset } from '../../features/UserSlice/UserSlice';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import cyberHub_Logo from '../../assets/images/cyberhub_Logo.png'
+import { useToast } from '../../ToastContext/ToastContext';
 
 
 const Home = () => {
@@ -13,6 +14,7 @@ const Home = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const {showToast} = useToast();
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -23,17 +25,25 @@ const Home = () => {
     useEffect(() => {
         if (isSuccess && user) {
             console.log('Login successful:', user);
-            navigate("/dashboard");
+            showToast("Login successful", "success");
+           
+            setTimeout(() => {
+                dispatch(reset());
+                navigate("/dashboard");
+            }, 800);
+            
         }
         if (isError) {
             console.log('Login error:', message);
-            // Handle login error
+            showToast(message || "Login failed", "error");
+             dispatch(reset());
+
         }
 
-        return () => {
-            dispatch(reset());
-        };
-    }, [isSuccess, isError, user, message, dispatch]);
+        // return () => {
+        //     dispatch(reset());
+        // };
+    }, [isSuccess, isError, user, message, showToast,dispatch]);
 
     const containerStyle = {
         display: 'flex',

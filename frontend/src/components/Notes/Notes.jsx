@@ -12,6 +12,7 @@ import {
     fetchSaleUserOngoingCases
 } from '../../features/SearchSlice/searchSlice';
 import { RefreshCw, User, AlertCircle } from 'lucide-react';
+import { useToast } from '../../ToastContext/ToastContext';
 
 const SalesUserCases = () => {
     const dispatch = useDispatch();
@@ -25,6 +26,8 @@ const SalesUserCases = () => {
         pagination,
         searchFilters
     } = useSelector((state) => state.salesCases);
+
+    const {showToast} = useToast();
 
 
     const { currentPage, pageSize, totalPages, totalCount } = pagination;
@@ -62,6 +65,7 @@ const SalesUserCases = () => {
         try {
             await dispatch(updateCase({ caseId, caseData: updatedData })).unwrap();
 
+            showToast("Case Updated", "success");
             dispatch(setCurrentPage(currentPage));
 
                 dispatch(fetchSaleUserOngoingCases({
@@ -70,6 +74,7 @@ const SalesUserCases = () => {
                     }));
         } catch (error) {
             console.error("Update failed:", error);
+            showToast("Failed to update.", "error");
         }
     };
 
@@ -109,6 +114,9 @@ const SalesUserCases = () => {
             minHeight: '100vh',
             background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)',
             paddingTop: '100px',
+            paddingLeft: '20px',
+            paddingRight: '20px',
+            paddingBottom: '20px',
             fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         },
         maxWidth: {
@@ -456,7 +464,7 @@ const SalesUserCases = () => {
         <div style={styles.container}>
             <div style={styles.maxWidth}>
 
-                <h1 style={styles.title}>Ongoing Cases</h1>
+                <h1 style={styles.title}>Ongoing Cases Notes</h1>
 
                 {/* Cases Table */}
                 <div style={styles.tableContainer}>
@@ -771,6 +779,7 @@ const SalesUserCases = () => {
                                         <select
                                             style={styles.input}
                                             value={selectedCase?.issueStatus || "Open"}
+                                            disabled
                                             onChange={(e) => dispatch(updateSelectedCase({ issueStatus: e.target.value }))}
                                         >
                                             <option value="Open">Open</option>
