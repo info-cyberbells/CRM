@@ -84,7 +84,7 @@ const NotificationCenter = () => {
   // const uniqueTypes = ['ALL', ...new Set(notifications.map(n => n.type))];
 
   return (
-    <div className="min-h-screen mt-16 bg-[#f8fafc] p-4 md:p-10 font-sans text-[#2c3e50]">
+    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-6 font-sans text-[#2c3e50]">
       <div className="max-w-4xl mx-auto">
         
         {/* Header Section */}

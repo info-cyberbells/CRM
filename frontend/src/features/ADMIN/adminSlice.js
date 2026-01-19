@@ -109,6 +109,9 @@ const adminSlice = createSlice({
             state.isSuccess = false;
             state.error = null;
         },
+        resetSelectedCases: (state) => {
+            state.selectedCase = null;
+        },
          setAdminSearchFilters: (state, action) => {
             state.searchFilters = { ...state.searchFilters, ...action.payload };
         },
@@ -204,5 +207,5 @@ const adminSlice = createSlice({
     }
 })
 
-export const { setAdminSearchFilters, setAdminPageSize, setAdminCurrentPage, setAdminShowModal, updateAdminSelectedCase} = adminSlice.actions;
+export const { setAdminSearchFilters, setAdminPageSize, setAdminCurrentPage, setAdminShowModal, updateAdminSelectedCase, resetSelectedCases} = adminSlice.actions;
 export default adminSlice.reducer;

@@ -32,15 +32,15 @@ const ROLE_BASED_MENUS = {
   { id: "notices", title: "Notices",icon: FileText,},
 //   { id: "chat", title: "Chat", icon: MessageSquare,},
   { id: "notifications", title: "Notifications", icon: Bell,},
-    {
-      id: "support",
-      title: "Support",
-      icon: HelpCircle,
-      children: [
-        { id: "privacy", title: "Privacy Policy", path: "privacy" },
-        { id: "terms", title: "Terms & Conditions", path: "terms" },
-      ],
-    },
+    // {
+    //   id: "support",
+    //   title: "Support",
+    //   icon: HelpCircle,
+    //   children: [
+    //     { id: "privacy", title: "Privacy Policy", path: "privacy" },
+    //     { id: "terms", title: "Terms & Conditions", path: "terms" },
+    //   ],
+    // },
   ],
   Sale: [
     { id: "dashboard", title: "Sales Overview", icon: TrendingUp },
@@ -121,7 +121,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     dispatch(logoutUserThunk()).then(()=>{
-        navigate('/login');
+        navigate('/');
     })
   }
 

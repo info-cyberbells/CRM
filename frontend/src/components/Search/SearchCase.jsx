@@ -14,6 +14,9 @@ import {
   Briefcase,
   Clock,
   LayoutGrid,
+   Pencil,
+  UserPlus,
+  ShieldAlert,
 } from "lucide-react";
 import {
   fetchSaleUserCases,
@@ -47,10 +50,12 @@ import {
   updateCaseDetailsByAdmin,
   searchTechUser,
 } from "../../features/ADMIN/adminSlice";
+import { useNavigate } from "react-router-dom";
 
 
 const SearchCase = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     cases: salesCases,
     selectedCase: salesSelectedCase,
@@ -198,15 +203,15 @@ const SearchCase = () => {
     else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
     else dispatch(setSearchFilters(emptyFilters));
 
-    if (isTech) {
-      dispatch(setTechCurrentPage(1));
-    }
-    if (isAdmin) {
-      dispatch(setAdminCurrentPage(1));
-    }
-    if (isSale) {
-      dispatch(setCurrentPage(1));
-    }
+    // if (isTech) {
+    //   dispatch(setTechCurrentPage(1));
+    // }
+    // if (isAdmin) {
+    //   dispatch(setAdminCurrentPage(1));
+    // }
+    // if (isSale) {
+    //   dispatch(setCurrentPage(1));
+    // }
 
     // Fetch once on mount
     // fetchCases({
@@ -218,13 +223,13 @@ const SearchCase = () => {
     return () => {
       if (isTech) {
         dispatch(setTechSearchFilters(emptyFilters));
-        dispatch(setTechCurrentPage(1));
+        // dispatch(setTechCurrentPage(1));
       } else if (isAdmin) {
         dispatch(setAdminSearchFilters(emptyFilters));
-        dispatch(setAdminCurrentPage(1));
+        // dispatch(setAdminCurrentPage(1));
       } else if (isSale) {
         dispatch(setSearchFilters(emptyFilters));
-        dispatch(setCurrentPage(1));
+        // dispatch(setCurrentPage(1));
       }
     };
   }, []);
@@ -287,6 +292,28 @@ const SearchCase = () => {
       filters: searchFilters,
     });
   };
+
+ const fetchCaseDetails = async (caseId, editMode = false) => {
+  try {
+    // Wait for the fetch to complete
+    if (isTech) {
+      await dispatch(getSingleCaseById(caseId)).unwrap();
+    } else if (isAdmin) {
+      await dispatch(adminViewCase(caseId)).unwrap();
+    } else {
+      await dispatch(fetchCaseById(caseId)).unwrap();
+    }
+
+    // Navigate with editing state after data is loaded
+    navigate(`/case/${caseId}`, { 
+      state: { editing: editMode, fromPage: currentPage } 
+    });
+  } catch (error) {
+    console.error("Failed to fetch case:", error);
+    showToast("Failed to load case details", "error");
+  }
+};
+
 
   // --- Helpers ---
   const formatCurrency = (val) =>
@@ -460,7 +487,7 @@ const SearchCase = () => {
                           <span className="text-[10px] font-bold text-gray-500 uppercase w-8">Tech:</span>
                           <span className={`px-2 py-1 rounded text-[10px] font-black uppercase
                                 ${c.assignedTo === "Unassigned"
-                                ? "bg-rose-100 text-rose-700 border border-rose-200"
+                                ? "bg-rose-100 text-rose-700"
                                 : "bg-emerald-50 text-emerald-700"}
                             `}
                             >
@@ -514,9 +541,47 @@ const SearchCase = () => {
                         </div>
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-right">
-                        <button className="p-2 text-slate-300 hover:text-emerald-600 hover:bg-emerald-100 rounded-xl transition-all">
-                          <Eye size={20} strokeWidth={2.5} />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {/* View Case */}
+                          <button 
+                            title="View Case"
+                            className="p-2 cursor-pointer text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90"
+                            onClick={() => {
+                                console.log("Case item:", c);
+                                fetchCaseDetails(c.caseId, false);
+                              }}
+                          >
+                            <Eye size={18} strokeWidth={2.5} />
+                          </button>
+                          
+                          {/* Edit Case */}
+                          <button 
+                            title="Edit Case"
+                            className="p-2 cursor-pointer text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
+                          onClick={() => {
+                              console.log("Case item:", c);
+                              fetchCaseDetails(c.caseId, true);
+                            }}
+                          >
+                            <Pencil size={18} strokeWidth={2.5} />
+                          </button>
+                          
+                          {/* Assign Tech */}
+                          {/* <button 
+                            title="Assign Tech"
+                            className="p-2 cursor-pointer text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all active:scale-90"
+                          >
+                            <UserPlus size={18} strokeWidth={2.5} />
+                          </button>
+                          
+                          // Charge Back 
+                          <button 
+                            title="Add Chargeback"
+                            className="p-2 cursor-pointer text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-90"
+                          >
+                            <ShieldAlert size={18} strokeWidth={2.5} />
+                          </button> */}
+                        </div>
                       </td>
                     </tr>
                   ))
