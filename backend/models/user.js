@@ -55,7 +55,11 @@ const User = sequelize.define("User", {
     updatedAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
-    },
+    }
+}, {
+    tableName: "users",
+    freezeTableName: true
 });
+
 
 export default User;
