@@ -276,6 +276,12 @@ export const getMyCases = async (req, res) => {
             specialNotes: c.specialNotes || "N/A",
             saleStatus: c.saleStatus || "Pending",
             issueStatus: c.status || "Open",
+            saleNoteType: c.saleNoteType,
+            saleNoteText: c.saleNoteText || "",
+            techNoteType: c.techNoteType,
+            techNoteText: c.techNoteText || "",
+            adminNoteType: c.adminNoteType,
+            adminNoteText: c.adminNoteText || "",
             date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
         }));
 
@@ -392,6 +398,12 @@ export const getAssignedCases = async (req, res)=>{
             specialNotes: c.specialNotes || "N/A",
             saleStatus: c.saleStatus || "Pending",
             issueStatus: c.status || "Open",
+            saleNoteType: c.saleNoteType,
+            saleNoteText: c.saleNoteText || "",
+            techNoteType: c.techNoteType,
+            techNoteText: c.techNoteText || "",
+            adminNoteType: c.adminNoteType,
+            adminNoteText: c.adminNoteText || "",
             date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
 
         }));

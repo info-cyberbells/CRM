@@ -555,6 +555,7 @@ const SearchCase = () => {
                           </button>
                           
                           {/* Edit Case */}
+                          {isAdmin &&
                           <button 
                             title="Edit Case"
                             className="p-2 cursor-pointer text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
@@ -565,6 +566,7 @@ const SearchCase = () => {
                           >
                             <Pencil size={18} strokeWidth={2.5} />
                           </button>
+                          }
                           
                           {/* Assign Tech */}
                           {/* <button 

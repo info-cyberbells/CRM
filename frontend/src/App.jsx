@@ -18,6 +18,7 @@ import AdminDashboard from "./components/Dashboard/AdminDashBoard";
 import SearchCase from "./components/Search/SearchCase";
 import CasesDetailsPage from "./components/CaseDetailsPage/CasesDetailsPage";
 import SaleTechDashboard from "./components/Dashboard/SaleTechDashboard";
+import NotesFeed from "./components/Notes/NotesFeed";
 
 function App() {
   const dispatch = useDispatch();
@@ -51,7 +52,8 @@ function App() {
           {/* <Route path="/search" element={<Search />} /> */}
           <Route path="/search-cases" element={<SearchCase />} />
           <Route path="/case/:caseId" element={<CasesDetailsPage />} />
-          <Route path="/notes" element={<Notes />} />
+          {/* <Route path="/notes" element={<Notes />} /> */}
+          <Route path="/manage-notes" element={<NotesFeed />}/>
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/my-cases" element={<MyCases />} />
           <Route path="/update-status" element={<UpdateCaseStatus />} />
