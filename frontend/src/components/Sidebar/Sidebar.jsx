@@ -20,7 +20,8 @@ import {
   MessageSquare,
   FileText,
   HelpCircle,
-  Briefcase
+  Briefcase,
+  Edit
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { loginUserThunk, logoutUserThunk } from '../../features/UserSlice/UserSlice';
@@ -65,7 +66,7 @@ const ROLE_BASED_MENUS = {
   Tech: [
     { id: "dashboard", title: "Tech Monitor", icon: Wrench },
     {id: "search-cases",title: "Search",icon: Search,},
-    {id: "update-status",title: "Update Onging Case",icon: FileText,},
+    {id: "update-status",title: "Update Case Status",icon: Edit,},
         { id: "manage-notes", title: "Notes Feed", icon: FileText },
         //   { id: "chat", title: "Chat", icon: MessageSquare,},
     { id: "notifications", title: "Notifications", icon: Bell,},
@@ -117,7 +118,7 @@ const Sidebar = () => {
         if (child) return child.title;
       }
     }
-    return "DASHBOARD";
+    return "";
   };
 
 

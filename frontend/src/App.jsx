@@ -19,6 +19,8 @@ import SearchCase from "./components/Search/SearchCase";
 import CasesDetailsPage from "./components/CaseDetailsPage/CasesDetailsPage";
 import SaleTechDashboard from "./components/Dashboard/SaleTechDashboard";
 import NotesFeed from "./components/Notes/NotesFeed";
+import CreateNewCase from "./components/Cases/CreateNewCase";
+import TechUpdateCaseStatus from "./components/TechUserPages/TechUpdateCaseStatus";
 
 function App() {
   const dispatch = useDispatch();
@@ -55,10 +57,13 @@ function App() {
           {/* <Route path="/notes" element={<Notes />} /> */}
           <Route path="/manage-notes" element={<NotesFeed />}/>
           <Route path="/notifications" element={<NotificationCenter />} />
-          <Route path="/my-cases" element={<MyCases />} />
-          <Route path="/update-status" element={<UpdateCaseStatus />} />
+          {/* <Route path="/my-cases" element={<MyCases />} /> */}
+          {/* <Route path="/my-cases" element={<TechUpdateCaseStatus />} /> */}
+          {/* <Route path="/update-status" element={<UpdateCaseStatus />} /> */}
+          <Route path="/update-status" element={<TechUpdateCaseStatus />} />
           <Route path="/notices" element={<AdminNoticePage />} />
-          <Route path="/create-case/:id" element={<Cases />} />
+          {/* <Route path="/create-case/:id" element={<Cases />} /> */}
+          <Route path="/create-case/:id" element={<CreateNewCase />} />
         </Route>
       </Routes>
     </>

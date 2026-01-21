@@ -128,7 +128,7 @@ const NotesFeed = () => {
                 Notes
               </h1>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
-                Manage notes for all cases
+                Manage notes for all open cases
               </p>
             </div>
           </div>
@@ -169,7 +169,7 @@ const NotesFeed = () => {
               {cases.length > 0 ? (
                 cases.map((note) => (
                   <tr
-                    key={note.id}
+                    key={note.caseId}
                     className="hover:bg-slate-50/50 transition-colors group"
                   >
                     <td className="px-8 py-6">
@@ -379,6 +379,9 @@ const NotesFeed = () => {
   );
 };
 
+
+
+// modal to view and add Note
 const CaseNotesPanel = ({ caseItem, onClose, currentPage, pageSize }) => {
   const [noteText, setNoteText] = useState("");
   const [category, setCategory] = useState("General");

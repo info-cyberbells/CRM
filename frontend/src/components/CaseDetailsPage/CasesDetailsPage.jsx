@@ -426,6 +426,7 @@ const CaseDetailPage = () => {
             </div>
           </div>
           <div className="flex gap-3">
+            {isAdmin && 
             <button
               onClick={() => handleToggleEdit(!editing)}
               className={`px-8 py-3 cursor-pointer rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 ${
@@ -436,6 +437,7 @@ const CaseDetailPage = () => {
             >
               {editing ? "Save Records" : "Enter Edit Mode"}
             </button>
+            }
           </div>
         </div>
       </div>
@@ -1027,18 +1029,18 @@ const CaseDetailPage = () => {
                   value={formData.status}
                   onChange={(e) => handleStatusUpdate(e.target.value)}
                   disabled={!editing}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-black text-xs uppercase transition-all shadow-sm appearance-none cursor-pointer"
+                  className={`w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-black text-xs uppercase transition-all shadow-sm appearance-none ${editing ? "cursor-pointer" : "cursor-default"}`}
                 >
                   <option value="Open">Open</option>
                   <option value="Pending">Pending</option>
                   <option value="Closed">Closed</option>
-                  {isAdmin && (
-                    <>
+                  {/* {isAdmin && (
+                    <> */}
                       <option value="Void">Void</option>
                       <option value="Refund">Refund</option>
                       <option value="Chargeback">Chargeback</option>
-                    </>
-                  )}
+                    {/* </>
+                  )} */}
                 </select>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                   <ChevronRight size={14} className="rotate-90" />
