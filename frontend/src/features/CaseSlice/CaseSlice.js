@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { createCase as createCaseAPI } from '../../services/services';
+import { createCase as createCaseAPI, previwCaseIDService } from '../../services/services';
 
 // Async thunk for creating a new case
 export const createCase = createAsyncThunk(
@@ -14,13 +14,27 @@ export const createCase = createAsyncThunk(
     }
 );
 
+//PREVIEW CASE ID
+export const previewCaseId = createAsyncThunk(
+    'case/preveiwCaseID',
+    async(caseType, thunkAPI)=>{
+        try {
+            const response = await previwCaseIDService(caseType);
+            return response;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.message);
+        }
+    }
+)
+
 const caseSlice = createSlice({
     name: 'cases',
     initialState: {
         loading: false,
         success: false,
         error: null,
-        message: null
+        message: null,
+        caseID: null,
     },
     reducers: {
         clearCaseState: (state) => {
@@ -47,7 +61,23 @@ const caseSlice = createSlice({
                 state.loading = false;
                 state.success = false;
                 state.error = action.payload;
-            });
+            })
+
+            // builder 
+            .addCase(previewCaseId.pending, (state)=>{
+                state.loading = true;
+                state.caseID = null;
+                state.error = null;
+            })
+            .addCase(previewCaseId.fulfilled, (state, action)=>{
+                state.loading = false;
+                state.caseID = action.payload;
+            })
+            .addCase(previewCaseId.rejected, (state, action)=>{
+                state.loading = false;
+                state.error = action.payload;
+            })
+
     }
 });
 

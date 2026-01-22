@@ -59,6 +59,22 @@ export const getDashboardData = async () => {
     return response.data;
 };
 
+// PREVIEW CASE ID
+export const previwCaseIDService = async(caseType)=>{
+    try {
+        const response = await axios.get(
+            `${USER_ENDPOINTS.SALE_PREVIEW_CASEID}/${caseType}`,{
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 //create acse
 export const createCase = async (caseData) => {
     try {

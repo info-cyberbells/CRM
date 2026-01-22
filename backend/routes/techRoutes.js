@@ -18,8 +18,8 @@ router.use(roleGuard("Tech"));
 
 router.get("/dashboard", getDashboardData);
 router.get('/my-cases', getAssignedCases);
-router.get('/getCaseByID/:id', getCaseById);
-router.put('/updateCase/:id', updateCase);
+router.get('/getCaseByID/:caseId', getCaseById);
+router.put('/updateCase/:caseId', updateCase);
 
 
 router.get('/notifications', getTechUserNotifications);

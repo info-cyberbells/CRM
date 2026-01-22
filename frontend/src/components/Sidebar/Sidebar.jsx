@@ -54,7 +54,7 @@ const ROLE_BASED_MENUS = {
     { id: "create-case-cbh", title: "CBH",path: "create-case/CBH",},
     { id: "create-case-td", title: "TD", path: "create-case/TD",},
     {id: "create-case-pws", title: "PWS",path: "create-case/PWS",},
-    { id: "create-case-no-sale", title: "No Sale", path: "create-case/no-sale",},
+    { id: "create-case-no-sale", title: "No Sale", path: "create-case/NOSALE",},
     ],
     },
     {id: "search-cases",title: "Search",icon: Search,},

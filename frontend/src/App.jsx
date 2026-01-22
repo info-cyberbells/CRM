@@ -63,7 +63,7 @@ function App() {
           <Route path="/update-status" element={<TechUpdateCaseStatus />} />
           <Route path="/notices" element={<AdminNoticePage />} />
           {/* <Route path="/create-case/:id" element={<Cases />} /> */}
-          <Route path="/create-case/:id" element={<CreateNewCase />} />
+          <Route path="/create-case/:caseType" element={<CreateNewCase />} />
         </Route>
       </Routes>
     </>

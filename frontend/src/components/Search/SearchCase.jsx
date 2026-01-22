@@ -561,7 +561,7 @@ const SearchCase = () => {
                             className="p-2 cursor-pointer text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
                           onClick={() => {
                               console.log("Case item:", c);
-                              fetchCaseDetails(c.caseId, true);
+                              fetchCaseDetails(c.id, true);
                             }}
                           >
                             <Pencil size={18} strokeWidth={2.5} />

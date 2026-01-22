@@ -3,6 +3,15 @@ import sequelize from "../config/db.js";
 import User from "./user.js";
 
 const Case = sequelize.define("Case", {
+    caseId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
+    caseType: {
+        type: DataTypes.ENUM("DIG", "CBH", "TD", "PWS", "NOSALE"),
+        allowNull: false
+    },
     customerID: { type: DataTypes.STRING, unique: true, allowNull: false },
     customerName: { type: DataTypes.STRING, allowNull: false },
     phone: { type: DataTypes.STRING, allowNull: false },

@@ -169,7 +169,7 @@ const NotesFeed = () => {
               {cases.length > 0 ? (
                 cases.map((note) => (
                   <tr
-                    key={note.caseId}
+                    key={note.id}
                     className="hover:bg-slate-50/50 transition-colors group"
                   >
                     <td className="px-8 py-6">
@@ -371,7 +371,6 @@ const NotesFeed = () => {
           pageSize={pageSize}
           onAddNote={(caseId, note) => {
             console.log("Add note:", caseId, note);
-            // later: dispatch(addNoteThunk({ caseId, note }))
           }}
         />
       )}

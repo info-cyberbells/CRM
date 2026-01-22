@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { PlusCircle } from 'lucide-react';
 import { useToast } from '../../ToastContext/ToastContext';
-import { createCase } from '../../features/CaseSlice/CaseSlice';
-import { useDispatch } from 'react-redux';
+import { createCase, previewCaseId } from '../../features/CaseSlice/CaseSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 const CreateNewCase = () => {
 
     const {showToast} = useToast();
     const dispatch = useDispatch();
+    const {caseType} = useParams();
+
+    const {caseID, loading, error} = useSelector((state)=>state.cases);
 
     const [activeStep, setActiveStep] = useState(0);
     const [errors, setErrors] = useState({});
@@ -89,7 +93,7 @@ const CreateNewCase = () => {
             };
         }, []);
 
-        useEffect(() => {
+    useEffect(() => {
                 if (formData.planDuration) {
                     const currentDate = new Date();
                     let validityDate;
@@ -110,6 +114,9 @@ const CreateNewCase = () => {
                 }
             }, [formData.planDuration]);
     
+    useEffect(()=>{
+        dispatch(previewCaseId(caseType));
+    },[caseType]);
 
     const labelClass = "text-xs font-bold text-slate-500 uppercase tracking-widest ml-1";
     
@@ -254,6 +261,7 @@ const handleSubmit = async () => {
 
     submitData = {
         ...formData,
+        caseType,
         remoteID: formData.remoteAccess[0].remoteID,
         remotePass: formData.remoteAccess[0].remotePass,
         operatingSystem: formData.remoteAccess[0].operatingSystem,
@@ -304,7 +312,7 @@ const handleSubmit = async () => {
         setActiveStep(0);
     } catch (error) {
         console.error("Submit error:", error);
-        showToast("Failed to submit the form", "error");
+        showToast(error || "Failed to submit the form", "error");
     }
 };
 
@@ -320,10 +328,22 @@ const handleSubmit = async () => {
               <PlusCircle size={32} />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-slate-800 tracking-tight leading-none">New Case Form</h1>
+              <h1 className="text-3xl font-black text-slate-800 tracking-tight leading-none">New {caseType} Case Form</h1>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Step {activeStep + 1} of 2</p>
             </div>
           </div>
+          <div className="relative text-center overflow-hidden rounded-3xl bg-white  p-2">
+
+            <p className="text-base font-bold uppercase tracking-wider text-slate-500">
+                Case ID: <span className=" font-black tracking-wide text-slate-800">
+                {caseID?.previewCaseID || "—"}
+            </span>
+            </p>
+            <p className="text-[11px] text-slate-400">
+                This ID will be confirmed when the case is created
+            </p>
+            </div>
+
         </div>
       </div>
 

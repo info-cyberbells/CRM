@@ -3,7 +3,68 @@ import Case from "../models/case.js";
 import User from "../models/user.js";
 import { Op } from 'sequelize';
 import Notification from "../models/notification.js";
+import sequelize from "../config/db.js";
+import CaseCounter from "../models/caseCounter.js";
 
+
+// Generate CaseID
+export const generateCaseId = async (caseType) => {
+    return await sequelize.transaction(async(t)=>{
+        const counter = await CaseCounter.findOne({
+            where: {caseType},
+            lock: t.LOCK.UPDATE,
+            transaction: t
+        });
+
+        if (!counter){
+            throw new Error(`Invalid case type: ${caseType}`);
+        }
+
+        counter.caseNumber += 1;
+        await counter.save({transaction: t});
+
+        return `${caseType}-${String(counter.caseNumber).padStart(4,"0")}`;
+    })
+};
+
+// preview caseID on UI
+export const previewCaseID = async (req, res) => {
+    try {
+        const {caseType} = req.params;
+
+        const ALLOWED_CASE_TYPES =  ["DIG", "CBH", "TD", "PWS", "NOSALE"];
+        const normalizedCaseType = caseType?.toUpperCase();
+
+        if(!ALLOWED_CASE_TYPES.includes(normalizedCaseType)){
+            return res.status(400).json({success: false, message: "Invalid Case Type", allowedCaseTypes: ALLOWED_CASE_TYPES});
+        }
+
+        const counter = await CaseCounter.findOne({
+            where: { caseType: normalizedCaseType}
+        });
+
+        if(!counter){
+            return res.status(404).json({
+                success: false,
+                message: "Case counter not found"
+            })
+        }
+
+        const nextNumber = (Number(counter.caseNumber) || 0) + 1;
+
+        const previewCaseID = `${normalizedCaseType}-${String(nextNumber).padStart(4,"0")}`;
+
+        return res.status(200).json({
+            success: true,
+            previewCaseID
+        });
+
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({success: false, message: "Failed to preview caseID"});
+    }
+}
 
 // Create new case
 export const createCase = async (req, res) => {
@@ -19,15 +80,36 @@ export const createCase = async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+        const { caseType, ...rest} = req.body;
+
+        if(!caseType){
+            return res.status(400).json({sucess: false, message: "CaseType is required!"});
+        }
+
+        const normalizedCaseType = caseType.toUpperCase();
+        const ALLOWED_CASE_TYPES = ["DIG", "CBH", "TD", "PWS", "NOSALE"];
+
+        if (!ALLOWED_CASE_TYPES.includes(normalizedCaseType)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid case type",
+            allowedCaseTypes: ALLOWED_CASE_TYPES
+        });
+        }
+
+        const caseId = await generateCaseId(normalizedCaseType);
+
         const newCase = await Case.create({
-            ...req.body,
+            ...rest,
+            caseId,
+            caseType,
             customerID: `CUST-${Date.now()}`,
             saleUserId: decoded.id,
         });
 
         await Notification.create({
             title: "New Case Created",
-            message: "New case created by Sale user",
+            message: `New ${caseType} created by Sale user`,
             type: "NEW_CASE",
             caseId: newCase.id,
             actorId: decoded.id,
@@ -147,7 +229,9 @@ export const getAllCases = async (req, res) => {
         });
 
         const formattedCases = cases.map((c) => ({
-            caseId: c.id,
+            id: c.id,
+            caseId: c.caseId,
+            caseType: c.caseType,
             customerName: c.customerName,
             email: c.email,
             customerID: c.customerID,
@@ -264,7 +348,9 @@ export const getMyCases = async (req, res) => {
 
 
         const formattedCases = cases.map((c) => ({
-            caseId: c.id,
+            id: c.id,
+            caseId: c.caseId,
+            caseType: c.caseType,
             customerName: c.customerName,
             plan: c.plan,
             caseCreatedBy: c.saleUser?.name || "N/A",
@@ -384,7 +470,9 @@ export const getAssignedCases = async (req, res)=>{
         });
 
         const formattedCases = cases.map((c)=>({
-            caseId: c.id,
+            id: c.id,
+            caseId: c.caseId,
+            caseType: c.caseType,
             customerID: c.customerID,
             customerName: c.customerName,
             email: c.email,
@@ -433,7 +521,7 @@ export const getAssignedCases = async (req, res)=>{
 // Update case status or other editable fields
 export const updateCase = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { caseId } = req.params;
 
         const token =
             req.cookies?.authToken ||
@@ -441,14 +529,17 @@ export const updateCase = async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const oldCase = await Case.findByPk(id);
+        const oldCase = await Case.findOne({
+            where: {caseId}
+        });
         if (!oldCase) {
             return res.status(404).json({ success: false, message: "Case not found" });
         }
 
-        const [rowsUpdated] = await Case.update(req.body, { where: { id } });
+        const [rowsUpdated] = await Case.update(req.body, { where: { caseId } });
 
-        const updatedCase = await Case.findByPk(id, {
+        const updatedCase = await Case.findOne({
+            where: {caseId},
             include: [
                 { model: User, as: "saleUser", attributes: ["id", "name", "email"] },
                 { model: User, as: "techUser", attributes: ["id", "name", "email"] },
@@ -490,8 +581,9 @@ export const updateCase = async (req, res) => {
 // Get case by ID
 export const getCaseById = async (req, res) => {
     try {
-        const { id } = req.params;
-        const caseData = await Case.findByPk(id, {
+        const { caseId } = req.params;
+        const caseData = await Case.findOne( {
+            where: {caseId},
             include: [
                 { model: User, as: "saleUser", attributes: ["id", "name"] },
                 { model: User, as: "techUser", attributes: ["id", "name"] },

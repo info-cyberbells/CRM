@@ -218,7 +218,7 @@ const CaseDetailPage = () => {
   useEffect(() => {
     if (data) {
       setFormData({
-        caseId: data.id || "",
+        caseId: data.caseId || "",
         customerID: data.customerID || "",
         customerName: data.customerName || "",
         email: data.email || "",
@@ -299,14 +299,14 @@ const CaseDetailPage = () => {
       try {
         if (isTech) {
           await dispatch(
-            updateCaseByTech({ caseId: formData.id, caseData: formData }),
+            updateCaseByTech({ caseId: formData.caseId, caseData: formData }),
           ).unwrap();
           // Re-fetch to get updated data
           await dispatch(getSingleCaseById(caseId)).unwrap();
         } else if (isAdmin) {
           await dispatch(
             updateCaseDetailsByAdmin({
-              caseId: formData.id,
+              caseId: formData.caseId,
               caseData: formData,
             }),
           ).unwrap();
@@ -314,7 +314,7 @@ const CaseDetailPage = () => {
           await dispatch(adminViewCase(caseId)).unwrap();
         } else {
           await dispatch(
-            updateCase({ caseId: formData.id, caseData: formData }),
+            updateCase({ caseId: formData.caseId, caseData: formData }),
           ).unwrap();
           // Re-fetch to get updated data
           await dispatch(fetchCaseById(caseId)).unwrap();

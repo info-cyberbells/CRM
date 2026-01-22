@@ -13,8 +13,8 @@ router.use(roleGuard("Admin"));
 router.get("/dashboard", getDashboardData);
 
 router.get('/all-cases', getAllCases);
-router.get('/getCaseByID/:id', getCaseById);
-router.put('/updateCase/:id', updateCase);
+router.get('/getCaseByID/:caseId', getCaseById);
+router.put('/updateCase/:caseId', updateCase);
 
 // search for tech user to assign in case
 router.get('/searchTechUser', searchTechUser);
