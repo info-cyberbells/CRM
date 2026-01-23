@@ -34,4 +34,6 @@ export const USER_ENDPOINTS = {
     ADMIN_GET_ALL_NOTICES: `${API_BASE_URL}/admin/notices`,
     ADMIN_UPDATE_NOTICE: `${API_BASE_URL}/admin/notice`, 
     ADMIN_DELETE_NOTICE: `${API_BASE_URL}/admin/notice`,
+
+    ADMIN_NOTIFICATION: `${API_BASE_URL}/admin/notifications`,
 };

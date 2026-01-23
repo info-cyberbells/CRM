@@ -65,7 +65,7 @@ const Case = sequelize.define("Case", {
         type: DataTypes.TEXT,
         allowNull: true,
     },
-    caseDurationTimer: { type: DataTypes.INTEGER, defaultValue: 0 },
+    caseDurationTimer: { type: DataTypes.STRING, allowNull: true },
 });
 
 // Relations

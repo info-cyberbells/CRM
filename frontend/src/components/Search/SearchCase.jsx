@@ -14,6 +14,8 @@ import {
   Briefcase,
   Clock,
   LayoutGrid,
+  Timer,
+  CheckCircle2,
    Pencil,
   UserPlus,
   ShieldAlert,
@@ -314,6 +316,81 @@ const SearchCase = () => {
   }
 };
 
+// calculate live time
+function LiveTimer({ startDate }) {
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    if (!startDate) return;
+
+    const start = new Date(startDate);
+
+    const interval = setInterval(() => {
+      let diff = Math.max(0, new Date() - start);
+
+      const days = Math.floor(diff / 86400000);
+      diff %= 86400000;
+
+      const hours = Math.floor(diff / 3600000);
+      diff %= 3600000;
+
+      const minutes = Math.floor(diff / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+
+      setTime([days > 0 && `${days}d`,hours > 0 && `${hours}h`,minutes > 0 && `${minutes}m`,`${seconds}s`,].filter(Boolean).join(" "));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [startDate]);
+
+  return <div className="flex flex-col mt-2 group">
+      <div className={`
+        inline-flex items-center gap-2 px-2 py-1 
+        rounded-md bg-slate-50 border border-slate-100 
+        transition-all duration-300 hover:border-blue-200 hover:bg-white hover:shadow-sm
+      `}>
+        {/* Animated Pulse Dot */}
+        <span className="relative flex h-2 w-2">
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400`}></span>
+          <span className={`relative inline-flex rounded-full h-2 w-2 bg-emerald-500`}></span>
+        </span>
+
+        <div className="flex items-center gap-1.5">
+          <Clock size={12} className="text-slate-400 animate-pulse group-hover:text-blue-500 transition-colors" />
+          <span className="text-[11px] font-mono font-medium tracking-tight text-slate-600 tabular-nums">
+            {time}
+          </span>
+        </div>
+      </div>
+      
+    
+    </div>;
+}
+
+const StaticDuration = ({ duration }) => {
+  return (
+    <div className="flex flex-col mt-2 group">
+      <div className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-gray-50 border border-gray-200/60 shadow-sm transition-all duration-300 hover:bg-white">
+        {/* Static Indicator (No pulse, represents completed/locked state) */}
+        <div className="flex items-center justify-center h-2 w-2">
+           <div className="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <Timer size={12} className="text-slate-400" />
+          <span className="text-[11px] font-mono font-semibold tracking-tight text-slate-500 tabular-nums">
+            {duration}
+          </span>
+        </div>
+        
+        {/* Subtle Checkmark to indicate completion */}
+        <CheckCircle2 size={10} className="text-emerald-500 ml-0.5" />
+      </div>
+    </div>
+  );
+};
+
+
 
   // --- Helpers ---
   const formatCurrency = (val) =>
@@ -531,11 +608,13 @@ const SearchCase = () => {
                         >
                           {c.issueStatus}
                         </span>
+                          {c.caseDurationTimer ? (<StaticDuration duration={c.caseDurationTimer} />) : (<LiveTimer startDate={c.date}/>)}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="text-xs font-black text-slate-700">
-                            {c.date}
+                            {/* {c.date} */}
+                            {c.date.split(" ")[0]}
                           </span>
                           
                         </div>
@@ -561,7 +640,7 @@ const SearchCase = () => {
                             className="p-2 cursor-pointer text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
                           onClick={() => {
                               console.log("Case item:", c);
-                              fetchCaseDetails(c.id, true);
+                              fetchCaseDetails(c.caseId, true);
                             }}
                           >
                             <Pencil size={18} strokeWidth={2.5} />

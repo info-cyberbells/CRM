@@ -441,3 +441,18 @@ export const adminSearchTechUserService = async(keyword)=>{
         throw error;
     }
 }
+
+//ADMIN GET NOTIFICATIONS 
+export const getAdminNotificationsService = async ()=>{
+    try {
+        const response = await axios.get(USER_ENDPOINTS.ADMIN_NOTIFICATION,{
+            withCredentials: true,
+            headers: {
+                "Content-Type":"application/json"
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

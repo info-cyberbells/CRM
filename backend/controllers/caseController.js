@@ -109,9 +109,10 @@ export const createCase = async (req, res) => {
 
         await Notification.create({
             title: "New Case Created",
-            message: `New ${caseType} created by Sale user`,
-            type: "NEW_CASE",
+            message: `New ${caseType} case is created by `,
+            type: "CASE_CREATED",
             caseId: newCase.id,
+            caseDisplayId: newCase.caseId,
             actorId: decoded.id,
         });
 
@@ -233,6 +234,7 @@ export const getAllCases = async (req, res) => {
             caseId: c.caseId,
             caseType: c.caseType,
             customerName: c.customerName,
+            caseDurationTimer: c.caseDurationTimer,
             email: c.email,
             customerID: c.customerID,
             plan: c.plan,
@@ -245,7 +247,9 @@ export const getAllCases = async (req, res) => {
             specialNotes: c.specialNotes || "N/A",
             saleStatus: c.saleStatus || "Pending",
             issueStatus: c.status || "Open",
-            date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
+            // date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
+            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE") : null,
+
         }));
 
 
@@ -352,6 +356,7 @@ export const getMyCases = async (req, res) => {
             caseId: c.caseId,
             caseType: c.caseType,
             customerName: c.customerName,
+            caseDurationTimer: c.caseDurationTimer,
             plan: c.plan,
             caseCreatedBy: c.saleUser?.name || "N/A",
             assignedTo: c.techUser?.name || "Unassigned",
@@ -368,7 +373,9 @@ export const getMyCases = async (req, res) => {
             techNoteText: c.techNoteText || "",
             adminNoteType: c.adminNoteType,
             adminNoteText: c.adminNoteText || "",
-            date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
+            // date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
+            // YYYY-MM-DD HH:mm:ss
+            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE") : null,
         }));
 
         res.json({
@@ -475,6 +482,7 @@ export const getAssignedCases = async (req, res)=>{
             caseType: c.caseType,
             customerID: c.customerID,
             customerName: c.customerName,
+            caseDurationTimer: c.caseDurationTimer,
             email: c.email,
             phone: c.phone,
             plan: c.plan,
@@ -492,7 +500,9 @@ export const getAssignedCases = async (req, res)=>{
             techNoteText: c.techNoteText || "",
             adminNoteType: c.adminNoteType,
             adminNoteText: c.adminNoteText || "",
-            date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
+            // date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
+            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE") : null,
+
 
         }));
 
@@ -536,7 +546,21 @@ export const updateCase = async (req, res) => {
             return res.status(404).json({ success: false, message: "Case not found" });
         }
 
-        const [rowsUpdated] = await Case.update(req.body, { where: { caseId } });
+        const updatedData = { ...req.body };
+
+        if(req.body.status === "Closed" && oldCase.status !== "Closed"){
+
+            const inSeconds = Math.floor((new Date() - new Date(oldCase.createdAt)) / 1000);
+
+            const day = Math.floor(inSeconds / 86400);
+            const hours = Math.floor((inSeconds % 86400) / 3600);
+            const minutes = Math.floor((inSeconds % 3600) / 60);
+            const seconds = inSeconds % 60;
+
+            updatedData.caseDurationTimer = `${day}D ${hours}H ${minutes}M ${seconds}S`;
+        }
+
+        const [rowsUpdated] = await Case.update(updatedData, { where: { caseId } });
 
         const updatedCase = await Case.findOne({
             where: {caseId},
@@ -546,30 +570,146 @@ export const updateCase = async (req, res) => {
             ],
         });
 
-        if (updatedCase.saleUserId) {
-            await Notification.create({
-                title: "Case Updated",
-                message: "Admin updated your case",
-                type: "CASE_UPDATED",
-                caseId: updatedCase.id,
-                actorId: decoded.id,
-            });
+            if (
+      req.body.techUserId &&
+      req.body.techUserId !== oldCase.techUserId
+    ) {
+      // Tech notification
+      await Notification.create({
+        title: "Case Assigned",
+        message: "A case has been assigned to you",
+        type: "CASE_ASSIGNED",
+        caseId: updatedCase.id,
+        caseDisplayId: updatedCase.caseId, 
+        recipientId: req.body.techUserId,
+        actorId: decoded.id, // admin
+      });
 
-        }
+      // Sale notification
+      await Notification.create({
+        title: "Case Assigned",
+        message: `Your case has been assigned to ${updatedCase.techUser?.name}`,
+        type: "CASE_ASSIGNED",
+        caseId: updatedCase.id,
+         caseDisplayId: updatedCase.caseId, 
+        recipientId: updatedCase.saleUserId,
+        actorId: decoded.id,
+      });
+    }
 
-        if (
-            req.body.techUserId &&
-            req.body.techUserId !== oldCase.techUserId
-        ) {
-            await Notification.create({
-                title: "New Case Assigned",
-                message: "A case has been assigned to you",
-                type: "CASE_ASSIGNED",
-                caseId: updatedCase.id,
-                recipientId: req.body.techUserId,
-                actorId: decoded.id,
-            });
-        }
+    //ADMIN UPDATED CASE DETAILS (not assignment, not status change)
+if (
+  decoded.role === "Admin" &&
+  !req.body.techUserId &&
+   (!req.body.status || req.body.status === oldCase.status)
+) {
+  await Notification.create({
+    title: "Case Details Updated",
+    message: `Admin updated details for case ${updatedCase.caseId}`,
+    type: "CASE_UPDATED",
+    caseId: updatedCase.id,
+    caseDisplayId: updatedCase.caseId,
+    recipientId: updatedCase.saleUserId,
+    actorId: decoded.id,
+  });
+   // Tech notification (only if assigned)
+  if (updatedCase.techUserId) {
+    await Notification.create({
+      title: "Case Details Updated",
+      message: `Admin updated details for case ${updatedCase.caseId}`,
+      type: "CASE_UPDATED",
+      caseId: updatedCase.id,
+      caseDisplayId: updatedCase.caseId,
+      recipientId: updatedCase.techUserId,
+      actorId: decoded.id,
+    });
+  }  
+}
+
+// ADMIN CHANGED STATUS (notify Sale + Tech)
+if (
+  decoded.role === "Admin" &&
+  req.body.status &&
+  req.body.status !== oldCase.status
+) {
+  // Sale notification
+  await Notification.create({
+    title: "Case Status Updated",
+    message: `Admin changed case ${updatedCase.caseId} status to ${req.body.status}`,
+    type: "CASE_UPDATED",
+    caseId: updatedCase.id,
+    caseDisplayId: updatedCase.caseId,
+    recipientId: updatedCase.saleUserId,
+    actorId: decoded.id,
+  });
+
+  // Tech notification (only if assigned)
+  if (updatedCase.techUserId) {
+    await Notification.create({
+      title: "Case Status Updated",
+      message: `Admin changed case ${updatedCase.caseId} status to ${req.body.status}`,
+      type: "CASE_UPDATED",
+      caseId: updatedCase.id,
+      caseDisplayId: updatedCase.caseId,
+      recipientId: updatedCase.techUserId,
+      actorId: decoded.id,
+    });
+  }
+}
+
+
+    // CASE STATUS UPDATED (Tech → Admin + Sale)
+    if (
+      req.body.status &&
+      req.body.status !== oldCase.status &&
+      req.body.status !== "Closed"
+    ) {
+      // Admin
+      await Notification.create({
+        title: "Case Updated",
+        message: `Case status updated to ${req.body.status}`,
+        type: "CASE_UPDATED",
+        caseId: updatedCase.id,
+         caseDisplayId: updatedCase.caseId, 
+        actorId: decoded.id, // tech
+      });
+
+      // Sale
+      await Notification.create({
+        title: "Case Updated",
+        message: `Your case status updated to ${req.body.status}`,
+        type: "CASE_UPDATED",
+        caseId: updatedCase.id,
+         caseDisplayId: updatedCase.caseId, 
+        recipientId: updatedCase.saleUserId,
+        actorId: decoded.id,
+      });
+    }
+
+    // CASE CLOSED NOTIFICATION (Tech → Admin + Sale)
+    if (req.body.status === "Closed" && oldCase.status !== "Closed") {
+      // Admin
+      await Notification.create({
+        title: "Case Closed",
+        message: "A case has been closed",
+        type: "CASE_CLOSED",
+        caseId: updatedCase.id,
+         caseDisplayId: updatedCase.caseId, 
+        actorId: decoded.id,
+      });
+
+      // Sale
+      await Notification.create({
+        title: "Case Closed",
+        message: "Your case has been closed successfully",
+        type: "CASE_CLOSED",
+        caseId: updatedCase.id,
+         caseDisplayId: updatedCase.caseId, 
+        recipientId: updatedCase.saleUserId,
+        actorId: decoded.id,
+      });
+    }
+
 
         res.json({ success: true, case: updatedCase });
     } catch (error) {

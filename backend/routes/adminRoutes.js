@@ -4,6 +4,7 @@ import roleGuard from "../middleware/roleGuard.js";
 import { getDashboardData } from "../controllers/dashbaordController.js";
 import { getAllCases, getCaseById, searchTechUser, updateCase } from "../controllers/caseController.js";
 import { createAdminNotice, deleteAdminNotice, getAllAdminNotices, updateAdminNotice } from "../controllers/noticeController.js";
+import { getAdminNotifications } from "../controllers/notificationController.js";
 
 
 const router = express.Router();
@@ -26,6 +27,10 @@ router.post("/notice", createAdminNotice);
 router.put("/notice/:id", updateAdminNotice);
 router.delete("/notice/:id", deleteAdminNotice);
 router.get("/notices", getAllAdminNotices);
+
+
+// notifications route
+router.get("/notifications", getAdminNotifications);
 
 
 //create user route

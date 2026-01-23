@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { getTechUserNotificationService, saleUserNotificationService } from "../../services/services";
+import { getAdminNotificationsService, getTechUserNotificationService, saleUserNotificationService } from "../../services/services";
 
 
 
@@ -18,7 +18,7 @@ export const getSaleUserNotifications = createAsyncThunk(
 
 // GET TECH NOTIFICATIONS
 export const getTechUserNotifications = createAsyncThunk(
-    'techUser/getNotifications',
+    'notification/getNotifications',
     async(_, thunkAPI)=>{
         try {
             const response = await getTechUserNotificationService();
@@ -28,6 +28,19 @@ export const getTechUserNotifications = createAsyncThunk(
         }
     }
 );
+
+// ADMIN NOTIFICATION THUNK
+export const adminNotification = createAsyncThunk(
+    'notification/getAdminNotification',
+    async(_, thunkAPI)=>{
+        try {
+            const response = await getAdminNotificationsService();
+            return response;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed fetch Notifications");
+        }
+    }
+)
 
 
 const notificationSlice = createSlice({
@@ -91,6 +104,23 @@ const notificationSlice = createSlice({
             state.isError = true;
             state.error = action.payload;
          })
+           // ADMIN NOTIFICATIONS
+        .addCase(adminNotification.pending, (state)=>{
+            state.isLoading = true;
+            state.isSuccess = false;
+            state.isError = false;
+            state.error = null;
+        })
+        .addCase(adminNotification.fulfilled, (state, action)=>{
+            state.isLoading = false;
+            state.isSuccess = true;
+            state.notifications = action.payload.notifications;
+        })
+        .addCase(adminNotification.rejected, (state, action)=>{
+            state.isLoading = false;
+            state.isError = true;
+            state.error = action.payload;
+        })
 
     }
 

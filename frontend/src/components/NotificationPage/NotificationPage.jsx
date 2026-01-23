@@ -4,7 +4,11 @@ import {
   CheckCheck, 
   Circle, 
   Info, 
-  AlertCircle, 
+  AlertCircle,
+  FilePlus,
+  UserCheck,
+  RefreshCw,
+  CheckCircle, 
   Clock, 
   User, 
   Briefcase,
@@ -18,7 +22,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getSaleUserNotifications, getTechUserNotifications } from '../../features/NotificationSlice/notificationSlice';
+import { adminNotification, getSaleUserNotifications, getTechUserNotifications } from '../../features/NotificationSlice/notificationSlice';
 
 
 
@@ -38,11 +42,12 @@ const NotificationCenter = () => {
       }
       if(userRole == "tech"){
         dispatch(getTechUserNotifications());
+      } if(userRole == "admin"){
+        dispatch(adminNotification());
       }
     },[userRole, dispatch])
   
   const {notifications = [], isLoading, isError, isSuccess} = useSelector((state)=> state.notification);
-  const unreadCount = notifications.filter(n => !n.isRead).length;
 
 
   const toggleExpand = (id) => {
@@ -137,10 +142,10 @@ const NotificationCenter = () => {
                       {/* Left: Icon & Unread Dot */}
                       <div className="relative flex-shrink-0">
                         <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${getTypeStyles(notif.type)}`}>
-                          {notif.type === 'NEW_CASE' && <Briefcase className="w-6 h-6" />}
-                          {notif.type === 'SYSTEM_UPDATE' && <AlertCircle className="w-6 h-6" />}
-                          {notif.type === 'UPDATE' && <Info className="w-6 h-6" />}
-                          {notif.type === 'CASE_ASSIGNED' && <Briefcase className="w-6 h-6" />}
+                          {notif.type === "CASE_CREATED" && <FilePlus className="w-6 h-6 text-blue-500" />}
+                          {notif.type === "CASE_ASSIGNED" && <UserCheck className="w-6 h-6 text-purple-500" />}
+                          {notif.type === "CASE_UPDATED" && <RefreshCw className="w-6 h-6 text-yellow-500" />}
+                          {notif.type === "CASE_CLOSED" && <CheckCircle className="w-6 h-6 text-green-500" />}
 
                         </div>
                         {!notif.isRead && (
@@ -163,7 +168,7 @@ const NotificationCenter = () => {
                         {/* Collapsed State: Single line message */}
                         {!isExpanded && (
                           <p className="text-sm text-slate-500 truncate max-w-2xl">
-                            {notif.message}
+                            {notif.message} {userRole === "admin" && notif.type === "CASE_CREATED" && notif?.actor}.
                           </p>
                         )}
 
