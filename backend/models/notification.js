@@ -14,11 +14,10 @@ const Notification = sequelize.define("Notification", {
     },
     type: {
         type: DataTypes.ENUM(
-            "NEW_CASE",
+            "CASE_CREATED",
             "CASE_ASSIGNED",
-            "STATUS_UPDATED",
-            "ADMIN_UPDATE",
-            "REMINDER"
+            "CASE_UPDATED",
+            "CASE_CLOSED"
         ),
         allowNull: false,
     },
@@ -26,6 +25,10 @@ const Notification = sequelize.define("Notification", {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+    caseDisplayId: {        // store "TD-0002"
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
 
 

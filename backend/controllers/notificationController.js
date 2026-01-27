@@ -26,7 +26,7 @@ export const getNotifications = async (req, res) => {
             where,
             include: [
                 { model: User, as: "actor", attributes: ["id", "name", "role"] },
-                { model: Case, attributes: ["id", "customerName", "status"] },
+                { model: Case, attributes: ["id", "caseId","customerName", "status"] },
             ],
             order: [["createdAt", "DESC"]],
             limit: 50,
@@ -40,7 +40,7 @@ export const getNotifications = async (req, res) => {
                 message: n.message,
                 type: n.type,
                 isRead: n.isRead,
-                caseId: n.Case?.id,
+                caseId: n.Case?.caseId || null,
                 customerName: n.Case?.customerName,
                 status: n.Case?.status,
                 actor: n.actor?.name || "System",
@@ -87,7 +87,7 @@ export const getTechUserNotifications = async (req, res) => {
                 type: {
                     [Op.in]: [
                         "CASE_ASSIGNED",   // new case assigned
-                        "STATUS_UPDATED",  // status change by admin/sales
+                        "CASE_UPDATED",
                         "ADMIN_UPDATE",    // admin edited case
                     ],
                 },
@@ -106,7 +106,7 @@ export const getTechUserNotifications = async (req, res) => {
                 },
                 {
                     model: Case,
-                    attributes: ["id", "customerName", "status"],
+                    attributes: ["id", "caseId","customerName", "status"],
                 },
             ],
             order: [["createdAt", "DESC"]],
@@ -121,7 +121,7 @@ export const getTechUserNotifications = async (req, res) => {
                 message: n.message,
                 type: n.type,
                 isRead: n.isRead,
-                caseId: n.Case?.id || null,
+                caseId: n.Case?.caseId || null,
                 customerName: n.Case?.customerName || null,
                 status: n.Case?.status || null,
                 actor: n.actor?.name || "System",
@@ -138,3 +138,65 @@ export const getTechUserNotifications = async (req, res) => {
         });
     }
 };
+
+export const getAdminNotifications = async (req, res) => {
+    try {
+        const token = req.cookies?.authToken || req.headers.authorization?.split(" ")[1];
+
+        if(!token){
+            return res.status(401).json({success: false, message: "No token provided"});
+        }
+
+        const decode = jwt.verify(token, process.env.JWT_SECRET);
+
+        if(decode.role !== "Admin"){
+            return res.status(403).json({success: false, message: "Access Denied"});
+        }
+
+        const adminId = decode.id;
+
+        const notification = await Notification.findAll({
+            where: {
+                type: {
+                    [Op.in]: [   "CASE_CREATED",
+            "CASE_UPDATED",
+            "CASE_CLOSED",]
+                },
+                recipientId: null,
+            },
+            include: [
+                {model: User, as: "actor", attributes: ["id","name"]},
+                {model: User, as: "recipient", attributes: ["id", "name"]},
+                {model: Case, attributes: ["caseId","customerName", "status"]},
+            ],
+            order: [["createdAt", "DESC"]],
+        });
+
+        const formattedNotification = notification.map((n)=>({
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            type: n.type,
+            isRead: n.isRead,
+            caseId: n.Case?.caseId || null,
+            customerName: n.Case?.customerName || null,
+            status: n.Case?.status || null,
+            actor: n.actor?.name || null,
+            recipient: n.recipient?.name || null,
+            date: n.createdAt, 
+        }));
+
+
+        res.status(200).json({
+            success: true,
+            notifications: formattedNotification
+        })
+
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch notifications"
+        })
+    }
+}

@@ -12,6 +12,8 @@ export const USER_ENDPOINTS = {
     UPDATE_SEARCHED_CASE: `${API_BASE_URL}/sale-user/updateCase`,
     SALE_USER_NOTIFICATION: `${API_BASE_URL}/sale-user/notifications`,
 
+    SALE_PREVIEW_CASEID: `${API_BASE_URL}/sale-user/previewCaseId`, 
+
     TECH_USER_DASHBOARD: `${API_BASE_URL}/tech-user/dashboard`,
 
     TECH_USER_MY_CASES: `${API_BASE_URL}/tech-user/my-cases`,
@@ -32,4 +34,6 @@ export const USER_ENDPOINTS = {
     ADMIN_GET_ALL_NOTICES: `${API_BASE_URL}/admin/notices`,
     ADMIN_UPDATE_NOTICE: `${API_BASE_URL}/admin/notice`, 
     ADMIN_DELETE_NOTICE: `${API_BASE_URL}/admin/notice`,
+
+    ADMIN_NOTIFICATION: `${API_BASE_URL}/admin/notifications`,
 };

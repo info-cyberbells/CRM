@@ -20,7 +20,8 @@ import {
   MessageSquare,
   FileText,
   HelpCircle,
-  Briefcase
+  Briefcase,
+  Edit
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { loginUserThunk, logoutUserThunk } from '../../features/UserSlice/UserSlice';
@@ -53,18 +54,20 @@ const ROLE_BASED_MENUS = {
     { id: "create-case-cbh", title: "CBH",path: "create-case/CBH",},
     { id: "create-case-td", title: "TD", path: "create-case/TD",},
     {id: "create-case-pws", title: "PWS",path: "create-case/PWS",},
-    { id: "create-case-no-sale", title: "No Sale", path: "create-case/no-sale",},
+    { id: "create-case-no-sale", title: "No Sale", path: "create-case/NOSALE",},
     ],
     },
     {id: "search-cases",title: "Search",icon: Search,},
-    { id: "notes", title: "Notes", icon: FileText },
+    // { id: "notes", title: "Notes", icon: FileText },
+    { id: "manage-notes", title: "Notes Feed", icon: FileText },
     //   { id: "chat", title: "Chat", icon: MessageSquare,},
   { id: "notifications", title: "Notifications", icon: Bell,},
   ],
   Tech: [
     { id: "dashboard", title: "Tech Monitor", icon: Wrench },
     {id: "search-cases",title: "Search",icon: Search,},
-    {id: "update-status",title: "Update Onging Case",icon: FileText,},
+    {id: "update-status",title: "Update Case Status",icon: Edit,},
+        { id: "manage-notes", title: "Notes Feed", icon: FileText },
         //   { id: "chat", title: "Chat", icon: MessageSquare,},
     { id: "notifications", title: "Notifications", icon: Bell,},
   ],
@@ -115,7 +118,7 @@ const Sidebar = () => {
         if (child) return child.title;
       }
     }
-    return "DASHBOARD";
+    return "";
   };
 
 
