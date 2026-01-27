@@ -44,7 +44,9 @@ export const getNotifications = async (req, res) => {
                 customerName: n.Case?.customerName,
                 status: n.Case?.status,
                 actor: n.actor?.name || "System",
-                date: n.createdAt,
+                date: new Date(n.createdAt).toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    }),
             })),
         });
 
@@ -126,7 +128,9 @@ export const getTechUserNotifications = async (req, res) => {
                 status: n.Case?.status || null,
                 actor: n.actor?.name || "System",
                 actorRole: n.actor?.role || "System",
-                date: n.createdAt,
+                date: new Date(n.createdAt).toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    }),
             })),
         });
 
@@ -183,7 +187,9 @@ export const getAdminNotifications = async (req, res) => {
             status: n.Case?.status || null,
             actor: n.actor?.name || null,
             recipient: n.recipient?.name || null,
-            date: n.createdAt, 
+            date: new Date(n.createdAt).toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+                }), 
         }));
 
 

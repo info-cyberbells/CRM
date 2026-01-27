@@ -161,7 +161,7 @@ const NotificationCenter = () => {
                           </h3>
                           <span className="flex-shrink-0 text-[11px] font-bold text-slate-400 uppercase flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {formatDate(notif.date)}
+                            {notif.date}
                           </span>
                         </div>
 
