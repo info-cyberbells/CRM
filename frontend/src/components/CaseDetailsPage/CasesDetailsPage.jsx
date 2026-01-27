@@ -293,28 +293,39 @@ const CaseDetailPage = () => {
     }
   };
 
+  
+  const normalizeCaseData = (data) => ({
+  ...data,
+  saleNoteType: data.saleNoteType || null,
+  techNoteType: data.techNoteType || null,
+  adminNoteType: data.adminNoteType || null,
+});
+
+
   const handleToggleEdit = async (newEditingState) => {
+    const normalizedData = normalizeCaseData(formData);
+
     if (editing && newEditingState === false) {
       // Saving
       try {
         if (isTech) {
           await dispatch(
-            updateCaseByTech({ caseId: formData.caseId, caseData: formData }),
+            updateCaseByTech({ caseId: normalizedData.caseId, caseData: normalizedData }),
           ).unwrap();
           // Re-fetch to get updated data
           await dispatch(getSingleCaseById(caseId)).unwrap();
         } else if (isAdmin) {
           await dispatch(
             updateCaseDetailsByAdmin({
-              caseId: formData.caseId,
-              caseData: formData,
+              caseId: normalizedData.caseId,
+              caseData: normalizedData,
             }),
           ).unwrap();
           // Re-fetch to get updated data
           await dispatch(adminViewCase(caseId)).unwrap();
         } else {
           await dispatch(
-            updateCase({ caseId: formData.caseId, caseData: formData }),
+            updateCase({ caseId: normalizedData.caseId, caseData: normalizedData }),
           ).unwrap();
           // Re-fetch to get updated data
           await dispatch(fetchCaseById(caseId)).unwrap();

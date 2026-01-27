@@ -80,7 +80,15 @@ export const getAllAdminNotices = async (req, res) => {
                 currentPage: page,
                 pageSize: limit,
             },
-            notices: rows,
+            notices: rows.map(n => ({
+            ...n.toJSON(),
+            createdAt: new Date(n.createdAt).toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+            }),
+            updatedAt: new Date(n.updatedAt).toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+            }),
+            })),
         });
 
     } catch (error) {
