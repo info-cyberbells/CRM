@@ -35,6 +35,7 @@ const caseSlice = createSlice({
         error: null,
         message: null,
         caseID: null,
+        createdCase: null,
     },
     reducers: {
         clearCaseState: (state) => {
@@ -42,7 +43,13 @@ const caseSlice = createSlice({
             state.success = false;
             state.error = null;
             state.message = null;
-        }
+        },
+        clearCreatedCase: (state)=>{
+            state.createdCase = null;
+            state.success = false;  
+            state.message = "";
+            state.error = null;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -55,6 +62,7 @@ const caseSlice = createSlice({
                 state.loading = false;
                 state.success = true;
                 state.message = action.payload.message || 'Case created successfully';
+                state.createdCase = action.payload.case;
                 state.error = null;
             })
             .addCase(createCase.rejected, (state, action) => {
@@ -81,5 +89,5 @@ const caseSlice = createSlice({
     }
 });
 
-export const { clearCaseState } = caseSlice.actions;
+export const { clearCaseState, clearCreatedCase } = caseSlice.actions;
 export default caseSlice.reducer;

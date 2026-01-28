@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { adminSearchAllCasesService, adminSearchTechUserService, adminViewCaseDetailService, getAdminDashboardDataService, updateCaseByAdminService } from "../../services/services";
+import { adminSearchAllCasesService, adminSearchTechUserService, adminViewCaseDetailService, getAdminDashboardDataService, getAdminSaleReportService, getOverallSummaryService, updateCaseByAdminService } from "../../services/services";
 
 // ADMIN DASBOARD THUNK
 export const adminDashboard = createAsyncThunk(
@@ -73,7 +73,35 @@ export const searchTechUser  = createAsyncThunk(
             return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to get tech user details");
         }
     }
-)
+);
+
+// SALE REPORT THUNK
+export const getSalesReportData = createAsyncThunk(
+    'admin/salesReport',
+    async(type, thunkAPI)=>{
+        try {
+            const response = await getAdminSaleReportService(type);
+            return response;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to get sale report data");
+        }
+    }
+);
+
+// OverAll Summary THUNK
+export const fetchOverAllSummary = createAsyncThunk(
+    'admin/getOverAllSummary',
+    async(_, thunkAPI) =>{
+        try {
+            const response = await getOverallSummaryService();
+            return response;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to get Summary data.")
+        }
+    }
+);
+
+
 
 const adminSlice = createSlice({
     name : "admin",
@@ -82,6 +110,8 @@ const adminSlice = createSlice({
         cases: [],
         selectedCase: null,
         searchTechusers: [],
+        salesReportData: null,
+        overAllSummary: null,
         searchLoading: false,
         modalLoading: false,
         showModal: false,
@@ -203,6 +233,41 @@ const adminSlice = createSlice({
         })
         .addCase(searchTechUser.rejected, (state)=>{
             state.isLoading = false;
+        })
+
+        // sales report 
+        .addCase(getSalesReportData.pending, (state)=>{
+            state.isLoading = true;
+            state.isError = false;
+            state.error = null;
+        })
+        .addCase(getSalesReportData.fulfilled, (state, action)=>{
+            state.isLoading = false;
+            state.isSuccess = true;
+            state.salesReportData = action.payload.data;
+        })
+        .addCase(getSalesReportData.rejected, (state, action)=>{
+            state.isLoading = true;
+            state.isError = true;
+            state.error = action.payload;
+        })
+
+        //overall summary data
+        .addCase(fetchOverAllSummary.pending, (state)=>{
+            state.isLoading = true;
+            state.isError = false;
+            state.isError = null;
+        })
+        .addCase(fetchOverAllSummary.fulfilled, (state, action)=>{
+            state.isLoading = false;
+            state.isSuccess = true;
+            state.overAllSummary = action.payload.data;
+        })
+        .addCase(fetchOverAllSummary.rejected, (state, action)=>{
+            state.isLoading = false;
+            state.isError = true;
+            state.isSuccess = false;
+            state.error = action.payload;
         })
     }
 })

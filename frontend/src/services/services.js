@@ -456,3 +456,38 @@ export const getAdminNotificationsService = async ()=>{
         throw error;
     }
 }
+
+// ADMIN GET SALES REPORT 
+export const getAdminSaleReportService = async(type)=>{
+    try {
+        const response = await axios.get(
+            `${USER_ENDPOINTS.ADMIN_SALES_REPORT}?type=${type}`,{
+            withCredentials: true,
+            headers: {
+                "Content-Type" : "application/json"
+            },
+        },
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+//ADMIN GET OVERALL SUMMARY
+
+export const getOverallSummaryService = async ()=>{
+    try {
+        const response = await axios.get(
+            USER_ENDPOINTS.ADMIN_OVERALL_SUMMARY,{
+                withCredentials: true,
+                headers: {
+                    "Content-Type":"application/json"
+                },
+            },
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

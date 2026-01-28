@@ -63,7 +63,7 @@ const securitySoftwareOptions = [
   "Bitdefender",
   "Avast",
 ];
-const planOptions = ["Basic", "Premium", "Enterprise"];
+  const planOptions = ["Silver", "Gold", "Platinum"];
 
 const planDurationOptions = [
   "1 Year",
@@ -1286,28 +1286,18 @@ const CaseDetailPage = () => {
                       <ShieldCheck size={16} />
                     </div>
                     {editing ? (
-                      <select
+                      <input
                         name="securitySoftware"
                         value={formData.securitySoftware}
                         onChange={handleChange}
                         className="w-full pl-12 pr-4 py-4 rounded-2xl border outline-none font-bold text-sm transition-all shadow-sm appearance-none bg-emerald-700 border-emerald-500 text-white focus:border-white"
-                      >
-                        {securitySoftwareOptions.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     ) : (
                       <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-emerald-500/20 text-white">
                         {formData.securitySoftware || "—"}
                       </div>
                     )}
-                    {editing && (
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-300">
-                        <ChevronRight size={14} className="rotate-90" />
-                      </div>
-                    )}
+                    
                   </div>
                 </div>
                 {/* Duration */}
@@ -1371,7 +1361,7 @@ const CaseDetailPage = () => {
                 {/* Gross */}
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] font-black uppercase tracking-widest opacity-60">
-                    Gross Amount
+                    Sale Amount
                   </span>
                   <div className="relative group w-32">
                     {editing ? (

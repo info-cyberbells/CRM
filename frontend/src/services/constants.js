@@ -35,5 +35,8 @@ export const USER_ENDPOINTS = {
     ADMIN_UPDATE_NOTICE: `${API_BASE_URL}/admin/notice`, 
     ADMIN_DELETE_NOTICE: `${API_BASE_URL}/admin/notice`,
 
+    ADMIN_SALES_REPORT: `${API_BASE_URL}/admin/sale-report`,
+    ADMIN_OVERALL_SUMMARY: `${API_BASE_URL}/admin/overAllSummary`,
+
     ADMIN_NOTIFICATION: `${API_BASE_URL}/admin/notifications`,
 };

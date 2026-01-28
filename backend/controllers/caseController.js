@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import Case from "../models/case.js";
 import User from "../models/user.js";
-import { Op } from 'sequelize';
+import { col, fn, literal, Op, Sequelize, where } from 'sequelize';
 import Notification from "../models/notification.js";
 import sequelize from "../config/db.js";
 import CaseCounter from "../models/caseCounter.js";
@@ -777,4 +777,272 @@ export const searchTechUser = async (req, res)=>{
             message: "Failed to fetch tech Users",
         });
     }
+};
+
+// Sales Reports Daily, weekly and monthly
+export const saleReportGraph = async(req, res)=>{
+    try {
+        const token = req.cookies?.authToken || headers.authorization?.split(" ")[1];
+
+        if(!token){
+            return res.status(401).json({success: false, message: "No token Provided"});
+        }
+
+        const {type = "daily"} = req.query;
+
+        let attributes = [];
+        let group = [];
+        let order = [];
+        let labelFormatter = () => {};
+
+        let whereCondition = {};
+
+        const now = new Date();
+
+        if(type === "daily"){
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+
+	    whereCondition.createdAt = {
+		    [Op.between]: [startOfDay, now]
+	    };
+
+        attributes = [
+            [fn("HOUR", col("createdAt")), "hour"],
+            [fn("COUNT", col("id")), "totalCases"],
+            [fn("SUM", col("saleAmount")), "totalSales"]
+        ];
+
+        group = [fn("HOUR", col("createdAt"))];
+
+        order = [[literal("hour"), "ASC"]];
+
+        labelFormatter = d => `${String(d.get("hour")).padStart(2, "0")}:00`;
+
+        } else if (type === "weekly"){
+            attributes = [
+                [fn("DAYNAME", col("createdAt")), "label"],
+                [fn("COUNT", col("id")), "totalCases"],
+                [fn("SUM", col('saleAmount')), "totalSales"],
+            ]
+
+            whereCondition.createdAT = {
+                [Op.gte]: fn("DATE_SUB", fn("CURDATE"), literal("INTERVAL 6 DAY"))
+            };
+
+            group = [fn("DAY", col("createdAt"))];
+            order = [[fn("DAY", col("createdAt")), "ASC"]];
+
+            labelFormatter = d => d.get("label");
+
+        }  else if (type === "monthly") {
+            attributes = [
+                [fn("DATE", col("createdAt")), "label"],
+                [fn("COUNT", col("id")), "totalCases"],
+                [fn("SUM", col("saleAmount")), "totalSales"]
+            ];
+
+            whereCondition.createdAt = {
+                [Op.gte]: fn("DATE_SUB", fn("CURDATE"), literal("INTERVAL 29 DAY"))
+            };
+
+            group = [fn("DATE", col("createdAt"))];
+            order = [[literal("label"), "ASC"]];
+
+            labelFormatter = d => d.get("label");
+            }
+
+            else {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid type. Use daily | weekly | monthly"
+            });
+            }
+
+
+        const data = await Case.findAll({
+            attributes,
+            where: whereCondition,
+            group,
+            order
+        });
+
+        const summary = await Case.findOne({
+            attributes: [
+                [fn("COUNT", col("id")), "totalCases"],
+                [fn("SUM", col("saleAmount")), "totalSales"]
+            ],
+            where: whereCondition
+        });
+
+        res.json({
+            success: true,
+            data: {
+                type,
+            summary: {
+                totalCases: Number(summary.get("totalCases")) || 0,
+                totalSales: Number(summary.get("totalSales")) || 0
+            },
+            labels: data.map(labelFormatter),
+            totalCases: data.map(d => Number(d.get("totalCases"))),
+            totalSales: data.map(d => Number(d.get("totalSales")))
+            }
+        })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false, 
+            message: error.message,
+        });
+    }
+}
+
+
+// Summary avg time taken, sales, chargebacks
+export const getOverallSummary = async (req, res) => {
+  try {
+
+    const token =
+      req.cookies?.authToken ||
+      req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token Provided",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role !== "Admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Admins only",
+      });
+    }
+
+    const totalCases = await Case.count();
+
+    const avgClosingTime = await Case.findOne({
+      attributes: [
+        [
+          Sequelize.fn(
+            "AVG",
+            Sequelize.literal(
+              "TIMESTAMPDIFF(MINUTE, createdAt, updatedAt)"
+            )
+          ),
+          "avgMinutes",
+        ],
+      ],
+      where: { status: "Closed" },
+    });
+
+    const salesSummary = await Case.findOne({
+      attributes: [
+        [Sequelize.fn("COUNT", Sequelize.col("saleAmount")), "totalSalesCases"],
+        [Sequelize.fn("SUM", Sequelize.col("saleAmount")), "totalSalesAmount"],
+      ],
+      where: {
+        saleAmount: {
+          [Op.ne]: null,
+          [Op.gt]: 0,
+        },
+      },
+    });
+
+    const chargebackSummary = await Case.findOne({
+      attributes: [
+        [Sequelize.fn("COUNT", Sequelize.col("id")), "chargebackCount"],
+        [Sequelize.fn("SUM", Sequelize.col("chargeBack")), "totalChargebackAmount"],
+        [Sequelize.fn("AVG", Sequelize.col("chargeBack")), "avgChargebackAmount"],
+      ],
+      where: {
+        status: "Chargeback",
+        chargeBack: {
+          [Op.ne]: null,
+          [Op.gt]: 0,
+        },
+      },
+    });
+
+    const totalSalesUsers = await User.count({
+    where: { role: "Sale" },
+    });
+
+    const totalTechUsers = await User.count({
+    where: { role: "Tech" },
+    });
+
+    const totalSalesCases = await Case.count({
+    where: {
+        saleUserId: {
+        [Op.ne]: null,
+        },
+    },
+    });
+
+    const totalTechCases = await Case.count({
+    where: {
+        techUserId: {
+        [Op.ne]: null,
+        },
+    },
+    });
+
+    const avgCasesPerSalesUser = totalSalesUsers > 0 ? (totalSalesCases / totalSalesUsers).toFixed(2) : "0.00";
+
+    const avgCasesPerTechUser = totalTechUsers > 0 ? (totalTechCases / totalTechUsers).toFixed(2) : "0.00";
+
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalCases,
+
+        avgCloseTimeMinutes: Number(
+          avgClosingTime?.dataValues?.avgMinutes || 0
+        ).toFixed(2),
+
+        sales: {
+          totalCases: Number(
+            salesSummary?.dataValues?.totalSalesCases || 0
+          ),
+          totalAmount: Number(
+            salesSummary?.dataValues?.totalSalesAmount || 0
+          ),
+        },
+
+        chargebacks: {
+          count: Number(
+            chargebackSummary?.dataValues?.chargebackCount || 0
+          ),
+          totalAmount: Number(
+            chargebackSummary?.dataValues?.totalChargebackAmount || 0
+          ),
+          avgAmount: Number(
+            chargebackSummary?.dataValues?.avgChargebackAmount || 0
+          ).toFixed(2),
+        },
+        users: {
+        sales: {
+            totalUsers: totalSalesUsers,
+            avgCasesPerUser: avgCasesPerSalesUser,
+        },
+        tech: {
+            totalUsers: totalTechUsers,
+            avgCasesPerUser: avgCasesPerTechUser,
+        },
+        },
+      },
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };

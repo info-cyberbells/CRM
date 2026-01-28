@@ -403,7 +403,7 @@ if (loading || !data) {
               <h3 className="text-xl font-black text-slate-800">Recent Cases Breakdown</h3>
             </div>
             <button
-            onClick={()=> navigate("/search")}
+            onClick={()=> navigate("/search-cases")}
             className="text-xs cursor-pointer font-bold text-emerald-600 hover:text-emerald-700 hover:scale-[1.10] active:scale-95 flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-lg transition-all duration-300 ease-in-out"
             >
               <ClipboardList size={14} /> View All
@@ -425,7 +425,7 @@ if (loading || !data) {
                 {data.cases.slice(0,15).map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-8 py-5">
-                      <span className="font-mono text-xs font-bold text-slate-400 group-hover:text-emerald-600 transition-colors">#{c.id || "id"}</span>
+                      <span className="font-mono text-xs font-bold text-slate-400 group-hover:text-emerald-600 transition-colors">{c.caseId || "id"}</span>
                     </td>
                     <td className="px-8 py-5">
                       <p className="font-bold text-slate-800 truncate max-w-[150px]">{c.customerName || "Name"}</p>
