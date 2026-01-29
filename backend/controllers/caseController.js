@@ -355,6 +355,7 @@ export const getMyCases = async (req, res) => {
             id: c.id,
             caseId: c.caseId,
             caseType: c.caseType,
+            customerID : c.customerID,
             customerName: c.customerName,
             caseDurationTimer: c.caseDurationTimer,
             plan: c.plan,
@@ -363,6 +364,7 @@ export const getMyCases = async (req, res) => {
             amount: c.amount || 0,
             deduction: c.deduction || 0,
             netAmount: (c.amount || 0) - (c.deduction || 0),
+            planDuration: c.planDuration,
             saleAmount: c.saleAmount || 0,
             specialNotes: c.specialNotes || "N/A",
             saleStatus: c.saleStatus || "Pending",
@@ -490,6 +492,7 @@ export const getAssignedCases = async (req, res)=>{
             amount: c.amount || 0,
             deduction: c.deduction || 0,
             netAmount: (c.amount || 0) - (c.deduction || 0),
+            planDuration: c.planDuration,
             saleAmount: c.saleAmount || 0,
             specialNotes: c.specialNotes || "N/A",
             saleStatus: c.saleStatus || "Pending",
@@ -748,24 +751,29 @@ export const searchTechUser = async (req, res)=>{
 
         const keyword = req.query.keyword ? req.query.keyword?.trim() : "";
 
-        if(!keyword){
-            return res.status(200).json({success: true, users:[]});
+        const whereCondition = {
+            role: "Tech",
+            isActive: true
+        };
+
+        // if(!keyword){
+        //     return res.status(200).json({success: true, users:[]});
+        // }
+
+        if(keyword){
+            whereCondition[Op.or] = [
+                {name: {[Op.like]: `%${keyword}%`}},
+                {id: {[Op.like]: `%${keyword}%`}},
+                {email: {[Op.like]: `%${keyword}%`}}
+            ];
         }
 
         const techUsers = await User.findAll({
-            where: {
-                role: "Tech",
-                isActive: true,
-                [Op.or]: [ 
-                    {name: {[Op.like]: `%${keyword}%`}},
-                    {id: {[Op.like]: `%${keyword}%`}},
-            ]
-            },
+            where: whereCondition,
             attributes: ["id", "name", "email"],
-            limit: 10,
+            limit: 20,
             order: [["name", "ASC"]]
         });
-
         res.status(200).json({
             success: true,
             users: techUsers,
@@ -773,7 +781,7 @@ export const searchTechUser = async (req, res)=>{
 
     } catch (error) {
         res.status(500).json({
-            success: true,
+            success: false,
             message: "Failed to fetch tech Users",
         });
     }

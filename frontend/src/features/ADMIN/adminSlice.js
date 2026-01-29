@@ -115,6 +115,7 @@ const adminSlice = createSlice({
         searchLoading: false,
         modalLoading: false,
         showModal: false,
+        dbLoading: false,
         isLoading: false,
         isError: false,
         isSuccess: false,
@@ -165,17 +166,17 @@ const adminSlice = createSlice({
     extraReducers: (builders) =>{
         builders
         .addCase(adminDashboard.pending, (state)=>{
-            state.isLoading = true;
+            state.dbLoading = true;
             state.isError = false;
             state.isSuccess = false;
         })
         .addCase(adminDashboard.fulfilled, (state, action)=>{
-            state.isLoading = false;
+            state.dbLoading = false;
             state.isSuccess = true;
             state.dashboardData = action.payload;
         })
         .addCase(adminDashboard.rejected, (state, action)=>{
-            state.isLoading = false;
+            state.dbLoading = false;
             state.isError = true;
             state.error = action.payload;
         })

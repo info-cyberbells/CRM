@@ -502,7 +502,7 @@ const StaticDuration = ({ duration }) => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                  <th className="px-4 py-6">Case ID</th>
+                  <th className="px-4 py-6">Case ID / CustomerID</th>
                   <th className="px-6 py-6">Customer</th>
                   <th className="px-6 py-6">Plan</th>
                   <th className="px-6 py-6">Sale</th>
@@ -536,7 +536,14 @@ const StaticDuration = ({ duration }) => {
                       className="hover:bg-emerald-50/30 transition-all group"
                     >
                       <td className="px-6 py-5 whitespace-nowrap text-sm font-black text-emerald-800">
+                        <div className="grid items-center">
+                          <p> 
                         {c.caseId}
+                            </p>  
+                            <p className="font-mono text-[10px] font-bold text-slate-400">
+                              {c.customerID}
+                            </p>
+                        </div>
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex flex-col">

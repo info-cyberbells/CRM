@@ -101,6 +101,7 @@ const techUserSlice = createSlice({
     notifications: [],
     selectedCase: null,
     modalLoading: false,
+    dbLoading: false,
     isLoading: false,
     isError: false,
     isSuccess: false,
@@ -159,18 +160,18 @@ const techUserSlice = createSlice({
 
       // TECH DASHBORD BUILDER
       .addCase(techUserDashboard.pending, (state) => {
-        state.isLoading = true;
+        state.dbLoading = true;
         state.isError = false;
         state.isSuccess = false;
         state.message = "";
       })
       .addCase(techUserDashboard.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.dbLoading = false;
         state.isSuccess = true;
         state.dashboardData = action.payload;
       })
       .addCase(techUserDashboard.rejected, (state, action) => {
-        state.isLoading = false;
+        state.dbLoading = false;
         state.isSuccess = false;
         state.isError = true;
         state.message = action.payload;
