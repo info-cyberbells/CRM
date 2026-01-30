@@ -139,18 +139,41 @@ const onCancel = () => {
                     <td className="px-4 py-4 border border-slate-100 font-black text-emerald-700">${item.saleAmount || "0"}</td>
                     <td className="px-4 py-4 border border-slate-100 font-bold text-slate-600 uppercase text-[10px]">{item.plan || "N/A"}</td>
                     <td className="px-4 py-4 border border-slate-100">
+                       {["Open", "Pending", "Closed"].includes(item.issueStatus) ? (
                       <select 
                         value={item.issueStatus}
+                         disabled={!["Open", "Pending", "Closed"].includes(item.issueStatus)}
                         onChange={(e) => handleStatusChange(item.caseId, e.target.value)}
-                        className={`px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest border transition-all cursor-pointer outline-none
-                          ${item.issueStatus === 'Open' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
-                            item.issueStatus === 'Pending' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
-                            'bg-emerald-50 text-emerald-600 border-emerald-100'}`}
+                        className={`px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest border transition-all outline-none
+                          ${
+                            ["Open", "Pending", "Closed"].includes(item.issueStatus)
+                              ? "cursor-pointer"
+                              : " opacity-60 appearance-none"
+                          }
+                          ${
+                            item.issueStatus === "Open"
+                              ? "bg-amber-50 text-amber-600 border-amber-100"
+                              : item.issueStatus === "Pending"
+                              ? "bg-blue-50 text-blue-600 border-blue-100"
+                              : item.issueStatus === "Closed"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              : "bg-slate-50 text-slate-500 border-slate-200"
+                          }`}
                       >
-                        <option value="Open">Open</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Closed">Closed</option>
-                      </select>
+                          {["Open", "Pending", "Closed"].map(status => (
+                            <option
+                              key={status}
+                              value={status}
+                              disabled={status === item.issueStatus}
+                            >
+                              {status}
+                            </option>
+                          ))}
+                      </select>) : (
+                          <span className="px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest bg-red-50 text-red-600 border border-red-200 inline-block">
+                            {item.issueStatus}
+                          </span>
+                      )}
                     </td>
                     <td className="px-4 py-4 border border-slate-100">
                       <button 
