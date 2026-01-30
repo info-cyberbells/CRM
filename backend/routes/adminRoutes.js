@@ -2,7 +2,7 @@ import express from "express";
 import { createUser, getUsers, getUserById } from "../controllers/userController.js";
 import roleGuard from "../middleware/roleGuard.js";
 import { getDashboardData } from "../controllers/dashbaordController.js";
-import { getAllCases, getCaseById, searchTechUser, updateCase } from "../controllers/caseController.js";
+import { getAllCases, getCaseById, getOverallSummary, saleReportGraph, searchTechUser, updateCase } from "../controllers/caseController.js";
 import { createAdminNotice, deleteAdminNotice, getAllAdminNotices, updateAdminNotice } from "../controllers/noticeController.js";
 import { getAdminNotifications } from "../controllers/notificationController.js";
 
@@ -31,6 +31,11 @@ router.get("/notices", getAllAdminNotices);
 
 // notifications route
 router.get("/notifications", getAdminNotifications);
+
+
+// Sales Report 
+router.get("/sale-report", saleReportGraph);
+router.get("/overAllSummary", getOverallSummary);
 
 
 //create user route

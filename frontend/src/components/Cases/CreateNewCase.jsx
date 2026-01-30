@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, X, CheckCircle2, ExternalLink, User, Hash, Check, ChevronRight, Monitor, AlertCircle, Calendar, DollarSign } from 'lucide-react';
 import { useToast } from '../../ToastContext/ToastContext';
-import { createCase, previewCaseId } from '../../features/CaseSlice/CaseSlice';
+import { createCase, previewCaseId, clearCreatedCase } from '../../features/CaseSlice/CaseSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -11,7 +11,8 @@ const CreateNewCase = () => {
     const dispatch = useDispatch();
     const {caseType} = useParams();
 
-    const {caseID, loading, error} = useSelector((state)=>state.cases);
+    const {caseID, loading, error, success, createdCase} = useSelector((state)=>state.cases);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const [activeStep, setActiveStep] = useState(0);
     const [errors, setErrors] = useState({});
@@ -51,14 +52,14 @@ const CreateNewCase = () => {
         "Linux Ubuntu",
         "Linux Mint",
     ];
-    const securitySoftwareOptions = [
-        "Norton",
-        "McAfee",
-        "Kaspersky",
-        "Bitdefender",
-        "Avast",
-    ];
-    const planOptions = ["Basic", "Premium", "Enterprise"];
+
+    const planOptions = ["Silver", "Gold", "Platinum"];
+
+    useEffect(()=>{
+        if(success && createdCase){
+            setShowSuccessModal(true);
+        }
+    },[success, createdCase]);
 
     useEffect(() => {
             return () => {
@@ -316,6 +317,12 @@ const handleSubmit = async () => {
     }
 };
 
+
+// handle close modal
+const handleCloseModal = ()=>{
+    setShowSuccessModal(false);
+    dispatch(clearCreatedCase());
+}
 
 
   return (
@@ -626,23 +633,12 @@ const handleSubmit = async () => {
                                     Security Software <span className="text-rose-500">*</span>
                                 </label>
 
-                                <select
-                                    className={inputClass(errors?.securitySoftware)}
-                                    value={formData.securitySoftware}
-                                    onChange={(e) =>
-                                    handleInputChangeWithErrorClear(
-                                        "securitySoftware",
-                                        e.target.value
-                                    )
-                                    }
-                                >
-                                    <option value="">Select Security Software</option>
-                                    {securitySoftwareOptions.map((software) => (
-                                    <option key={software} value={software}>
-                                        {software}
-                                    </option>
-                                    ))}
-                                </select>
+                                <input type="text" name='securitySoftware' className={inputClass(errors?.securitySoftware)} onChange={(e)=>
+                                        handleInputChangeWithErrorClear(
+                                            "securitySoftware",
+                                            e.target.value
+                                        )
+                                    } />
                             </div>
 
                             <div>
@@ -742,6 +738,89 @@ const handleSubmit = async () => {
 
 
             </div>
+
+              {/* Success Result Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300">
+                        {/* Modal Header */}
+                        <div className="bg-emerald-600 p-4 xl:p-10 text-center relative">
+                            <button 
+                                onClick={handleCloseModal}
+                                className="absolute cursor-pointer top-8 right-8 text-white/60 hover:text-white transition-colors bg-white/10 p-2 rounded-full"
+                            >
+                                <X size={20} />
+                            </button>
+                            <div className="bg-white/10 w-18 h-18 rounded-[2rem] rotate-12 flex items-center justify-center mx-auto mb-6 border border-white/20">
+                                <CheckCircle2 size={40} className="text-white -rotate-12" />
+                            </div>
+                            <h2 className="text-3xl font-black text-white tracking-tighter uppercase leading-none">Case Generated</h2>
+                            {/* <p className="text-emerald-100 text-xs font-bold uppercase tracking-[0.2em] mt-3 opacity-80">Server Confirmation Received</p> */}
+                        </div>
+
+                        {/* Modal Body: Result Display */}
+                        <div className="p-10 pt-8 space-y-6">
+                            <div className="space-y-4">
+                                {/* Primary ID Result */}
+                                <div className="bg-emerald-50 rounded-[2rem] p-6 border border-emerald-100/50 flex items-center justify-between group">
+                                    <div className="flex items-center gap-5">
+                                        <div className="bg-white p-3 rounded-2xl text-emerald-600 shadow-sm">
+                                            <Hash size={24} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest">Confirmed Case ID</p>
+                                            <p className="text-2xl font-black text-emerald-900 tracking-tight">{createdCase?.caseId}</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        // onClick={() => copyToClipboard(submissionResult?.caseId)}
+                                        className="p-4 bg-white rounded-2xl transition-all text-emerald-400 hover:text-emerald-700 shadow-sm border border-emerald-100 active:scale-95"
+                                    >
+                                        {<Check size={22} className="text-emerald-600" /> }
+                                    </button>
+                                </div>
+
+                                {/* Secondary Data Points */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <User size={12} className="text-slate-400" />
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer Name</p>
+                                        </div>
+                                        <p className="text-sm font-black text-slate-800 truncate">{createdCase?.customerName}</p>
+                                    </div>
+                                    <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Hash size={12} className="text-slate-400" />
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CustomerID</p>
+                                        </div>
+                                        <p className="text-sm font-black text-slate-800 truncate">{createdCase?.customerID}</p>
+                                    </div>
+                                </div>
+
+                                {/* Summary Footer */}
+                                <div className="flex items-center justify-center px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    {/* <div className="flex items-center gap-2">
+                                        <Calendar size={12} />
+                                        <span>{createdCase?.createdAt || "Now"}</span>
+                                    </div> */}
+                                    <div className="flex items-center gap-2">
+                                        <DollarSign size={12} />
+                                        <span>Sale Amount: ${createdCase?.saleAmount}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={handleCloseModal}
+                                className="w-full cursor-pointer bg-slate-900 text-white py-5 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2"
+                            >
+                                Close & Continue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
 
         

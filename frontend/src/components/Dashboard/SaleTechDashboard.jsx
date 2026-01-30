@@ -6,10 +6,10 @@ import {
   NavLink,
   useLocation,
   Navigate,
+  useNavigate,
 } from "react-router-dom";
 import {
-  UserCircle,
-  Settings,
+  User,
   Bell,
   Menu,
   X,
@@ -49,11 +49,13 @@ import {
   AlertCircle,
   RefreshCw,
   CheckCircle2,
+  Eye,
 } from "lucide-react";
-import { techUserDashboard } from "../../features/TechUserSlice/TechUserSlice";
-import { adminDashboard } from "../../features/ADMIN/adminSlice";
+import { getSingleCaseById, getTechUserAssignedCases, techUserDashboard, setTechCurrentPage, setTechPageSize } from "../../features/TechUserSlice/TechUserSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchDashboardData } from "../../features/DashboardSlice/dashboardSlice";
+import { fetchCaseById, fetchSaleUserCases, setPageSize, setCurrentPage } from "../../features/SearchSlice/searchSlice";
+import { useToast } from "../../ToastContext/ToastContext";
 
 const NoticeBoard = ({ notices }) => (
   <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
@@ -182,23 +184,62 @@ const DashboardMetricCard = ({
 
 const SaleTechDashboard = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const {
     data : saleData,
     loading,
     error,
   } = useSelector((state) => state.dashboard);
-  const { dashboardData } = useSelector(
+  const { dashboardData, dbLoading } = useSelector(
     (state) => state.techUser
   );
 
+  const {
+      cases: salesCases,
+      selectedCase: salesSelectedCase,
+      loading: salesLoading,
+      modalLoading,
+      error: salesError,
+      showModal: saleShowModal,
+      pagination: salesPagination,
+      searchFilters: salesSearchFilters,
+    } = useSelector((state) => state.salesCases);
+
+      const {
+        cases: techCases,
+        selectedCase: techSelectedCase,
+        pagination: techPagination,
+        isLoading: techLoading,
+        error: techError,
+        showModal: techShowModal,
+        searchFilters: techSearchFilters,
+      } = useSelector((state) => state.techUser);
+
+      const {showToast} = useToast();
+
   const userRole = localStorage.getItem("Role").toLowerCase();
+
+  const dashboardLoading = userRole === "tech" ? dbLoading : loading;
+
+    const cases = userRole === "tech" ? techCases : salesCases;
+    const pagination = userRole === "tech" ? techPagination : salesPagination;
+
+  const Loading = userRole === "tech" ? techLoading : salesLoading;
+
+  const Error = userRole === "tech" ? techError : salesError;
+
+    const { currentPage, pageSize, totalPages, totalCount } = pagination;
+
 
   useEffect(() => {
     if (userRole == "sale") {
       dispatch(fetchDashboardData());
+      dispatch(fetchSaleUserCases({page: currentPage, limit: pageSize}));
     }
     if (userRole == "tech") {
       dispatch(techUserDashboard());
+      dispatch(getTechUserAssignedCases({page: currentPage, limit: pageSize}));
     }
   }, [dispatch, userRole]);
 
@@ -212,10 +253,49 @@ const SaleTechDashboard = () => {
 
   //   if (loading) return <LoadingScreen />;
 
-  if (loading || !data) {
+  if (dashboardLoading || !data) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
-        <Loader2 className="animate-spin text-indigo-600" size={40} />
+        {/* <Loader2 className="animate-spin text-indigo-600" size={40} /> */}
+        <div className="relative w-14 h-14" style={{
+        animation: 'spin 2s linear infinite'
+      }}>
+        <div 
+          className="absolute top-0 left-0 w-3 h-3 bg-emerald-600 rounded-full" 
+          style={{
+            animation: 'pulse 1.5s ease-in-out infinite',
+            animationDelay: '0s'
+          }}
+        ></div>
+        <div 
+          className="absolute top-0 right-0 w-3 h-3 bg-emerald-500 rounded-full" 
+          style={{
+            animation: 'pulse 1.5s ease-in-out infinite',
+            animationDelay: '0.2s'
+          }}
+        ></div>
+        <div 
+          className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full" 
+          style={{
+            animation: 'pulse 1.5s ease-in-out infinite',
+            animationDelay: '0.4s'
+          }}
+        ></div>
+        <div 
+          className="absolute bottom-0 left-0 w-3 h-3 bg-emerald-300 rounded-full" 
+          style={{
+            animation: 'pulse 1.5s ease-in-out infinite',
+            animationDelay: '0.6s'
+          }}
+        ></div>
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       </div>
     );
   }
@@ -307,6 +387,50 @@ const SaleTechDashboard = () => {
     } 
   };
 
+   const fetchCaseDetails = async (caseId, editMode = false) => {
+    try {
+      // Wait for the fetch to complete
+      if (userRole === "tech") {
+        await dispatch(getSingleCaseById(caseId)).unwrap();
+      }  else {
+        await dispatch(fetchCaseById(caseId)).unwrap();
+      }
+  
+      // Navigate with editing state after data is loaded
+      navigate(`/case/${caseId}`, { 
+        state: { editing: editMode, fromPage: currentPage } 
+      });
+    } catch (error) {
+      console.error("Failed to fetch case:", error);
+      showToast("Failed to load case details", "error");
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+      if (userRole === "tech") {
+        dispatch(setTechCurrentPage(newPage));
+        dispatch(getTechUserAssignedCases({page: newPage, limit: pageSize}));
+      }
+      else {
+        dispatch(setCurrentPage(newPage));
+        dispatch(fetchSaleUserCases({page: newPage, limit: pageSize}));
+      }
+    };
+
+     const handlePageSizeChange = (newPageSize) => {
+        if (userRole === "tech") {
+          dispatch(setTechPageSize(newPageSize));
+          dispatch(setTechCurrentPage(1));
+          dispatch(getTechUserAssignedCases({limit: newPageSize}));
+        } else {
+          dispatch(setPageSize(newPageSize));
+          dispatch(setCurrentPage(1));
+          dispatch(fetchSaleUserCases({limit: newPageSize}));
+
+        }
+
+      };
+
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -328,7 +452,9 @@ const SaleTechDashboard = () => {
                   Recent Assignments
                 </h3>
               </div>
-              <button className="text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-700 tracking-widest bg-indigo-50 px-4 py-2 rounded-xl transition-all">
+              <button 
+              onClick={()=>navigate("/search-cases")}
+              className="text-[10px] cursor-pointer font-black uppercase text-indigo-600 hover:text-indigo-700 hover:scale-[1.10] active:scale-95 tracking-widest bg-indigo-50 px-4 py-2 rounded-xl transition-all">
                 View All Cases
               </button>
             </div>
@@ -337,22 +463,32 @@ const SaleTechDashboard = () => {
                 <thead>
                   <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b">
                     <th className="px-8 py-5">Customer Info</th>
-                    <th className="px-8 py-5">Issue / Plan</th>
-                    <th className="px-8 py-5">Revenue</th>
+                    <th className="px-8 py-5">Plan</th>
+                    <th className="px-8 py-5">Sale Amount</th>
                     <th className="px-8 py-5">Status</th>
+                    <th className="px-8 py-5">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {data.cases?.map((c) => (
+                  {Loading ? <tr>
+                    <td colSpan="12" className="py-32 text-center">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <div className="w-10 h-10 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin"></div>
+                        <p className="font-black text-[10px] text-slate-400 uppercase tracking-[0.3em]">
+                          Processing Records...
+                        </p>
+                      </div>
+                    </td>
+                  </tr> : cases.length > 0 ? cases.map((c) => (
                     <tr
                       key={c.id}
                       className="hover:bg-slate-50/50 transition-colors group"
                     >
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="bg-slate-100 p-2 rounded-xl text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
+                          {/* <div className="bg-slate-100 p-2 rounded-xl text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
                             <UserCircle size={18} />
-                          </div>
+                          </div> */}
                           <div>
                             <p className="font-bold text-slate-800 text-sm">
                               {c.customerName}
@@ -382,26 +518,107 @@ const SaleTechDashboard = () => {
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
                           ${
-                            c.status === "Open"
+                            c.issueStatus === "Open"
                               ? "bg-amber-50 text-amber-600 border border-amber-100"
                               : "bg-emerald-50 text-emerald-600 border border-emerald-100"
                           }`}
                         >
                           <span
                             className={`w-1 h-1 rounded-full ${
-                              c.status === "Open"
+                              c.issueStatus === "Open"
                                 ? "bg-amber-500"
                                 : "bg-emerald-500"
                             }`}
                           ></span>
-                          {c.status}
+                          {c.issueStatus}
                         </span>
                       </td>
+                      <td className="px-8 py-5">
+                        <button
+                        title="View Case"
+                            className="p-2 cursor-pointer text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90"
+                            onClick={() => {
+                                console.log("Case:", c.caseId);
+                                fetchCaseDetails(c.caseId, false);
+                              }}
+                        >
+                          <Eye size={18} strokeWidth={2.5}/>
+                        </button>
+                      </td>
                     </tr>
-                  ))}
+                  )) : (
+                  <tr>
+                    <td colSpan="12" className="py-24 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 text-slate-200">
+                          <User size={48} />
+                        </div>
+                        <h3 className="text-lg font-black text-slate-700">
+                          No Records Found
+                        </h3>
+                      </div>
+                    </td>
+                  </tr>                    
+                  )}
                 </tbody>
               </table>
             </div>
+            {/* Pagination Section */}
+          {cases.length > 0 && (
+            <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex flex-wrap justify-between items-center gap-6">
+              <div className="flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                <span>Show:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  className="bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none font-black text-slate-700 focus:border-emerald-500 transition-all shadow-sm"
+                >
+                  {[10, 20, 30, 50].map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+                <span>entries</span>
+              </div>
+
+              <div className="text-[9px] font-black text-slate-800 uppercase tracking-[tight] hidden lg:block">
+                Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                {Math.min(currentPage * pageSize, totalCount)} of {totalCount}{" "}
+                entries
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className="
+                    px-4 py-3 cursor-pointer
+                    text-[10px] font-black uppercase tracking-widest
+                    rounded-2xl
+                    border border-slate-200
+                    bg-white text-slate-400
+                    hover:bg-slate-50 hover:text-slate-700
+                    disabled:opacity-30 disabled:cursor-not-allowed
+                    transition-all
+                    active:scale-95
+                "
+                >
+                  Previous
+                </button>
+                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-4 py-2 rounded-xl uppercase tracking-widest shadow-sm border border-emerald-100">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className=" px-6 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 "
+                                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
           </div>
         </div>
 

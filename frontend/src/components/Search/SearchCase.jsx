@@ -186,55 +186,49 @@ const SearchCase = () => {
       dispatch(setCurrentPage(1));
     }
 
-    fetchCases({
-      page: 1,
-      limit: pageSize,
-      filters: emptyFilters,
-    });
-  };
-
-  useEffect(() => {
-    const emptyFilters = {
-      customerName: "",
-      phone: "",
-      customerID: "",
-      email: "",
-    };
-
-    if (isTech) dispatch(setTechSearchFilters(emptyFilters));
-    else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
-    else dispatch(setSearchFilters(emptyFilters));
-
-    // if (isTech) {
-    //   dispatch(setTechCurrentPage(1));
-    // }
-    // if (isAdmin) {
-    //   dispatch(setAdminCurrentPage(1));
-    // }
-    // if (isSale) {
-    //   dispatch(setCurrentPage(1));
-    // }
-
-    // Fetch once on mount
     // fetchCases({
     //   page: 1,
     //   limit: pageSize,
     //   filters: emptyFilters,
     // });
+  };
 
-    return () => {
-      if (isTech) {
-        dispatch(setTechSearchFilters(emptyFilters));
-        // dispatch(setTechCurrentPage(1));
-      } else if (isAdmin) {
-        dispatch(setAdminSearchFilters(emptyFilters));
-        // dispatch(setAdminCurrentPage(1));
-      } else if (isSale) {
-        dispatch(setSearchFilters(emptyFilters));
-        // dispatch(setCurrentPage(1));
-      }
-    };
-  }, []);
+  // useEffect(() => {
+  //   const emptyFilters = {
+  //     customerName: "",
+  //     phone: "",
+  //     customerID: "",
+  //     email: "",
+  //   };
+
+  //   if (isTech) dispatch(setTechSearchFilters(emptyFilters));
+  //   else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
+  //   else dispatch(setSearchFilters(emptyFilters));
+
+  //   return () => {
+  //     if (isTech) {
+  //       dispatch(setTechSearchFilters(emptyFilters));
+  //       // dispatch(setTechCurrentPage(1));
+  //     } else if (isAdmin) {
+  //       dispatch(setAdminSearchFilters(emptyFilters));
+  //       // dispatch(setAdminCurrentPage(1));
+  //     } else if (isSale) {
+  //       dispatch(setSearchFilters(emptyFilters));
+  //       // dispatch(setCurrentPage(1));
+  //     }
+  //   };
+  // }, []);
+
+
+  useEffect(() => {
+  // Fetch with whatever filters are already in Redux state
+  fetchCases({
+    page: currentPage,
+    limit: pageSize,
+    filters: searchFilters,
+  });
+}, []);
+
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -256,8 +250,10 @@ const SearchCase = () => {
     }, 1000);
 
     return () => clearTimeout(debounceRef.current);
-  }, [searchFilters]); // Remove pageSize from here
+  }, [searchFilters]); 
 
+
+  
   const handleFilterChange = (field, value) => {
     if (isTech) dispatch(setTechSearchFilters({ [field]: value }));
     else if (isAdmin) dispatch(setAdminSearchFilters({ [field]: value }));
@@ -502,7 +498,7 @@ const StaticDuration = ({ duration }) => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                  <th className="px-4 py-6">Case ID</th>
+                  <th className="px-4 py-6">Case ID / CustomerID</th>
                   <th className="px-6 py-6">Customer</th>
                   <th className="px-6 py-6">Plan</th>
                   <th className="px-6 py-6">Sale</th>
@@ -536,7 +532,14 @@ const StaticDuration = ({ duration }) => {
                       className="hover:bg-emerald-50/30 transition-all group"
                     >
                       <td className="px-6 py-5 whitespace-nowrap text-sm font-black text-emerald-800">
+                        <div className="grid items-center">
+                          <p> 
                         {c.caseId}
+                            </p>  
+                            <p className="font-mono text-[10px] font-bold text-slate-400">
+                              {c.customerID}
+                            </p>
+                        </div>
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex flex-col">
