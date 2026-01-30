@@ -152,6 +152,7 @@ const CaseDetailPage = () => {
 
   const [techSearch, setTechSearch] = useState("");
   const [showTechDropdown, setShowTechDropdown] = useState(false);
+  const techDropdownRef = useRef(null);
 
   // Get data from Redux
   const { selectedCase: techSelectedCase, isLoading: techLoading } =
@@ -273,10 +274,12 @@ const CaseDetailPage = () => {
 
   // Add useEffect for tech search
   useEffect(() => {
-    if (techSearch.length < 2) {
-      setShowTechDropdown(false);
-      return;
-    }
+    // if (techSearch.length < 2) {
+    //   setShowTechDropdown(false);
+    //   return;
+    // }
+
+    if (!showTechDropdown) return;
 
     const timer = setTimeout(() => {
       dispatch(searchTechUser(techSearch));
@@ -285,6 +288,22 @@ const CaseDetailPage = () => {
 
     return () => clearTimeout(timer);
   }, [techSearch, dispatch]);
+
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (techDropdownRef.current && !techDropdownRef.current.contains(event.target)) {
+      setShowTechDropdown(false);
+    }
+  };
+
+  if (showTechDropdown) {
+    document.addEventListener('mousedown', handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [showTechDropdown]);
 
   const handleBack = () => {
     navigate(-1);
@@ -1086,7 +1105,7 @@ const CaseDetailPage = () => {
 
               {/* Tech User - Updated with Search */}
               {!isTech && (
-                <div className="relative">
+                <div className="relative" ref={techDropdownRef}>
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">
                     Tech User Assignment
                   </label>
@@ -1099,6 +1118,12 @@ const CaseDetailPage = () => {
                         type="text"
                         value={techSearch} // Remove the fallback here
                         disabled={!isAdmin}
+                        onFocus={() => {
+                          setShowTechDropdown(true);
+                          if (!showTechDropdown) {
+                              dispatch(searchTechUser(techSearch || ""));
+                            }
+                        }}
                         onChange={(e) => {
                           setTechSearch(e.target.value);
                           // Only clear techUserId if user is typing, not when empty
@@ -1114,7 +1139,7 @@ const CaseDetailPage = () => {
                           formData.techUser?.name
                             ? formData.techUser.name
                             : isAdmin
-                              ? "Search Tech User"
+                              ? "Assign Tech User"
                               : "Not assigned yet"
                         }
                         autoComplete="off"
@@ -1126,7 +1151,7 @@ const CaseDetailPage = () => {
                       />
 
                       {showTechDropdown &&
-                        techSearch.length >= 2 &&
+                        
                         isAdmin && (
                           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 max-h-60 overflow-y-auto">
                             {searchLoading ? (
@@ -1164,11 +1189,11 @@ const CaseDetailPage = () => {
                                     <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black">
                                       {user.name.charAt(0).toUpperCase()}
                                     </div>
-                                    <div>
+                                    <div className="flex-1 min-w-0">
                                       <p className="text-sm font-black text-slate-700">
                                         {user.name}
                                       </p>
-                                      <p className="text-xs text-slate-400">
+                                      <p className="text-xs text-slate-400 truncate">
                                         {user.email}
                                       </p>
                                     </div>

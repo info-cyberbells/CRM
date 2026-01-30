@@ -505,7 +505,7 @@ if (dbLoading || !data) {
               <thead>
                 <tr className="bg-slate-50/30 text-slate-400 text-[10px] uppercase font-bold tracking-widest border-b border-slate-100">
                   <th className="px-8 py-5">Case ID</th>
-                  <th className="px-8 py-5">Customer</th>
+                  <th className="px-8 py-5">Customer/ CUST. ID</th>
                   <th className="px-8 py-5">Sale Amount</th>
                   <th className="px-8 py-5">Sales User/Status</th>
                   <th className="px-8 py-5">Tech User</th>
@@ -521,6 +521,7 @@ if (dbLoading || !data) {
                     </td>
                     <td className="px-8 py-5">
                       <p className="font-bold text-slate-800 truncate max-w-[150px]">{c.customerName || "Name"}</p>
+                      <p className="font-bold text-xs text-slate-800 truncate max-w-[150px]">{c.customerID || "CID"}</p>
                     </td>
                     <td className="px-8 py-5">
                       <p className="font-black text-slate-800">{formatCurrency(c.saleAmount) || "999"}</p>

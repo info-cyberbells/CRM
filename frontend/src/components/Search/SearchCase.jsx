@@ -186,55 +186,49 @@ const SearchCase = () => {
       dispatch(setCurrentPage(1));
     }
 
-    fetchCases({
-      page: 1,
-      limit: pageSize,
-      filters: emptyFilters,
-    });
-  };
-
-  useEffect(() => {
-    const emptyFilters = {
-      customerName: "",
-      phone: "",
-      customerID: "",
-      email: "",
-    };
-
-    if (isTech) dispatch(setTechSearchFilters(emptyFilters));
-    else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
-    else dispatch(setSearchFilters(emptyFilters));
-
-    // if (isTech) {
-    //   dispatch(setTechCurrentPage(1));
-    // }
-    // if (isAdmin) {
-    //   dispatch(setAdminCurrentPage(1));
-    // }
-    // if (isSale) {
-    //   dispatch(setCurrentPage(1));
-    // }
-
-    // Fetch once on mount
     // fetchCases({
     //   page: 1,
     //   limit: pageSize,
     //   filters: emptyFilters,
     // });
+  };
 
-    return () => {
-      if (isTech) {
-        dispatch(setTechSearchFilters(emptyFilters));
-        // dispatch(setTechCurrentPage(1));
-      } else if (isAdmin) {
-        dispatch(setAdminSearchFilters(emptyFilters));
-        // dispatch(setAdminCurrentPage(1));
-      } else if (isSale) {
-        dispatch(setSearchFilters(emptyFilters));
-        // dispatch(setCurrentPage(1));
-      }
-    };
-  }, []);
+  // useEffect(() => {
+  //   const emptyFilters = {
+  //     customerName: "",
+  //     phone: "",
+  //     customerID: "",
+  //     email: "",
+  //   };
+
+  //   if (isTech) dispatch(setTechSearchFilters(emptyFilters));
+  //   else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
+  //   else dispatch(setSearchFilters(emptyFilters));
+
+  //   return () => {
+  //     if (isTech) {
+  //       dispatch(setTechSearchFilters(emptyFilters));
+  //       // dispatch(setTechCurrentPage(1));
+  //     } else if (isAdmin) {
+  //       dispatch(setAdminSearchFilters(emptyFilters));
+  //       // dispatch(setAdminCurrentPage(1));
+  //     } else if (isSale) {
+  //       dispatch(setSearchFilters(emptyFilters));
+  //       // dispatch(setCurrentPage(1));
+  //     }
+  //   };
+  // }, []);
+
+
+  useEffect(() => {
+  // Fetch with whatever filters are already in Redux state
+  fetchCases({
+    page: currentPage,
+    limit: pageSize,
+    filters: searchFilters,
+  });
+}, []);
+
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -256,8 +250,10 @@ const SearchCase = () => {
     }, 1000);
 
     return () => clearTimeout(debounceRef.current);
-  }, [searchFilters]); // Remove pageSize from here
+  }, [searchFilters]); 
 
+
+  
   const handleFilterChange = (field, value) => {
     if (isTech) dispatch(setTechSearchFilters({ [field]: value }));
     else if (isAdmin) dispatch(setAdminSearchFilters({ [field]: value }));
