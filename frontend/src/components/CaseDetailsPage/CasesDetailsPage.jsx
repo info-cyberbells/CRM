@@ -153,6 +153,9 @@ const CaseDetailPage = () => {
   const [techSearch, setTechSearch] = useState("");
   const [showTechDropdown, setShowTechDropdown] = useState(false);
   const techDropdownRef = useRef(null);
+  const [activeRemoteIndex, setActiveRemoteIndex] = useState(0);
+  const [showAllRemotes, setShowAllRemotes] = useState(false);
+
 
   // Get data from Redux
   const { selectedCase: techSelectedCase, isLoading: techLoading } =
@@ -193,6 +196,7 @@ const CaseDetailPage = () => {
     remotePass: "",
     operatingSystem: "",
     computerPass: "",
+    remoteAccess: [],
     issue: "",
     modelNo: "",
     workToBeDone: "",
@@ -215,6 +219,12 @@ const CaseDetailPage = () => {
     techUser: { name: "" },
   });
 
+  const remoteList =
+  showAllRemotes
+    ? formData.remoteAccess || []
+    : (formData.remoteAccess?.length ? [formData.remoteAccess[0]] : []);
+
+
   // Update formData when data loads
   useEffect(() => {
     if (data) {
@@ -233,6 +243,18 @@ const CaseDetailPage = () => {
         remotePass: data.remotePass || "",
         operatingSystem: data.operatingSystem || "",
         computerPass: data.computerPass || "",
+        remoteAccess: (() => {
+          if (Array.isArray(data.remoteAccess)) return data.remoteAccess;
+
+          if (typeof data.remoteAccess === "string") {
+            try {
+              return JSON.parse(data.remoteAccess);
+            } catch {
+              return [];
+            }
+          }
+          return [];
+        })(),
         issue: data.issue || "",
         modelNo: data.modelNo || "",
         workToBeDone: data.workToBeDone || "",
@@ -304,6 +326,15 @@ const CaseDetailPage = () => {
     document.removeEventListener('mousedown', handleClickOutside);
   };
 }, [showTechDropdown]);
+
+const handleRemoteChange = (index, field, value) => {
+  setFormData((prev) => {
+    const updated = [...prev.remoteAccess];
+    updated[index] = { ...updated[index], [field]: value };
+    return { ...prev, remoteAccess: updated };
+  });
+};
+
 
   const handleBack = () => {
     navigate(-1);
@@ -690,99 +721,14 @@ const CaseDetailPage = () => {
           </div>
 
           {/* Technical Information */}
-          <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm space-y-6">
+  <div
+    className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm space-y-6"
+  >
             <div className="flex items-center gap-2 text-blue-600 border-b border-slate-50 pb-4">
               <Monitor size={20} strokeWidth={2.5} />
               <h3 className="text-sm font-black uppercase tracking-widest">
                 Technical Diagnosis
               </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* OS */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Operating System
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <Monitor size={16} />
-                  </div>
-                  {editing ? (
-                    <select
-                      name="operatingSystem"
-                      value={formData.operatingSystem}
-                      onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all appearance-none"
-                    >
-                      {operatingSystems.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {formData.operatingSystem || "—"}
-                    </div>
-                  )}
-                  {editing && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                      <ChevronRight size={14} className="rotate-90" />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Remote ID */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Remote ID
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <LayoutGrid size={16} />
-                  </div>
-                  {editing ? (
-                    <input
-                      type="text"
-                      name="remoteID"
-                      value={formData.remoteID}
-                      onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {formData.remoteID || "—"}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Remote Password */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Remote Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <Lock size={16} />
-                  </div>
-                  {editing ? (
-                    <input
-                      type="text"
-                      name="remotePass"
-                      value={formData.remotePass}
-                      onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {formData.remotePass || "—"}
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
 
             {/* Issue */}
@@ -809,57 +755,6 @@ const CaseDetailPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Computer Pass */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Computer Pass
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <Lock size={16} />
-                  </div>
-                  {editing ? (
-                    <input
-                      type="text"
-                      name="computerPass"
-                      value={formData.computerPass}
-                      onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {formData.computerPass || "—"}
-                    </div>
-                  )}
-                </div>
-              </div>
-              {/* Model Number */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Model Number
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <LayoutGrid size={16} />
-                  </div>
-                  {editing ? (
-                    <input
-                      type="text"
-                      name="modelNo"
-                      value={formData.modelNo}
-                      onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {formData.modelNo || "—"}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
             {/* Work To Be Done */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
@@ -883,7 +778,173 @@ const CaseDetailPage = () => {
                 )}
               </div>
             </div>
-          </div>
+             {/* Model Number */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                  Model Number
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                    <LayoutGrid size={16} />
+                  </div>
+                  {editing ? (
+                    <input
+                      type="text"
+                      name="modelNo"
+                      value={formData.modelNo}
+                      onChange={handleChange}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                      {formData.modelNo || "—"}
+                    </div>
+                  )}
+                </div>
+              </div>
+              </div>
+                 {remoteList.map((remote, index) => (
+                    <div
+    key={remote.id ?? index}
+    className="bg-white rounded-[2rem] p-8 border border-slate-100 space-y-6"
+  >
+    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h4 className="text-sm font-black uppercase tracking-widest text-blue-600">
+        Remote Access Info {index + 1}
+      </h4>
+
+      {!editing && (
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          ID: {remote.id}
+        </span>
+      )}
+    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* OS */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                  Operating System
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                    <Monitor size={16} />
+                  </div>
+                  {editing ? (
+                    <select
+                      name="operatingSystem"
+                      value={remote.operatingSystem}
+                      onChange={(e)=> handleRemoteChange(index, "operatingSystem", e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all appearance-none"
+                    >
+                      {operatingSystems.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                      {remote.operatingSystem || "—"}
+                    </div>
+                  )}
+                  {editing && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <ChevronRight size={14} className="rotate-90" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Remote ID */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                  Remote ID
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                    <LayoutGrid size={16} />
+                  </div>
+                  {editing ? (
+                    <input
+                      type="text"
+                      name="remoteID"
+                      value={remote.remoteID}
+                      onChange={(e)=> handleRemoteChange(index, "remoteID", e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                      {remote.remoteID || "—"}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Remote Password */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                  Remote Password
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                    <Lock size={16} />
+                  </div>
+                  {editing ? (
+                    <input
+                      type="text"
+                      name="remotePass"
+                      value={remote.remotePass}
+                      onChange={(e)=> handleRemoteChange(index, "remotePass", e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                      {remote.remotePass || "—"}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                  Computer Pass
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                    <Lock size={16} />
+                  </div>
+                  {editing ? (
+                    <input
+                      type="text"
+                      name="computerPass"
+                      value={remote.computerPass}
+                      onChange={(e)=> handleRemoteChange(index, "computerPass", e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                      {remote.computerPass || "—"}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+</div>
+          ))}
+            
+          {formData.remoteAccess?.length > 1 && (
+  <div className="flex justify-center mt-4">
+    <button
+      onClick={() => setShowAllRemotes((p) => !p)}
+      className="text-xs cursor-pointer font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-800"
+    >
+      {showAllRemotes ? "Show Less" : "Show More Remote Access"}
+    </button>
+  </div>
+)}
+          </div> 
 
           {/* Special Notes Section */}
           <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm space-y-6 relative overflow-hidden">

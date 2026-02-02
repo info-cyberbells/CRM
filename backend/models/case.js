@@ -66,6 +66,10 @@ const Case = sequelize.define("Case", {
         allowNull: true,
     },
     caseDurationTimer: { type: DataTypes.STRING, allowNull: true },
+    remoteAccess: {
+  type: DataTypes.JSON,
+  allowNull: true
+},
 }, {
     tableName: "cases",
     freezeTableName: true
