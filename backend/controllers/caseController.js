@@ -248,7 +248,7 @@ export const getAllCases = async (req, res) => {
             saleStatus: c.saleStatus || "Pending",
             issueStatus: c.status || "Open",
             // date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
-            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE") : null,
+            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE",{timeZone: "Asia/Kolkata"}) : null,
 
         }));
 
@@ -377,7 +377,9 @@ export const getMyCases = async (req, res) => {
             adminNoteText: c.adminNoteText || "",
             // date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
             // YYYY-MM-DD HH:mm:ss
-            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE") : null,
+            // date: c.createdAt ? c.createdAt.toLocaleString("sv-SE") : null,
+            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE",{timeZone: "Asia/Kolkata"}) : null,
+
         }));
 
         res.json({
@@ -504,8 +506,8 @@ export const getAssignedCases = async (req, res)=>{
             adminNoteType: c.adminNoteType,
             adminNoteText: c.adminNoteText || "",
             // date: c.createdAt ? c.createdAt.toISOString().split("T")[0] : null,
-            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE") : null,
-
+            // date: c.createdAt ? c.createdAt.toLocaleString("sv-SE") : null,
+            date: c.createdAt ? c.createdAt.toLocaleString("sv-SE",{timeZone: "Asia/Kolkata"}) : null,
 
         }));
 
@@ -790,7 +792,7 @@ export const searchTechUser = async (req, res)=>{
 // Sales Reports Daily, weekly and monthly
 export const saleReportGraph = async(req, res)=>{
     try {
-        const token = req.cookies?.authToken || headers.authorization?.split(" ")[1];
+        const token = req.cookies?.authToken || req.headers.authorization?.split(" ")[1];
 
         if(!token){
             return res.status(401).json({success: false, message: "No token Provided"});
@@ -829,17 +831,17 @@ export const saleReportGraph = async(req, res)=>{
 
         } else if (type === "weekly"){
             attributes = [
-                [fn("DAYNAME", col("createdAt")), "label"],
+                [fn("DATE", col("createdAt")), "label"],
                 [fn("COUNT", col("id")), "totalCases"],
                 [fn("SUM", col('saleAmount')), "totalSales"],
             ]
 
-            whereCondition.createdAT = {
+            whereCondition.createdAt = {
                 [Op.gte]: fn("DATE_SUB", fn("CURDATE"), literal("INTERVAL 6 DAY"))
             };
 
-            group = [fn("DAY", col("createdAt"))];
-            order = [[fn("DAY", col("createdAt")), "ASC"]];
+            group = [fn("DATE", col("createdAt"))];
+            order = [[literal("label"), "ASC"]];
 
             labelFormatter = d => d.get("label");
 
