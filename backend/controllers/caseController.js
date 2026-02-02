@@ -80,7 +80,28 @@ export const createCase = async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const { caseType, ...rest} = req.body;
+        const { caseType, remoteAccess, ...rest} = req.body;
+
+        let normalizedRemoteAccess = [];
+
+        if(remoteAccess){
+            const parsed = typeof remoteAccess === "string" ? JSON.parse(remoteAccess) : remoteAccess;
+
+            if(!Array.isArray(parsed)){
+                return res.status(400).json({
+                    success: false,
+                    message: "remoteAccess must be an array"
+                });
+            }
+
+        normalizedRemoteAccess = parsed.map((r, index)=>({
+            id: index + 1,
+            remoteID: r.remoteID || null,
+            remotePass: r.remotePass || null,
+            operatingSystem: r.operatingSystem || null, 
+            computerPass: r.computerPass || null,
+        }));
+        }
 
         if(!caseType){
             return res.status(400).json({sucess: false, message: "CaseType is required!"});
@@ -105,6 +126,7 @@ export const createCase = async (req, res) => {
             caseType,
             customerID: `CUST-${Date.now()}`,
             saleUserId: decoded.id,
+            remoteAccess: normalizedRemoteAccess.length ? normalizedRemoteAccess : null,
         });
 
         await Notification.create({
@@ -551,7 +573,18 @@ export const updateCase = async (req, res) => {
             return res.status(404).json({ success: false, message: "Case not found" });
         }
 
-        const updatedData = { ...req.body };
+        const {remoteAccess, ...rest} = req.body;
+        const updatedData = { ...rest };
+
+        if (Array.isArray(remoteAccess) && remoteAccess.length > 0) {
+        updatedData.remoteAccess = remoteAccess.map((r, index) => ({
+            id: Number.isInteger(r.id) ? r.id : index + 1,
+            remoteID: r.remoteID || null,
+            remotePass: r.remotePass || null,
+            operatingSystem: r.operatingSystem || null,
+            computerPass: r.computerPass || null
+        }));
+        }
 
         if(req.body.status === "Closed" && oldCase.status !== "Closed"){
 
@@ -715,8 +748,18 @@ if (
       });
     }
 
+    const parsedCase = updatedCase.toJSON();
 
-        res.json({ success: true, case: updatedCase });
+    if (typeof parsedCase.remoteAccess === "string") {
+    try {
+        parsedCase.remoteAccess = JSON.parse(parsedCase.remoteAccess);
+    } catch {
+        parsedCase.remoteAccess = [];
+    }
+    }
+
+
+        res.json({ success: true, case: parsedCase });
     } catch (error) {
         res.status(500).json({ success: false, message: "Failed to update case", error });
     }
@@ -734,7 +777,13 @@ export const getCaseById = async (req, res) => {
                 { model: User, as: "techUser", attributes: ["id", "name"] },
             ],
         });
-        res.json({ success: true, case: caseData });
+        const remoteAccess = typeof caseData.remoteAccess === "string"
+            ? JSON.parse(caseData.remoteAccess)
+            : Array.isArray(caseData.remoteAccess)
+            ? caseData.remoteAccess
+            : [];
+
+        res.json({ success: true, case: {...caseData.toJSON(), remoteAccess} });
     } catch (error) {
         res.status(500).json({ success: false, message: "Failed to fetch case", error });
     }

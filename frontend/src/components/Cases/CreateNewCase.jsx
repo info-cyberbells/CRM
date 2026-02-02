@@ -263,13 +263,9 @@ const handleSubmit = async () => {
     submitData = {
         ...formData,
         caseType,
-        remoteID: formData.remoteAccess[0].remoteID,
-        remotePass: formData.remoteAccess[0].remotePass,
-        operatingSystem: formData.remoteAccess[0].operatingSystem,
-        computerPass: formData.remoteAccess[0].computerPass,
+        remoteAccess: formData.remoteAccess,
     };
 
-    delete submitData.remoteAccess;
 
     console.log("Form Data to Submit:", submitData);
 
