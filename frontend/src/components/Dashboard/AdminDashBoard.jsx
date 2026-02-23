@@ -43,6 +43,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { adminDashboard, adminViewCase, fetchAllCasesAdmin, searchTechUser, setAdminCurrentPage, setAdminPageSize, updateCaseDetailsByAdmin, } from '../../features/ADMIN/adminSlice';
 import { useToast } from '../../ToastContext/ToastContext';
+import { logoutUserThunk } from '../../features/UserSlice/UserSlice';
 
 
 const ErrorBanner = ({ message, onRetry }) => {
@@ -117,10 +118,24 @@ const AdminDashboard = () => {
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    useEffect(()=>{
-        dispatch(adminDashboard());
-        dispatch(fetchAllCasesAdmin({currentPage, pageSize}));
-    },[dispatch]);
+    useEffect(() => {
+        const loadDashboard = async () => {
+            try {
+                await dispatch(adminDashboard()).unwrap();
+            } catch (error) {
+                console.log("Dashboard auth failed:", error);
+                localStorage.clear();
+                window.location.replace("/");
+                dispatch(logoutUserThunk());
+            }
+        };
+        loadDashboard();
+    }, [dispatch]);
+
+    // Re-run when pagination changes
+    useEffect(() => {
+        dispatch(fetchAllCasesAdmin({ currentPage, pageSize }));
+    }, [dispatch]);
 
       useEffect(() => {
       if (!activeCaseId || techSearch[activeCaseId] === undefined) {

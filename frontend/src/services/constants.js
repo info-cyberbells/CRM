@@ -39,4 +39,9 @@ export const USER_ENDPOINTS = {
     ADMIN_OVERALL_SUMMARY: `${API_BASE_URL}/admin/overAllSummary`,
 
     ADMIN_NOTIFICATION: `${API_BASE_URL}/admin/notifications`,
+
+    ADMIN_CREATE_AGENT: `${API_BASE_URL}/admin/createAgent`,
+    ADMIN_UPDATE_AGENT: `${API_BASE_URL}/admin/updateAgent`,
+    ADMIN_VIEW_AGENT: `${API_BASE_URL}/admin/getAgent`,
+    ADMIN_GET_ALL_AGENTS: `${API_BASE_URL}/admin/getAllAgents`,
 };

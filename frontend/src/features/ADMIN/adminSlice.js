@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { adminSearchAllCasesService, adminSearchTechUserService, adminViewCaseDetailService, getAdminDashboardDataService, getAdminSaleReportService, getOverallSummaryService, updateCaseByAdminService } from "../../services/services";
+import { adminSearchAllCasesService, adminSearchTechUserService, adminViewCaseDetailService, createAgentService, getAdminDashboardDataService, getAdminSaleReportService, getAllAgentsService, getOverallSummaryService, updateAgentService, updateCaseByAdminService, viewAgentDetailsService } from "../../services/services";
 
 // ADMIN DASBOARD THUNK
 export const adminDashboard = createAsyncThunk(
@@ -101,6 +101,70 @@ export const fetchOverAllSummary = createAsyncThunk(
     }
 );
 
+// Admin get all agent data thunk
+export const getAllAgentsThunk = createAsyncThunk(
+    'admin/getAllAgents',
+    async({ page = 1, limit = 10 }, thunkAPI)=>{
+        try {
+            const response = await getAllAgentsService(page, limit);
+            return {
+                agents: response.agents,
+                pagination: {
+                    currentPage: response.pagination.currentPage,
+                    totalPages: response.pagination.totalPages,
+                    totalCount: response.pagination.total,
+                    pageSize: response.pagination.pageSize,
+            }
+            }
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to get agents data");
+        }
+    }
+)
+
+// create agent by admin thunk
+export const createAgentByAdmin = createAsyncThunk(
+    'admin/createAgent',
+    async(agentData, thunkAPI) => {
+        try {
+            const response = await createAgentService(agentData);
+            return response;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to create agent");
+        }
+    }
+);
+
+// update agent details
+export const updateAgentThunk = createAsyncThunk(
+  "admin/updateAgent",
+  async ({ id, agentData }, thunkAPI) => {
+    try {
+      const response = await updateAgentService(id, agentData);
+      return response.data; 
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to update agent"
+      );
+    }
+  }
+);
+
+export const viewAgentDetailsThunk = createAsyncThunk(
+  "admin/viewAgentDetails",
+  async (id, thunkAPI) => {
+    try {
+      const response = await viewAgentDetailsService(id);
+      return response.data; 
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch agent details"
+      );
+    }
+  }
+);
+
+
 
 
 const adminSlice = createSlice({
@@ -108,7 +172,9 @@ const adminSlice = createSlice({
     initialState : {
         dashboardData: null,
         cases: [],
+        agents: [],
         selectedCase: null,
+        selectedAgent: null,
         searchTechusers: [],
         salesReportData: null,
         overAllSummary: null,
@@ -270,6 +336,69 @@ const adminSlice = createSlice({
             state.isSuccess = false;
             state.error = action.payload;
         })
+            // get all agents data
+        .addCase(getAllAgentsThunk.pending, (state)=>{
+            state.isLoading = true;
+            state.isError = false;
+            state.error = null;
+        })
+        .addCase(getAllAgentsThunk.fulfilled, (state, action)=>{
+            state.isLoading = false;
+            state.agents = action.payload.agents;
+            state.pagination = { ...state.pagination, ...action.payload.pagination};
+        })
+        .addCase(getAllAgentsThunk.rejected, (state, action)=>{
+            state.isLoading = false;
+            state.isError = true;
+            state.error = action.payload;
+        })
+        // create agent by admin
+        .addCase(createAgentByAdmin.pending, (state)=>{
+            state.isLoading = true;
+            state.isError = false;
+            state.error = null;
+        })
+        .addCase(createAgentByAdmin.fulfilled, (state, action)=>{
+            state.isLoading = false;
+        })
+        .addCase(createAgentByAdmin.rejected, (state, action)=>{
+            state.isLoading = false;
+            state.isError = true;
+            state.error = action.payload;
+        })
+
+        .addCase(updateAgentThunk.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.error = null;
+        })
+        .addCase(updateAgentThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.selectedAgent = action.payload;
+        })
+        .addCase(updateAgentThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.error = action.payload;
+        })
+
+
+        .addCase(viewAgentDetailsThunk.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.error = null;
+        })
+
+        .addCase(viewAgentDetailsThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.selectedAgent = action.payload;
+        })
+
+        .addCase(viewAgentDetailsThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.error = action.payload;
+        });
     }
 })
 
