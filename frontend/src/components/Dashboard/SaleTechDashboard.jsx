@@ -56,6 +56,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchDashboardData } from "../../features/DashboardSlice/dashboardSlice";
 import { fetchCaseById, fetchSaleUserCases, setPageSize, setCurrentPage } from "../../features/SearchSlice/searchSlice";
 import { useToast } from "../../ToastContext/ToastContext";
+import { logoutUserThunk } from "../../features/UserSlice/UserSlice";
 
 const NoticeBoard = ({ notices }) => (
   <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
@@ -231,16 +232,32 @@ const SaleTechDashboard = () => {
 
     const { currentPage, pageSize, totalPages, totalCount } = pagination;
 
+    useEffect(() => {
+      const loadDashboard = async () => {
+          try {
+              if (userRole === "sale") {
+                  await dispatch(fetchDashboardData()).unwrap();
+              }
+              if (userRole === "tech") {
+                  await dispatch(techUserDashboard()).unwrap();
+              }
+          } catch (error) {
+              console.log("Dashboard auth failed:", error);
+              localStorage.clear();
+              dispatch(logoutUserThunk());
+              window.location.replace("/");
+          }
+      };
+      loadDashboard();
+  }, [dispatch, userRole]);
 
   useEffect(() => {
-    if (userRole == "sale") {
-      dispatch(fetchDashboardData());
-      dispatch(fetchSaleUserCases({page: currentPage, limit: pageSize}));
-    }
-    if (userRole == "tech") {
-      dispatch(techUserDashboard());
-      dispatch(getTechUserAssignedCases({page: currentPage, limit: pageSize}));
-    }
+      if (userRole === "sale") {
+          dispatch(fetchSaleUserCases({ page: currentPage, limit: pageSize }));
+      }
+      if (userRole === "tech") {
+          dispatch(getTechUserAssignedCases({ page: currentPage, limit: pageSize }));
+      }
   }, [dispatch, userRole]);
 
   const data = userRole === "sale" ? saleData : dashboardData;

@@ -31,6 +31,7 @@ const ROLE_BASED_MENUS = {
   Admin: [
     { id: "admin-dashboard", title: "Admin Dashboard", icon: LayoutDashboard },
     {id: "search-cases",title: "Search",icon: Search,},
+        { id: "my-team", title: "My Team", icon: Users },
   { id: "notices", title: "Notices",icon: FileText,},
   { id: "sales-report", title: "Sales Report",icon: ChartNoAxesCombined,},
 //   { id: "chat", title: "Chat", icon: MessageSquare,},

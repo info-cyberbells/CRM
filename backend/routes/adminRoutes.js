@@ -1,5 +1,5 @@
 import express from "express";
-import { createUser, getUsers, getUserById } from "../controllers/userController.js";
+import { createUser, getUsers, getUserById, createAgent, updateAgentDetails, viewAgentDetails, getAllAgents } from "../controllers/userController.js";
 import roleGuard from "../middleware/roleGuard.js";
 import { getDashboardData } from "../controllers/dashbaordController.js";
 import { getAllCases, getCaseById, getOverallSummary, saleReportGraph, searchTechUser, updateCase } from "../controllers/caseController.js";
@@ -42,5 +42,12 @@ router.get("/overAllSummary", getOverallSummary);
 router.post("/createUser", createUser);
 router.get("/getUsers", getUsers);
 router.get("/getUser/:id", getUserById);
+
+
+//AGENTS ROUTES
+router.post("/createAgent", createAgent);
+router.put("/updateAgent/:id", updateAgentDetails);
+router.get("/getAgent/:id", viewAgentDetails);
+router.get("/getAllAgents", getAllAgents);
 
 export default router;

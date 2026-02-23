@@ -6,10 +6,20 @@ const authGuard = async (req, res, next) => {
         const token = req.cookies?.authToken;
 
         if (!token) {
-            return res.status(401).json({ message: "Unauthorized" });
+            return res.status(401).json({error: "AUTH_ERROR", code: "TOKEN_MISSING", message: "Unauthorized" });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        let decoded;
+
+        try {
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (err) {
+            return res.status(401).json({
+                error: "AUTH_ERROR",
+                code: "TOKEN_EXPIRED",
+                message: "Session expired. Please login again."
+            });
+        }
 
         const user = await User.findByPk(decoded.id, {
             attributes: { exclude: ["password"] },
@@ -17,7 +27,7 @@ const authGuard = async (req, res, next) => {
 
         if (!user) {
             res.clearCookie("authToken");
-            return res.status(401).json({ message: "Session expired" });
+            return res.status(401).json({error: "AUTH_ERROR",code: "USER_NOT_FOUND", message: "Session expired" });
         }
 
         req.user = {

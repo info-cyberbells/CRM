@@ -46,11 +46,10 @@ const CreateNewCase = () => {
     });
 
     const operatingSystems = [
-        "Windows 10",
-        "Windows 11",
-        "macOS",
-        "Linux Ubuntu",
-        "Linux Mint",
+        "Windows",
+        "Mac",
+        "Chromebook",
+        "IOS",
     ];
 
     const planOptions = ["Silver", "Gold", "Platinum"];

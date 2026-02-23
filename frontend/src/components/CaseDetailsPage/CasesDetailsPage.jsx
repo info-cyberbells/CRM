@@ -50,11 +50,10 @@ import { useToast } from "../../ToastContext/ToastContext";
  * --- CONSTANTS ---
  */
 const operatingSystems = [
-  "Windows 10",
-  "Windows 11",
-  "macOS",
-  "Linux Ubuntu",
-  "Linux Mint",
+        "Windows",
+        "Mac",
+        "Chromebook",
+        "IOS",
 ];
 const securitySoftwareOptions = [
   "Norton",

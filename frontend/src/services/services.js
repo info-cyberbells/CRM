@@ -15,9 +15,7 @@ axios.interceptors.response.use(
             console.log('Unauthorized - token may have expired');
         }
 
-        // Extract error message
-        const message = error.response?.data?.message || error.message || 'Something went wrong';
-        return Promise.reject(new Error(message));
+        return Promise.reject(error);
     }
 );
 
@@ -280,13 +278,18 @@ export const getTechUserOngoingCasesService = async (page, limit) => {
 
 //  ADMIN DASHBOARD SERVICE
 export const getAdminDashboardDataService = async () => {
-    const response = await axios.get(USER_ENDPOINTS.ADMIN_DASHBOARD, {
-        withCredentials: true,
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-    return response.data;
+     try {
+        const response = await axios.get(USER_ENDPOINTS.ADMIN_DASHBOARD, {
+            withCredentials: true,
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
 };
 
 
@@ -486,6 +489,80 @@ export const getOverallSummaryService = async ()=>{
                 },
             },
         );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+//Get All agents
+export const getAllAgentsService = async(page, limit) => {
+    try {
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+        });
+
+        const response = await axios.get(
+            `${USER_ENDPOINTS.ADMIN_GET_ALL_AGENTS}?${queryParams}`,{
+                withCredentials: true,
+                headers: {
+                    'Content-Type' : 'application/json'
+            }
+        },
+        );
+
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// create agent by admin
+export const createAgentService = async(agentData) => {
+    try {
+        const response = await axios.post(
+            USER_ENDPOINTS.ADMIN_CREATE_AGENT, agentData, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type' : 'application/json'
+                }
+            }
+        )
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// update agent details by admin
+export const updateAgentService = async(id, agentData) => {
+    try {
+        const response = await axios.put(
+            `${USER_ENDPOINTS.ADMIN_UPDATE_AGENT}/${id}`, agentData, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type' : 'application/json'
+            }
+            },
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+//view agent details by admin
+export const viewAgentDetailsService = async(id) => {
+    try {
+        const response = await axios.get(
+            `${USER_ENDPOINTS.ADMIN_VIEW_AGENT}/${id}`, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type' : 'application/json'
+                }
+            }
+        )
         return response.data;
     } catch (error) {
         throw error;
