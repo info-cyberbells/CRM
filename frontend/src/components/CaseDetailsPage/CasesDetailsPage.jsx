@@ -27,6 +27,8 @@ import {
   Activity,
   StickyNote,
   AlertCircle,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -45,16 +47,12 @@ import {
   resetSelectedCases,
 } from "../../features/ADMIN/adminSlice";
 import { useToast } from "../../ToastContext/ToastContext";
+import { addCaseNoteTech, getCaseNotesTech, addCaseNoteSale, getCaseNotesSale, addCaseNoteAdmin, getCaseNotesAdmin } from "../../features/CaseNotes/casenotesSlice";
 
 /**
  * --- CONSTANTS ---
  */
-const operatingSystems = [
-        "Windows",
-        "Mac",
-        "Chromebook",
-        "IOS",
-];
+const operatingSystems = ["Windows", "Mac", "Chromebook", "IOS"];
 const securitySoftwareOptions = [
   "Norton",
   "McAfee",
@@ -62,7 +60,7 @@ const securitySoftwareOptions = [
   "Bitdefender",
   "Avast",
 ];
-  const planOptions = ["Silver", "Gold", "Platinum"];
+const planOptions = ["Silver", "Gold", "Platinum"];
 
 const planDurationOptions = [
   "1 Year",
@@ -133,12 +131,68 @@ const StatusConfirmModal = ({ isOpen, onCancel, onConfirm, pendingStatus }) => {
   );
 };
 
+
+// add new note text box
+const NoteInput = ({ newNote, handleInputChange, handlePostNote }) => (
+  <div className="mt-4 pt-5 border-t border-slate-100">
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex gap-1.5">
+        {['General', 'Urgent', 'Follow-up'].map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => handleInputChange('type', type)}
+            className={`text-xs font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full border transition-all ${
+              newNote.type === type 
+                ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
+                : 'bg-white border-slate-200 text-slate-400 hover:border-slate-300'
+            }`}
+          >
+            {type}
+          </button>
+        ))}
+      </div>
+      <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+        New Note
+      </span>
+    </div>
+
+    <div className="relative group">
+      <textarea
+        placeholder="Type note..."
+        value={newNote.text}
+        onChange={(e) => handleInputChange('text', e.target.value)}
+        className="w-full p-4 pr-14 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none font-medium text-sm transition-all min-h-[90px] resize-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
+      />
+      <button 
+        type="button"
+        onClick={handlePostNote}
+        disabled={!newNote.text.trim()}
+        className="absolute bottom-3 cursor-pointer right-3 p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-100 active:scale-95"
+        aria-label="Send note"
+      >
+        <Send size={18} />
+      </button>
+    </div>
+  </div>
+);
+
+
+
+
+
+
 const CaseDetailPage = () => {
   const { caseId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const { showToast } = useToast();
+
+  const [newNote, setNewNote] = useState({
+    type: "General",
+    text: ""
+  });
 
   const [editing, setEditing] = useState(location.state?.editing || false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -148,13 +202,13 @@ const CaseDetailPage = () => {
   const role = localStorage.getItem("Role")?.toLowerCase() || "admin";
   const isTech = role === "tech";
   const isAdmin = role === "admin";
+  const isSale = role === "sale";
 
   const [techSearch, setTechSearch] = useState("");
   const [showTechDropdown, setShowTechDropdown] = useState(false);
   const techDropdownRef = useRef(null);
   const [activeRemoteIndex, setActiveRemoteIndex] = useState(0);
   const [showAllRemotes, setShowAllRemotes] = useState(false);
-
 
   // Get data from Redux
   const { selectedCase: techSelectedCase, isLoading: techLoading } =
@@ -174,6 +228,10 @@ const CaseDetailPage = () => {
       ? adminSelectedCase
       : salesSelectedCase;
   const loading = isTech ? techLoading : isAdmin ? adminLoading : salesLoading;
+
+  const { notes, addloading, notesloading, noteserror } = useSelector(
+    (state) => state.caseNotes,
+  );
 
   useEffect(() => {
     //   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -218,11 +276,11 @@ const CaseDetailPage = () => {
     techUser: { name: "" },
   });
 
-  const remoteList =
-  showAllRemotes
+  const remoteList = showAllRemotes
     ? formData.remoteAccess || []
-    : (formData.remoteAccess?.length ? [formData.remoteAccess[0]] : []);
-
+    : formData.remoteAccess?.length
+      ? [formData.remoteAccess[0]]
+      : [];
 
   // Update formData when data loads
   useEffect(() => {
@@ -293,6 +351,27 @@ const CaseDetailPage = () => {
     }
   }, [caseId]);
 
+  useEffect(() => {
+    if (isTech) {
+      dispatch(getCaseNotesTech(caseId));
+    } else if (isAdmin) {
+      dispatch(getCaseNotesAdmin(caseId));
+    } else if (isSale){
+      dispatch(getCaseNotesSale(caseId));
+    }
+  }, []);
+
+  const adminNotes =
+    notes?.filter((note) => note.createdByRole === "Admin") || [];
+
+  const techNotes =
+    notes?.filter((note) => note.createdByRole === "Tech") || [];
+
+  const saleNotes =
+    notes?.filter((note) => note.createdByRole === "Sale") || [];
+
+ 
+
   // Add useEffect for tech search
   useEffect(() => {
     // if (techSearch.length < 2) {
@@ -311,29 +390,31 @@ const CaseDetailPage = () => {
   }, [techSearch, dispatch]);
 
   useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (techDropdownRef.current && !techDropdownRef.current.contains(event.target)) {
-      setShowTechDropdown(false);
+    const handleClickOutside = (event) => {
+      if (
+        techDropdownRef.current &&
+        !techDropdownRef.current.contains(event.target)
+      ) {
+        setShowTechDropdown(false);
+      }
+    };
+
+    if (showTechDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showTechDropdown]);
+
+  const handleRemoteChange = (index, field, value) => {
+    setFormData((prev) => {
+      const updated = [...prev.remoteAccess];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, remoteAccess: updated };
+    });
   };
-
-  if (showTechDropdown) {
-    document.addEventListener('mousedown', handleClickOutside);
-  }
-
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
-  };
-}, [showTechDropdown]);
-
-const handleRemoteChange = (index, field, value) => {
-  setFormData((prev) => {
-    const updated = [...prev.remoteAccess];
-    updated[index] = { ...updated[index], [field]: value };
-    return { ...prev, remoteAccess: updated };
-  });
-};
-
 
   const handleBack = () => {
     navigate(-1);
@@ -342,14 +423,12 @@ const handleRemoteChange = (index, field, value) => {
     }
   };
 
-  
   const normalizeCaseData = (data) => ({
-  ...data,
-  saleNoteType: data.saleNoteType || null,
-  techNoteType: data.techNoteType || null,
-  adminNoteType: data.adminNoteType || null,
-});
-
+    ...data,
+    saleNoteType: data.saleNoteType || null,
+    techNoteType: data.techNoteType || null,
+    adminNoteType: data.adminNoteType || null,
+  });
 
   const handleToggleEdit = async (newEditingState) => {
     const normalizedData = normalizeCaseData(formData);
@@ -359,7 +438,10 @@ const handleRemoteChange = (index, field, value) => {
       try {
         if (isTech) {
           await dispatch(
-            updateCaseByTech({ caseId: normalizedData.caseId, caseData: normalizedData }),
+            updateCaseByTech({
+              caseId: normalizedData.caseId,
+              caseData: normalizedData,
+            }),
           ).unwrap();
           // Re-fetch to get updated data
           await dispatch(getSingleCaseById(caseId)).unwrap();
@@ -374,7 +456,10 @@ const handleRemoteChange = (index, field, value) => {
           await dispatch(adminViewCase(caseId)).unwrap();
         } else {
           await dispatch(
-            updateCase({ caseId: normalizedData.caseId, caseData: normalizedData }),
+            updateCase({
+              caseId: normalizedData.caseId,
+              caseData: normalizedData,
+            }),
           ).unwrap();
           // Re-fetch to get updated data
           await dispatch(fetchCaseById(caseId)).unwrap();
@@ -448,6 +533,146 @@ const handleRemoteChange = (index, field, value) => {
     );
   }
 
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const NoteBubble = ({ note }) => {
+    if (!note) return null;
+
+    const typeStyles = {
+      Urgent:
+        "bg-rose-50 border-rose-100 text-rose-900 shadow-[0_4px_12px_rgba(244,63,94,0.08)]",
+      "Follow-up":
+        "bg-amber-50 border-amber-100 text-amber-900 shadow-[0_4px_12px_rgba(245,158,11,0.08)]",
+      General:
+        "bg-slate-50 border-slate-100 text-slate-900 shadow-[0_4px_12px_rgba(71,85,105,0.04)]",
+    };
+
+    const badgeStyles = {
+      Urgent: "bg-rose-500 text-white",
+      "Follow-up": "bg-amber-500 text-white",
+      General: "bg-slate-500 text-white",
+    };
+
+    const initials =
+      note?.creator?.name
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase() || "NA";
+
+    return (
+      <div
+        className={`p-4 rounded-2xl border mb-4 transition-all hover:translate-y-[-2px] ${
+          typeStyles[note.noteType] || typeStyles.General
+        }`}
+      >
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden">
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-500 font-bold text-[10px]">
+                {initials}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[12px] font-black uppercase tracking-normal text-slate-700 leading-none mb-1">
+                {note?.creator?.name || "Unknown"}
+              </p>
+
+              <p className="text-[11px] font-semibold flex items-center gap-1">
+                <Clock size={8} />
+                {note?.created_at ? formatTime(note.created_at) : "—"}
+              </p>
+            </div>
+          </div>
+
+          <span
+            className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wider ${
+              badgeStyles[note.noteType] || badgeStyles.General
+            }`}
+          >
+            {note.noteType || "General"}
+          </span>
+        </div>
+
+        <p className="text-[13px] font-medium leading-relaxed">
+          {note.noteText || "—"}
+        </p>
+      </div>
+    );
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewNote((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+
+
+const handlePostNote = async () => {
+  if (!newNote.text.trim()) return;
+
+  try {
+    const payload = {
+      noteType: newNote.type,
+      noteText: newNote.text
+    };
+
+    if (isTech) {
+      await dispatch(
+        addCaseNoteTech({
+          caseId,
+          noteData: payload
+        })
+      ).unwrap();
+
+      await dispatch(getCaseNotesTech(caseId));
+
+    } else if (isAdmin) {
+      await dispatch(
+        addCaseNoteAdmin({
+          caseId,
+          noteData: payload
+        })
+      ).unwrap();
+
+      await dispatch(getCaseNotesAdmin(caseId));
+
+    } else if (isSale) {
+      await dispatch(
+        addCaseNoteSale({
+          caseId,
+          noteData: payload
+        })
+      ).unwrap();
+
+      await dispatch(getCaseNotesSale(caseId));
+    }
+
+    // Clear input after success
+    setNewNote({
+      type: "General",
+      text: ""
+    });
+
+    showToast("Note added successfully", "success");
+
+  } catch (error) {
+    console.error("Failed to add note:", error);
+    showToast("Failed to add note", "error");
+  }
+};
+
   return (
     <div className="max-w-7xl font-[Poppins] mx-auto animate-in slide-in-from-right duration-500 pb-20 space-y-6">
       {/* Confirmation Modal */}
@@ -486,18 +711,18 @@ const handleRemoteChange = (index, field, value) => {
             </div>
           </div>
           <div className="flex gap-3">
-            {isAdmin && 
-            <button
-              onClick={() => handleToggleEdit(!editing)}
-              className={`px-8 py-3 cursor-pointer rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 ${
-                editing
-                  ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100"
-                  : "bg-slate-900 text-white"
-              }`}
-            >
-              {editing ? "Save Records" : "Enter Edit Mode"}
-            </button>
-            }
+            {isAdmin && (
+              <button
+                onClick={() => handleToggleEdit(!editing)}
+                className={`px-8 py-3 cursor-pointer rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg transition-all active:scale-95 ${
+                  editing
+                    ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100"
+                    : "bg-slate-900 text-white"
+                }`}
+              >
+                {editing ? "Save Records" : "Enter Edit Mode"}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -720,9 +945,7 @@ const handleRemoteChange = (index, field, value) => {
           </div>
 
           {/* Technical Information */}
-  <div
-    className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm space-y-6"
-  >
+          <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm space-y-6">
             <div className="flex items-center gap-2 text-blue-600 border-b border-slate-50 pb-4">
               <Monitor size={20} strokeWidth={2.5} />
               <h3 className="text-sm font-black uppercase tracking-widest">
@@ -777,9 +1000,8 @@ const handleRemoteChange = (index, field, value) => {
                 )}
               </div>
             </div>
-             {/* Model Number */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
+            {/* Model Number */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
                   Model Number
@@ -803,147 +1025,171 @@ const handleRemoteChange = (index, field, value) => {
                   )}
                 </div>
               </div>
-              </div>
-                 {remoteList.map((remote, index) => (
-                    <div
-    key={remote.id ?? index}
-    className="bg-white rounded-[2rem] p-8 border border-slate-100 space-y-6"
-  >
-    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-      <h4 className="text-sm font-black uppercase tracking-widest text-blue-600">
-        Remote Access Info {index + 1}
-      </h4>
-
-      {!editing && (
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-          ID: {remote.id}
-        </span>
-      )}
-    </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* OS */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Operating System
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <Monitor size={16} />
-                  </div>
-                  {editing ? (
-                    <select
-                      name="operatingSystem"
-                      value={remote.operatingSystem}
-                      onChange={(e)=> handleRemoteChange(index, "operatingSystem", e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all appearance-none"
-                    >
-                      {operatingSystems.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {remote.operatingSystem || "—"}
-                    </div>
-                  )}
-                  {editing && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                      <ChevronRight size={14} className="rotate-90" />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Remote ID */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Remote ID
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <LayoutGrid size={16} />
-                  </div>
-                  {editing ? (
-                    <input
-                      type="text"
-                      name="remoteID"
-                      value={remote.remoteID}
-                      onChange={(e)=> handleRemoteChange(index, "remoteID", e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {remote.remoteID || "—"}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Remote Password */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Remote Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <Lock size={16} />
-                  </div>
-                  {editing ? (
-                    <input
-                      type="text"
-                      name="remotePass"
-                      value={remote.remotePass}
-                      onChange={(e)=> handleRemoteChange(index, "remotePass", e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {remote.remotePass || "—"}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
-                  Computer Pass
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
-                    <Lock size={16} />
-                  </div>
-                  {editing ? (
-                    <input
-                      type="text"
-                      name="computerPass"
-                      value={remote.computerPass}
-                      onChange={(e)=> handleRemoteChange(index, "computerPass", e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
-                      {remote.computerPass || "—"}
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
-</div>
-          ))}
-            
-          {formData.remoteAccess?.length > 1 && (
-  <div className="flex justify-center mt-4">
-    <button
-      onClick={() => setShowAllRemotes((p) => !p)}
-      className="text-xs cursor-pointer font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-800"
-    >
-      {showAllRemotes ? "Show Less" : "Show More Remote Access"}
-    </button>
-  </div>
-)}
-          </div> 
+            {remoteList.map((remote, index) => (
+              <div
+                key={remote.id ?? index}
+                className="bg-white rounded-[2rem] p-8 border border-slate-100 space-y-6"
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h4 className="text-sm font-black uppercase tracking-widest text-blue-600">
+                    Remote Access Info {index + 1}
+                  </h4>
+
+                  {!editing && (
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      ID: {remote.id}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* OS */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                      Operating System
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                        <Monitor size={16} />
+                      </div>
+                      {editing ? (
+                        <select
+                          name="operatingSystem"
+                          value={remote.operatingSystem}
+                          onChange={(e) =>
+                            handleRemoteChange(
+                              index,
+                              "operatingSystem",
+                              e.target.value,
+                            )
+                          }
+                          className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all appearance-none"
+                        >
+                          {operatingSystems.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                          {remote.operatingSystem || "—"}
+                        </div>
+                      )}
+                      {editing && (
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                          <ChevronRight size={14} className="rotate-90" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Remote ID */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                      Remote ID
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                        <LayoutGrid size={16} />
+                      </div>
+                      {editing ? (
+                        <input
+                          type="text"
+                          name="remoteID"
+                          value={remote.remoteID}
+                          onChange={(e) =>
+                            handleRemoteChange(
+                              index,
+                              "remoteID",
+                              e.target.value,
+                            )
+                          }
+                          className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                          {remote.remoteID || "—"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Remote Password */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                      Remote Password
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                        <Lock size={16} />
+                      </div>
+                      {editing ? (
+                        <input
+                          type="text"
+                          name="remotePass"
+                          value={remote.remotePass}
+                          onChange={(e) =>
+                            handleRemoteChange(
+                              index,
+                              "remotePass",
+                              e.target.value,
+                            )
+                          }
+                          className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                          {remote.remotePass || "—"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-slate-400">
+                      Computer Pass
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-slate-300 group-focus-within:text-emerald-500">
+                        <Lock size={16} />
+                      </div>
+                      {editing ? (
+                        <input
+                          type="text"
+                          name="computerPass"
+                          value={remote.computerPass}
+                          onChange={(e) =>
+                            handleRemoteChange(
+                              index,
+                              "computerPass",
+                              e.target.value,
+                            )
+                          }
+                          className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-bold text-sm transition-all shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-full pl-12 pr-4 py-4 rounded-2xl border border-transparent font-bold text-sm bg-slate-50/50 text-slate-700">
+                          {remote.computerPass || "—"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {formData.remoteAccess?.length > 1 && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setShowAllRemotes((p) => !p)}
+                  className="text-xs cursor-pointer font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-800"
+                >
+                  {showAllRemotes ? "Show Less" : "Show More Remote Access"}
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Special Notes Section */}
           <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm space-y-6 relative overflow-hidden">
@@ -978,121 +1224,106 @@ const handleRemoteChange = (index, field, value) => {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex justify-between">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
-                  Sale Note
-                </label>
-                {formData.saleNoteType && (
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase
-          ${
-            formData.saleNoteType === "Urgent"
-              ? "bg-rose-100 text-rose-600"
-              : formData.saleNoteType === "Follow-up"
-                ? "bg-amber-100 text-amber-600"
-                : "bg-slate-100 text-slate-600"
-          }`}
-                  >
-                    {formData.saleNoteType}
-                  </span>
-                )}
-              </div>
-              <div className="pl-4 pr-4 py-4 rounded-2xl bg-slate-50 text-slate-700 font-bold text-sm min-h-[80px]">
-                {formData.saleNoteText || "—"}
-              </div>
-            </div>
+            <div className="grid grid-cols-1 gap-12">
+              {" "}
+              {/* SALE NOTES SECTION */}{" "}
+              <section className="space-y-5">
+                {" "}
+                <div className="flex items-center gap-3 text-indigo-600 px-1">
+                  {" "}
+                  <div className="p-2 bg-indigo-50 rounded-lg">
+                    {" "}
+                    <MessageSquare size={16} />{" "}
+                  </div>{" "}
+                  <h4 className="text-[12px] font-black uppercase tracking-[0.2em]">
+                    Sale Agent Notes
+                  </h4>{" "}
+                  <div className="h-[1px] flex-grow bg-gradient-to-r from-indigo-100 to-transparent"></div>{" "}
+                </div>{" "}
+                <div className="max-h-[350px] overflow-y-auto px-1 custom-scrollbar">
+                  {" "}
+                  {saleNotes.length > 0 ? (
+                    saleNotes.map((note) => (
+                      <NoteBubble key={note.id} note={note} />
+                    ))
+                  ) : (
+                    <p className="text-xs text-slate-400 italic text-center py-6 border-2 border-dashed border-slate-100 rounded-3xl">
+                      No sales activity logged yet.
+                    </p>
+                  )}{" "}
+                </div>{" "}
+                {isSale &&  <NoteInput
+                        newNote={newNote}
+                        handleInputChange={handleInputChange}
+                        handlePostNote={handlePostNote}
+                      /> } 
+              </section>{" "}
 
-            {/* TECH NOTE */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
-                  Tech Note
-                </label>
 
-                {formData.techNoteType && (
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase
-          ${
-            formData.techNoteType === "Urgent"
-              ? "bg-rose-100 text-rose-600"
-              : formData.techNoteType === "Follow-up"
-                ? "bg-amber-100 text-amber-600"
-                : "bg-slate-100 text-slate-600"
-          }`}
-                  >
-                    {formData.techNoteType}
-                  </span>
-                )}
-              </div>
-              <div className="pl-4 pr-4 py-4 rounded-2xl bg-slate-50 text-slate-700 font-bold text-sm min-h-[80px]">
-                {formData.techNoteText || "—"}
-              </div>
-            </div>
-
-            {/* ADMIN NOTE */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
-                  Admin Note
-                </label>
-
-                {/* NOTE TYPE */}
-                {isAdmin && editing ? (
-                  <select
-                    value={formData.adminNoteType || "General"}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        adminNoteType: e.target.value,
-                      }))
-                    }
-                    className="text-[9px] font-black uppercase rounded-full px-2 py-1
-                   bg-white border border-slate-200 text-slate-600
-                   focus:outline-none focus:border-emerald-500"
-                  >
-                    <option value="General">General</option>
-                    <option value="Urgent">Urgent</option>
-                    <option value="Follow-up">Follow-up</option>
-                  </select>
-                ) : (
-                  formData.adminNoteType && (
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase
-            ${
-              formData.adminNoteType === "Urgent"
-                ? "bg-rose-100 text-rose-600"
-                : formData.adminNoteType === "Follow-up"
-                  ? "bg-amber-100 text-amber-600"
-                  : "bg-slate-100 text-slate-600"
-            }`}
-                    >
-                      {formData.adminNoteType}
-                    </span>
-                  )
-                )}
-              </div>
-
-              {/* NOTE TEXT */}
-              {isAdmin && editing ? (
-                <textarea
-                  value={formData.adminNoteText || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      adminNoteText: e.target.value,
-                    }))
-                  }
-                  placeholder="Write admin note..."
-                  className="w-full pl-4 pr-4 py-4 rounded-2xl border border-slate-200
-                 bg-white text-slate-700 font-bold text-sm min-h-[100px]
-                 focus:outline-none focus:border-emerald-500 transition-all"
-                />
-              ) : (
-                <div className="pl-4 pr-4 py-4 rounded-2xl bg-slate-50 text-slate-700 font-bold text-sm min-h-[80px]">
-                  {formData.adminNoteText || "—"}
-                </div>
-              )}
+              {/* TECH NOTES SECTION */}{" "}
+              <section className="space-y-5">
+                {" "}
+                <div className="flex items-center gap-3 text-emerald-600 px-1">
+                  {" "}
+                  <div className="p-2 bg-emerald-50 rounded-lg">
+                    {" "}
+                    <AlertCircle size={16} />{" "}
+                  </div>{" "}
+                  <h4 className="text-[12px] font-black uppercase tracking-[0.2em]">
+                    Tech Agent Notes
+                  </h4>{" "}
+                  <div className="h-[1px] flex-grow bg-gradient-to-r from-emerald-100 to-transparent"></div>{" "}
+                </div>{" "}
+                <div className="max-h-[350px] overflow-y-auto px-1 custom-scrollbar">
+                  {" "}
+                  {techNotes.length > 0 ? (
+                    techNotes.map((note) => (
+                      <NoteBubble key={note.id} note={note} />
+                    ))
+                  ) : (
+                    <p className="text-xs text-slate-400 italic text-center py-6 border-2 border-dashed border-slate-100 rounded-3xl">
+                      No technical updates found.
+                    </p>
+                  )}{" "}
+                </div>{" "}
+                {isTech &&  <NoteInput
+                        newNote={newNote}
+                        handleInputChange={handleInputChange}
+                        handlePostNote={handlePostNote}
+                      /> } 
+                    </section>{" "}
+              {/* ADMIN NOTES SECTION */}{" "}
+              <section className="space-y-5">
+                {" "}
+                <div className="flex items-center gap-3 text-slate-900 px-1">
+                  {" "}
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    {" "}
+                    <User size={16} />{" "}
+                  </div>{" "}
+                  <h4 className="text-[12px] font-black uppercase tracking-[0.2em]">
+                    Admin Note
+                  </h4>{" "}
+                  <div className="h-[1px] flex-grow bg-gradient-to-r from-slate-200 to-transparent"></div>{" "}
+                </div>{" "}
+                <div className="max-h-[350px] overflow-y-auto px-1 custom-scrollbar">
+                  {" "}
+                  {adminNotes.length > 0 ? (
+                    adminNotes.map((note) => (
+                      <NoteBubble key={note.id} note={note} />
+                    ))
+                  ) : (
+                    <p className="text-xs text-slate-400 italic text-center py-6 border-2 border-dashed border-slate-100 rounded-3xl">
+                      No admin directives recorded.
+                    </p>
+                  )}{" "}
+                </div>{" "}
+                {isAdmin &&  <NoteInput
+                        newNote={newNote}
+                        handleInputChange={handleInputChange}
+                        handlePostNote={handlePostNote}
+                      /> }
+              </section>{" "}
             </div>
           </div>
         </div>
@@ -1126,10 +1357,10 @@ const handleRemoteChange = (index, field, value) => {
                   <option value="Closed">Closed</option>
                   {/* {isAdmin && (
                     <> */}
-                      <option value="Void">Void</option>
-                      <option value="Refund">Refund</option>
-                      <option value="Chargeback">Chargeback</option>
-                    {/* </>
+                  <option value="Void">Void</option>
+                  <option value="Refund">Refund</option>
+                  <option value="Chargeback">Chargeback</option>
+                  {/* </>
                   )} */}
                 </select>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
@@ -1181,8 +1412,8 @@ const handleRemoteChange = (index, field, value) => {
                         onFocus={() => {
                           setShowTechDropdown(true);
                           if (!showTechDropdown) {
-                              dispatch(searchTechUser(techSearch || ""));
-                            }
+                            dispatch(searchTechUser(techSearch || ""));
+                          }
                         }}
                         onChange={(e) => {
                           setTechSearch(e.target.value);
@@ -1210,59 +1441,57 @@ const handleRemoteChange = (index, field, value) => {
                         } outline-none font-bold text-sm transition-all shadow-sm`}
                       />
 
-                      {showTechDropdown &&
-                        
-                        isAdmin && (
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 max-h-60 overflow-y-auto">
-                            {searchLoading ? (
-                              <div className="p-4 text-center text-slate-500">
-                                <RefreshCw
-                                  className="animate-spin inline-block mr-2"
-                                  size={16}
-                                />
-                                Searching...
-                              </div>
-                            ) : searchTechusers.length === 0 ? (
-                              <div className="p-4 text-center text-slate-400 text-sm">
-                                No tech user found with this keyword
-                              </div>
-                            ) : (
-                              searchTechusers.map((user) => (
-                                <div
-                                  key={user.id}
-                                  className="p-4 hover:bg-emerald-50 cursor-pointer transition-colors border-b border-slate-50 last:border-b-0"
-                                  onClick={() => {
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      techUserId: user.id,
-                                      techUser: { name: user.name },
-                                    }));
-                                    setTechSearch(""); // Clear search after selection
-                                    setShowTechDropdown(false);
-                                    showToast(
-                                      "Click Save Records to Save",
-                                      "info",
-                                    );
-                                  }}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black">
-                                      {user.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-black text-slate-700">
-                                        {user.name}
-                                      </p>
-                                      <p className="text-xs text-slate-400 truncate">
-                                        {user.email}
-                                      </p>
-                                    </div>
+                      {showTechDropdown && isAdmin && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                          {searchLoading ? (
+                            <div className="p-4 text-center text-slate-500">
+                              <RefreshCw
+                                className="animate-spin inline-block mr-2"
+                                size={16}
+                              />
+                              Searching...
+                            </div>
+                          ) : searchTechusers.length === 0 ? (
+                            <div className="p-4 text-center text-slate-400 text-sm">
+                              No tech user found with this keyword
+                            </div>
+                          ) : (
+                            searchTechusers.map((user) => (
+                              <div
+                                key={user.id}
+                                className="p-4 hover:bg-emerald-50 cursor-pointer transition-colors border-b border-slate-50 last:border-b-0"
+                                onClick={() => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    techUserId: user.id,
+                                    techUser: { name: user.name },
+                                  }));
+                                  setTechSearch(""); // Clear search after selection
+                                  setShowTechDropdown(false);
+                                  showToast(
+                                    "Click Save Records to Save",
+                                    "info",
+                                  );
+                                }}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black">
+                                    {user.name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-black text-slate-700">
+                                      {user.name}
+                                    </p>
+                                    <p className="text-xs text-slate-400 truncate">
+                                      {user.email}
+                                    </p>
                                   </div>
                                 </div>
-                              ))
-                            )}
-                          </div>
-                        )}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1360,7 +1589,6 @@ const handleRemoteChange = (index, field, value) => {
               </div>
 
               <div className="grid grid-cols-1 gap-6">
-                
                 {/* Security Software */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black uppercase tracking-[0.15em] ml-1 text-emerald-200">
@@ -1382,7 +1610,6 @@ const handleRemoteChange = (index, field, value) => {
                         {formData.securitySoftware || "—"}
                       </div>
                     )}
-                    
                   </div>
                 </div>
                 {/* Duration */}

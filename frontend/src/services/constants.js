@@ -13,12 +13,17 @@ export const USER_ENDPOINTS = {
     SALE_USER_NOTIFICATION: `${API_BASE_URL}/sale-user/notifications`,
 
     SALE_PREVIEW_CASEID: `${API_BASE_URL}/sale-user/previewCaseId`, 
+    SALE_USER_CREATE_NOTE: `${API_BASE_URL}/sale-user/createNote`,
+    SALE_USER_GET_NOTES: `${API_BASE_URL}/sale-user/getCaseNotes`,
 
     TECH_USER_DASHBOARD: `${API_BASE_URL}/tech-user/dashboard`,
 
     TECH_USER_MY_CASES: `${API_BASE_URL}/tech-user/my-cases`,
     TECH_USER_GET_CASE_BY_ID: `${API_BASE_URL}/tech-user/getCaseById`,
     TECH_USER_UPDATE_CASE: `${API_BASE_URL}/tech-user/updateCase`,
+
+    TECH_USER_CREATE_NOTE: `${API_BASE_URL}/tech-user/createNote`,
+    TECH_USER_GET_NOTES: `${API_BASE_URL}/tech-user/getCaseNotes`,
 
 
     TECH_USER_NOTIFICATIONS: `${API_BASE_URL}/tech-user/notifications`,
@@ -44,4 +49,7 @@ export const USER_ENDPOINTS = {
     ADMIN_UPDATE_AGENT: `${API_BASE_URL}/admin/updateAgent`,
     ADMIN_VIEW_AGENT: `${API_BASE_URL}/admin/getAgent`,
     ADMIN_GET_ALL_AGENTS: `${API_BASE_URL}/admin/getAllAgents`,
+
+    ADMIN_CREATE_NOTE: `${API_BASE_URL}/admin/createNote`,
+    ADMIN_GET_NOTES: `${API_BASE_URL}/admin/getCaseNotes`,
 };

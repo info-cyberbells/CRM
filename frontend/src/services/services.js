@@ -172,6 +172,36 @@ export const saleUserNotificationService = async ()=>{
     return response.data;
 }
 
+// GET CASE NOTES BY Sale USER
+export const getCaseNotesSaleService = async (caseId) => {
+    try {
+        const response = await axios.get(`${USER_ENDPOINTS.SALE_USER_GET_NOTES}/${caseId}`, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+//ADD NOTE BY Sale USER
+export const addCaseNoteSaleService = async (caseId, noteData) => {
+    try {
+        const response = await axios.post(`${USER_ENDPOINTS.SALE_USER_CREATE_NOTE}/${caseId}`, noteData, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+
+
+
 export const getTechDashboardData = async () => {
     const response = await axios.get(USER_ENDPOINTS.TECH_USER_DASHBOARD, {
         withCredentials: true,
@@ -265,6 +295,31 @@ export const getTechUserOngoingCasesService = async (page, limit) => {
     }
 };
 
+// GET CASE NOTES BY TECH USER
+export const getCaseNotesTechService = async (caseId) => {
+    try {
+        const response = await axios.get(`${USER_ENDPOINTS.TECH_USER_GET_NOTES}/${caseId}`, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+//ADD NOTE BY TECH USER
+export const addCaseNoteTechService = async (caseId, noteData) => {
+    try {
+        const response = await axios.post(`${USER_ENDPOINTS.TECH_USER_CREATE_NOTE}/${caseId}`, noteData, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
 
 
 
@@ -563,6 +618,32 @@ export const viewAgentDetailsService = async(id) => {
                 }
             }
         )
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// GET CASE NOTES BY ADMIN USER
+export const getCaseNotesAdminService = async (caseId) => {
+    try {
+        const response = await axios.get(`${USER_ENDPOINTS.ADMIN_GET_NOTES}/${caseId}`, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+//ADD NOTE BY ADMIN USER
+export const addCaseNoteAdminService = async (caseId, noteData) => {
+    try {
+        const response = await axios.post(`${USER_ENDPOINTS.ADMIN_CREATE_NOTE}/${caseId}`, noteData, {
+            withCredentials: true,
+            headers: { 'Content-Type': 'application/json' }
+        });
         return response.data;
     } catch (error) {
         throw error;

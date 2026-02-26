@@ -36,15 +36,6 @@ const ROLE_BASED_MENUS = {
   { id: "sales-report", title: "Sales Report",icon: ChartNoAxesCombined,},
 //   { id: "chat", title: "Chat", icon: MessageSquare,},
   { id: "notifications", title: "Notifications", icon: Bell,},
-    // {
-    //   id: "support",
-    //   title: "Support",
-    //   icon: HelpCircle,
-    //   children: [
-    //     { id: "privacy", title: "Privacy Policy", path: "privacy" },
-    //     { id: "terms", title: "Terms & Conditions", path: "terms" },
-    //   ],
-    // },
   ],
   Sale: [
     { id: "dashboard", title: "Sales Overview", icon: TrendingUp },
@@ -62,7 +53,7 @@ const ROLE_BASED_MENUS = {
     },
     {id: "search-cases",title: "Search",icon: Search,},
     // { id: "notes", title: "Notes", icon: FileText },
-    { id: "manage-notes", title: "Notes Feed", icon: FileText },
+    // { id: "manage-notes", title: "Notes Feed", icon: FileText },
     //   { id: "chat", title: "Chat", icon: MessageSquare,},
   { id: "notifications", title: "Notifications", icon: Bell,},
   ],
@@ -70,7 +61,7 @@ const ROLE_BASED_MENUS = {
     { id: "dashboard", title: "Tech Monitor", icon: Wrench },
     {id: "search-cases",title: "Search",icon: Search,},
     {id: "update-status",title: "Update Case Status",icon: Edit,},
-        { id: "manage-notes", title: "Notes Feed", icon: FileText },
+        // { id: "manage-notes", title: "Notes Feed", icon: FileText },
         //   { id: "chat", title: "Chat", icon: MessageSquare,},
     { id: "notifications", title: "Notifications", icon: Bell,},
   ],
