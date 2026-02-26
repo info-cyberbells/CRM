@@ -8,7 +8,7 @@ import {
     deleteCustomer
 } from "../controllers/customerController.js";
 import { getDashboardData } from "../controllers/dashbaordController.js";
-import { getAssignedCases, getCaseById, updateCase } from "../controllers/caseController.js";
+import { addCaseNote, getAssignedCases, getCaseById, getCaseNotes, updateCase } from "../controllers/caseController.js";
 import { getTechUserNotifications } from "../controllers/notificationController.js";
 
 
@@ -20,6 +20,9 @@ router.get("/dashboard", getDashboardData);
 router.get('/my-cases', getAssignedCases);
 router.get('/getCaseByID/:caseId', getCaseById);
 router.put('/updateCase/:caseId', updateCase);
+
+router.post("/createNote/:caseId", addCaseNote);
+router.get('/getCaseNotes/:caseId', getCaseNotes);
 
 
 router.get('/notifications', getTechUserNotifications);

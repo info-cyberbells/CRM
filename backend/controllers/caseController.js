@@ -5,6 +5,7 @@ import { col, fn, literal, Op, Sequelize, where } from 'sequelize';
 import Notification from "../models/notification.js";
 import sequelize from "../config/db.js";
 import CaseCounter from "../models/caseCounter.js";
+import CaseNote from "../models/casenotes.js";
 
 
 // Generate CaseID
@@ -1102,6 +1103,117 @@ export const getOverallSummary = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+// add case note
+export const addCaseNote = async (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const { noteType, noteText } = req.body;
+
+    const token =
+      req.cookies?.authToken ||
+      req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token Provided",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if case exists
+    const existingCase = await Case.findOne({
+      where: { caseId }
+    });
+
+    if (!existingCase) {
+      return res.status(404).json({
+        success: false,
+        message: "Case not found",
+      });
+    }
+
+    // Create Note
+    const newNote = await CaseNote.create({
+      caseId: existingCase.caseId, // store internal id
+      createdById: decoded.id,
+      createdByRole: decoded.role,
+      noteType,
+      noteText,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Case note added successfully",
+      note: newNote,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add case note",
+      error,
+    });
+  }
+};
+
+// view case notes
+export const getCaseNotes = async (req, res) => {
+  try {
+    const { caseId } = req.params;
+
+    const token =
+      req.cookies?.authToken ||
+      req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token Provided",
+      });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET);
+
+    const existingCase = await Case.findOne({
+      where: { caseId }
+    });
+
+    if (!existingCase) {
+      return res.status(404).json({
+        success: false,
+        message: "Case not found",
+      });
+    }
+
+    const notes = await CaseNote.findAll({
+      where: { caseId },
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: ["id", "name", "email", "role"]
+        }
+      ],
+      order: [["created_at", "DESC"]],
+    });
+
+    return res.status(200).json({
+      success: true,
+      notes,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch notes",
+      error: error.message,
     });
   }
 };

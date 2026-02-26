@@ -1,5 +1,5 @@
 import express from "express";
-import { createCase, getAllCases, getMyCases, updateCase, getCaseById, previewCaseID } from "../controllers/caseController.js";
+import { createCase, getAllCases, getMyCases, updateCase, getCaseById, previewCaseID, addCaseNote, getCaseNotes } from "../controllers/caseController.js";
 import { getDashboardData } from "../controllers/dashbaordController.js";
 import roleGuard from "../middleware/roleGuard.js";
 import { getNotifications } from "../controllers/notificationController.js";
@@ -23,5 +23,9 @@ router.get("/dashboard", getDashboardData);
 
 //notifications
 router.get("/notifications", getNotifications);
+
+// sale note 
+router.post("/createNote/:caseId", addCaseNote);
+router.get('/getCaseNotes/:caseId', getCaseNotes);
 
 export default router;

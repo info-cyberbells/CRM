@@ -2,7 +2,7 @@ import express from "express";
 import { createUser, getUsers, getUserById, createAgent, updateAgentDetails, viewAgentDetails, getAllAgents } from "../controllers/userController.js";
 import roleGuard from "../middleware/roleGuard.js";
 import { getDashboardData } from "../controllers/dashbaordController.js";
-import { getAllCases, getCaseById, getOverallSummary, saleReportGraph, searchTechUser, updateCase } from "../controllers/caseController.js";
+import { addCaseNote, getAllCases, getCaseById, getCaseNotes, getOverallSummary, saleReportGraph, searchTechUser, updateCase } from "../controllers/caseController.js";
 import { createAdminNotice, deleteAdminNotice, getAllAdminNotices, updateAdminNotice } from "../controllers/noticeController.js";
 import { getAdminNotifications } from "../controllers/notificationController.js";
 
@@ -49,5 +49,9 @@ router.post("/createAgent", createAgent);
 router.put("/updateAgent/:id", updateAgentDetails);
 router.get("/getAgent/:id", viewAgentDetails);
 router.get("/getAllAgents", getAllAgents);
+
+// admin note
+router.post("/createNote/:caseId", addCaseNote);
+router.get('/getCaseNotes/:caseId', getCaseNotes);
 
 export default router;

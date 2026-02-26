@@ -10,6 +10,8 @@ import adminRoutes from "./routes/adminRoutes.js";
 import techRoutes from "./routes/techRoutes.js"
 
 import authGuard from "./middleware/authGuard.js";
+import User from "./models/user.js";
+import CaseNote from "./models/casenotes.js";
 
 
 dotenv.config();
@@ -23,6 +25,17 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// CaseNote → User
+CaseNote.belongsTo(User, {
+  foreignKey: "createdById",
+  as: "creator"
+});
+
+// User → CaseNote
+User.hasMany(CaseNote, {
+  foreignKey: "createdById"
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
