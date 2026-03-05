@@ -86,10 +86,10 @@ export const createAgent = async (req, res) => {
         
       const { name, email, password, role, phone, address, city, state, country } = req.body;
 
-      if (!name || !email || !password || !role || !phone) {
+      if (!name || !email || !password || !role ) {
             return res.status(400).json({
                 success: false,
-                message: "Name, Email, Password, Phone and Role are required fields"
+                message: "Name, Email, Password and Role are required fields"
             });
         }
 
@@ -105,7 +105,7 @@ export const createAgent = async (req, res) => {
         if (existingUser) {
             return res.status(409).json({
                 success: false,
-                message: "Email already exists"
+                message: "Agent with this email already exists"
             });
         }
 

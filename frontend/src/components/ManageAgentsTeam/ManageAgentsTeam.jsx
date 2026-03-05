@@ -8,6 +8,7 @@ import {
   ShieldCheck as ShieldIcon,
   Eye,
   Edit,
+  EyeOff,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -40,6 +41,12 @@ const AddMemberModal = ({
     country: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const { showToast } = useToast();
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     if (selectedAgent && isOpen) {
       setFormData({
@@ -68,31 +75,48 @@ const AddMemberModal = ({
         country: "",
       });
     }
+    if (isOpen) {
+      setErrors({});
+    }
   }, [selectedAgent, isOpen]);
 
   if (!isOpen) return null;
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   if (formData.password !== formData.confirmPassword) {
-  //     alert("Passwords do not match");
-  //     return;
-  //   }
-  //   onAdd(formData);
-  //   onClose();
-  // };
-
-  // Fix handleSubmit:
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!isEditMode && formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+    const newErrors = {};
+
+    if (!formData.name) newErrors.name = true;
+    if (!formData.email) newErrors.email = true;
+    if (!formData.role) newErrors.role = true;
+
+    if (!isEditMode) {
+      if (!formData.password) newErrors.password = true;
+      if (!formData.confirmPassword) newErrors.confirmPassword = true;
+
+      if (formData.password && formData.password.length < 6) {
+        newErrors.password = true;
+        showToast("Password must be at least 6 characters", "error");
+        setErrors(newErrors);
+        return;
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        showToast("Passwords do not match", "error");
+        return;
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      showToast("Please fill all required fields", "error");
       return;
     }
 
+    setErrors({});
+
     if (isEditMode) {
-      // Only send fields relevant for update (no password)
       const { password, confirmPassword, ...updateData } = formData;
       onUpdate(updateData);
     } else {
@@ -120,47 +144,47 @@ const AddMemberModal = ({
 
         <form
           onSubmit={handleSubmit}
-          className="p-8 space-y-6 overflow-y-auto max-h-[80vh] "
+          className="p-8 space-y-4 overflow-y-auto max-h-[80vh] "
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                Full Name
+                Full Name*
               </label>
               <input
                 type="text"
                 name="name"
-                required
                 disabled={isViewMode}
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="Enter Name"
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                className={`w-full px-4 py-3 rounded-xl bg-slate-50 border font-semibold text-sm outline-none transition-all
+                ${errors.name ? "border-red-500" : "border-slate-100 focus:border-emerald-500 focus:bg-white"}`}
               />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                Email
+                Email*
               </label>
               <input
                 type="email"
                 name="email"
-                required
                 disabled={isViewMode}
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
                 placeholder="Enter Email"
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                className={`w-full px-4 py-3 rounded-xl bg-slate-50 border font-semibold text-sm outline-none transition-all
+                ${errors.email ? "border-red-500" : "border-slate-100 focus:border-emerald-500 focus:bg-white"}`}
               />
             </div>
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                System Role
+                System Role*
               </label>
               <select
                 value={formData.role}
@@ -181,15 +205,79 @@ const AddMemberModal = ({
               <input
                 type="text"
                 name="phone"
-                required
                 disabled={isViewMode}
                 value={formData.phone}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
                 placeholder="984877483"
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-semibold text-xs outline-none focus:border-emerald-500 focus:bg-white transition-all"
               />
+            </div>
+
+            {!isViewMode && !isEditMode && (
+              <>
+                <div className="space-y-1 relative">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    Password*
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    placeholder="********"
+                    className={`w-full px-4 py-3 rounded-xl bg-slate-50 border font-semibold text-sm outline-none transition-all
+                  ${errors.password ? "border-red-500" : "border-slate-100 focus:border-emerald-500 focus:bg-white"}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 text-slate-400"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <div className="space-y-1 relative">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    Confirm Password*
+                  </label>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    placeholder="********"
+                    className={`w-full px-4 py-3 rounded-xl bg-slate-50 border font-semibold text-sm outline-none transition-all
+                    ${errors.confirmPassword ? "border-red-500" : "border-slate-100 focus:border-emerald-500 focus:bg-white"}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 text-slate-400"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+
+            <div className="md:col-span-2 flex items-center gap-3 mt-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Optional Fields
+              </span>
+              <div className="flex-1 h-px bg-slate-100"></div>
             </div>
 
             <div className="md:col-span-2">
@@ -199,13 +287,12 @@ const AddMemberModal = ({
               <input
                 type="text"
                 name="address"
-                required
                 disabled={isViewMode}
                 value={formData.address}
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
-                placeholder="Street number and name"
+                placeholder="Add Address"
                 className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none focus:border-emerald-500 focus:bg-white transition-all"
               />
             </div>
@@ -217,7 +304,6 @@ const AddMemberModal = ({
               <input
                 type="text"
                 name="city"
-                required
                 disabled={isViewMode}
                 value={formData.city}
                 onChange={(e) =>
@@ -235,7 +321,6 @@ const AddMemberModal = ({
               <input
                 type="text"
                 name="state"
-                required
                 disabled={isViewMode}
                 value={formData.state}
                 onChange={(e) =>
@@ -252,7 +337,6 @@ const AddMemberModal = ({
               <input
                 type="text"
                 name="country"
-                required
                 disabled={isViewMode}
                 value={formData.country}
                 onChange={(e) =>
@@ -262,48 +346,6 @@ const AddMemberModal = ({
                 className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none focus:border-emerald-500 focus:bg-white transition-all"
               />
             </div>
-
-            {!isViewMode && !isEditMode && (
-              <>
-                <div className="h-px bg-slate-100 md:col-span-2 my-2"></div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    required
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    placeholder="********"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                    Confirm Password
-                  </label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    required
-                    value={formData.confirmPassword}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        confirmPassword: e.target.value,
-                      })
-                    }
-                    placeholder="********"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-xs outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                  />
-                </div>
-              </>
-            )}
           </div>
 
           <div className="pt-6 flex gap-3">

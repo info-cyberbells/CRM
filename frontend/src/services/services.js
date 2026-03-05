@@ -213,12 +213,13 @@ export const getTechDashboardData = async () => {
 };
 
 //GET USER ASSIGNED CASES
-export const getTechUserCasesService = async (page, limit, filters) => {
+export const getTechUserCasesService = async (page, limit, filters, assignedTo = "all") => {
     try {
         const queryParams = new URLSearchParams({
             page: page.toString(),
             limit: limit.toString()
         });
+        queryParams.append("assignedTo", assignedTo);
 
         if (filters.customerName?.trim()) queryParams.append('customerName', filters.customerName.trim());
         if (filters.phone?.trim()) queryParams.append('phone', filters.phone.trim());

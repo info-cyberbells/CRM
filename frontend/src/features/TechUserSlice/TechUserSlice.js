@@ -25,9 +25,9 @@ export const techUserDashboard = createAsyncThunk(
 // GET ASSIGNED CASES
 export const getTechUserAssignedCases = createAsyncThunk(
   "techUser/getAssignedCases",
-  async ({ page = 1, limit = 10, filters = {} }, thunkAPI) => {
+  async ({ page = 1, limit = 10, filters = {}, assignedTo = "all" }, thunkAPI) => {
     try {
-      const response = await getTechUserCasesService(page, limit, filters);
+      const response = await getTechUserCasesService(page, limit, filters, assignedTo);
       return {
         cases: response.cases,
         pagination: {

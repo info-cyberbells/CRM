@@ -20,7 +20,8 @@ useEffect(()=>{
   dispatch(getTechUserAssignedCases({
       page: 1,
       limit: 10,
-      filters: {}
+      filters: {},
+      assignedTo: "me"
     }));
  },[])
 
