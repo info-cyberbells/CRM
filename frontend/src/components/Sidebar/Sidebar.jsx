@@ -259,9 +259,9 @@ const Sidebar = () => {
               </button>
               {isProfileOpen && (
                 <div className="absolute right-0 mt-3 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 overflow-hidden">
-                  <button className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50"><UserCircle size={16} /> Profile</button>
+                  {/* <button className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50"><UserCircle size={16} /> Profile</button>
                   <button className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50"><Settings size={16} /> Settings</button>
-                  <div className="h-px bg-slate-100 my-1 mx-2"></div>
+                  <div className="h-px bg-slate-100 my-1 mx-2"></div> */}
                   <button onClick={handleLogout} className="flex cursor-pointer w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"><LogOut size={16} /> Sign out</button>
                 </div>
               )}

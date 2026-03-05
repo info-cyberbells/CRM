@@ -1395,7 +1395,7 @@ const handlePostNote = async () => {
               </div>
 
               {/* Tech User - Updated with Search */}
-              {!isTech && (
+              
                 <div className="relative" ref={techDropdownRef}>
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">
                     Tech User Assignment
@@ -1536,7 +1536,7 @@ const handlePostNote = async () => {
                     )
                   )}
                 </div>
-              )}
+              
             </div>
           </div>
 

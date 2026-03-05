@@ -155,7 +155,7 @@ const SearchCase = () => {
       dispatch(fetchAllCasesAdmin({ page, limit, filters }));
     }
     if (role === "tech") {
-      dispatch(getTechUserAssignedCases({ page, limit, filters }));
+      dispatch(getTechUserAssignedCases({ page, limit, filters, assignedTo: "all" }));
     }
     if (role === "sale") {
       dispatch(fetchSaleUserCases({ page, limit, filters }));
@@ -193,31 +193,6 @@ const SearchCase = () => {
     // });
   };
 
-  // useEffect(() => {
-  //   const emptyFilters = {
-  //     customerName: "",
-  //     phone: "",
-  //     customerID: "",
-  //     email: "",
-  //   };
-
-  //   if (isTech) dispatch(setTechSearchFilters(emptyFilters));
-  //   else if (isAdmin) dispatch(setAdminSearchFilters(emptyFilters));
-  //   else dispatch(setSearchFilters(emptyFilters));
-
-  //   return () => {
-  //     if (isTech) {
-  //       dispatch(setTechSearchFilters(emptyFilters));
-  //       // dispatch(setTechCurrentPage(1));
-  //     } else if (isAdmin) {
-  //       dispatch(setAdminSearchFilters(emptyFilters));
-  //       // dispatch(setAdminCurrentPage(1));
-  //     } else if (isSale) {
-  //       dispatch(setSearchFilters(emptyFilters));
-  //       // dispatch(setCurrentPage(1));
-  //     }
-  //   };
-  // }, []);
 
 
   useEffect(() => {
@@ -563,7 +538,7 @@ const StaticDuration = ({ duration }) => {
                           <span className="text-[10px] font-bold text-gray-500 uppercase w-8">Sale:</span>
                           <span className="text-xs font-bold text-slate-600">{c.caseCreatedBy || "N/A"}</span>
                         </div>
-                        {role === "admin" && <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5">
                           <span className="text-[10px] font-bold text-gray-500 uppercase w-8">Tech:</span>
                           <span className={`px-2 py-1 rounded text-[10px] font-black uppercase
                                 ${c.assignedTo === "Unassigned"
@@ -572,7 +547,7 @@ const StaticDuration = ({ duration }) => {
                             `}
                             >
                             {c.assignedTo}</span>
-                        </div>}
+                        </div>
                       </div>
                       </td>
                       {/* {role === "admin" && (

@@ -450,8 +450,18 @@ export const getAssignedCases = async (req, res)=>{
         const email = req.query.email ? req.query.email.trim() : "";
         const phone = req.query.phone ? req.query.phone.trim() : "";
 
+        const assignedTo = req.query.assignedTo ? req.query.assignedTo.trim() : "all";
 
-        let where = {techUserId: userId};
+
+        // let where = {techUserId: userId};
+
+        let where = {};
+
+        if (assignedTo === "me") {
+            where.techUserId = userId;  // show only logged-in tech cases
+        } else {
+            where.techUserId = { [Op.ne]: null }; // show all cases where tech assigned
+        }
 
         const searchConditions = [];
 
@@ -514,6 +524,7 @@ export const getAssignedCases = async (req, res)=>{
             phone: c.phone,
             plan: c.plan,
             caseCreatedBy: c.saleUser?.name || "N/A",
+            assignedTo: c.techUser?.name || "Unassigned",
             amount: c.amount || 0,
             deduction: c.deduction || 0,
             netAmount: (c.amount || 0) - (c.deduction || 0),

@@ -125,13 +125,18 @@ const UserWelcomeHeader = ({ user }) => {
               <span className="flex items-center gap-1.5">
                 <Mail size={14} className="text-slate-300" /> {user.email || "N/A"}
               </span>
-              <span className="flex items-center gap-1.5">
-                <Phone size={14} className="text-slate-300" /> {user.phone || "N/A"}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <MapPin size={14} className="text-slate-300" /> {user.city || "N/A"},{" "}
-                {user.state || "N/A"}
-              </span>
+              {user.phone && (
+                <span className="flex items-center gap-1.5">
+                  <Phone size={14} className="text-slate-300" /> {user.phone}
+                </span>
+              )}
+
+              {(user.city || user.state) && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin size={14} className="text-slate-300" />
+                  {[user.city, user.state].filter(Boolean).join(", ")}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -256,7 +261,7 @@ const SaleTechDashboard = () => {
           dispatch(fetchSaleUserCases({ page: currentPage, limit: pageSize }));
       }
       if (userRole === "tech") {
-          dispatch(getTechUserAssignedCases({ page: currentPage, limit: pageSize }));
+          dispatch(getTechUserAssignedCases({ page: currentPage, limit: pageSize, assignedTo: "me" }));
       }
   }, [dispatch, userRole]);
 
