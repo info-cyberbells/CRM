@@ -16,7 +16,7 @@ import {
   LayoutGrid,
   Timer,
   CheckCircle2,
-   Pencil,
+  Pencil,
   UserPlus,
   ShieldAlert,
 } from "lucide-react";
@@ -40,6 +40,7 @@ import {
   setTechShowModal,
   updateCaseByTech,
   updateTechSelectedCase,
+  clearTechCases,
 } from "../../features/TechUserSlice/TechUserSlice";
 import {
   fetchAllCasesAdmin,
@@ -53,7 +54,6 @@ import {
   searchTechUser,
 } from "../../features/ADMIN/adminSlice";
 import { useNavigate } from "react-router-dom";
-
 
 const SearchCase = () => {
   const dispatch = useDispatch();
@@ -100,6 +100,7 @@ const SearchCase = () => {
 
   const debounceRef = useRef();
   const isInitialMount = useRef(true);
+  const [hasSearch, setHasSearched] = useState(false);
 
   const [filters, setFilters] = useState({
     customerName: "",
@@ -114,15 +115,15 @@ const SearchCase = () => {
     role === "tech"
       ? techPagination
       : role === "admin"
-      ? adminPagination
-      : salesPagination;
+        ? adminPagination
+        : salesPagination;
 
   const loading =
     role === "tech"
       ? techLoading
       : role === "admin"
-      ? adminLoading
-      : salesLoading;
+        ? adminLoading
+        : salesLoading;
 
   const error =
     role === "tech" ? techError : role === "admin" ? adminError : salesError;
@@ -131,22 +132,22 @@ const SearchCase = () => {
     role === "tech"
       ? techSearchFilters
       : role === "admin"
-      ? adminSearchFilters
-      : salesSearchFilters;
+        ? adminSearchFilters
+        : salesSearchFilters;
 
   const selectedCase =
     role === "tech"
       ? techSelectedCase
       : role === "admin"
-      ? adminSelectedCase
-      : salesSelectedCase;
+        ? adminSelectedCase
+        : salesSelectedCase;
 
   const showModal =
     role === "tech"
       ? techShowModal
       : role === "admin"
-      ? adminShowModal
-      : saleShowModal;
+        ? adminShowModal
+        : saleShowModal;
 
   const { currentPage, pageSize, totalPages, totalCount } = pagination;
 
@@ -155,7 +156,17 @@ const SearchCase = () => {
       dispatch(fetchAllCasesAdmin({ page, limit, filters }));
     }
     if (role === "tech") {
-      dispatch(getTechUserAssignedCases({ page, limit, filters, assignedTo: "all" }));
+      const hasFilterValue = Object.values(filters || {}).some(
+        (value) => value && value.trim() !== "",
+      );
+
+      if (hasFilterValue) {
+        dispatch(
+          getTechUserAssignedCases({ page, limit, filters, assignedTo: "all" }),
+        );
+      } else {
+        dispatch(clearTechCases());
+      }
     }
     if (role === "sale") {
       dispatch(fetchSaleUserCases({ page, limit, filters }));
@@ -193,17 +204,14 @@ const SearchCase = () => {
     // });
   };
 
-
-
   useEffect(() => {
-  // Fetch with whatever filters are already in Redux state
-  fetchCases({
-    page: currentPage,
-    limit: pageSize,
-    filters: searchFilters,
-  });
-}, []);
-
+    // Fetch with whatever filters are already in Redux state
+    fetchCases({
+      page: currentPage,
+      limit: pageSize,
+      filters: searchFilters,
+    });
+  }, []);
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -216,19 +224,20 @@ const SearchCase = () => {
       return;
     }
 
+    setHasSearched(true);
+
     debounceRef.current = setTimeout(() => {
       fetchCases({
         page: 1,
         limit: pageSize,
         filters: searchFilters,
       });
+      setHasSearched(false);
     }, 1000);
 
     return () => clearTimeout(debounceRef.current);
-  }, [searchFilters]); 
+  }, [searchFilters]);
 
-
-  
   const handleFilterChange = (field, value) => {
     if (isTech) dispatch(setTechSearchFilters({ [field]: value }));
     else if (isAdmin) dispatch(setAdminSearchFilters({ [field]: value }));
@@ -266,102 +275,122 @@ const SearchCase = () => {
     });
   };
 
- const fetchCaseDetails = async (caseId, editMode = false) => {
-  try {
-    // Wait for the fetch to complete
-    if (isTech) {
-      await dispatch(getSingleCaseById(caseId)).unwrap();
-    } else if (isAdmin) {
-      await dispatch(adminViewCase(caseId)).unwrap();
-    } else {
-      await dispatch(fetchCaseById(caseId)).unwrap();
+  const fetchCaseDetails = async (caseId, editMode = false) => {
+    try {
+      // Wait for the fetch to complete
+      if (isTech) {
+        await dispatch(getSingleCaseById(caseId)).unwrap();
+      } else if (isAdmin) {
+        await dispatch(adminViewCase(caseId)).unwrap();
+      } else {
+        await dispatch(fetchCaseById(caseId)).unwrap();
+      }
+
+      // Navigate with editing state after data is loaded
+      navigate(`/case/${caseId}`, {
+        state: { editing: editMode, fromPage: currentPage },
+      });
+    } catch (error) {
+      console.error("Failed to fetch case:", error);
+      showToast("Failed to load case details", "error");
     }
+  };
 
-    // Navigate with editing state after data is loaded
-    navigate(`/case/${caseId}`, { 
-      state: { editing: editMode, fromPage: currentPage } 
-    });
-  } catch (error) {
-    console.error("Failed to fetch case:", error);
-    showToast("Failed to load case details", "error");
-  }
-};
+  // calculate live time
+  function LiveTimer({ startDate }) {
+    const [time, setTime] = useState("");
 
-// calculate live time
-function LiveTimer({ startDate }) {
-  const [time, setTime] = useState("");
+    useEffect(() => {
+      if (!startDate) return;
 
-  useEffect(() => {
-    if (!startDate) return;
+      const start = new Date(startDate);
 
-    const start = new Date(startDate);
+      const interval = setInterval(() => {
+        let diff = Math.max(0, new Date() - start);
 
-    const interval = setInterval(() => {
-      let diff = Math.max(0, new Date() - start);
+        const days = Math.floor(diff / 86400000);
+        diff %= 86400000;
 
-      const days = Math.floor(diff / 86400000);
-      diff %= 86400000;
+        const hours = Math.floor(diff / 3600000);
+        diff %= 3600000;
 
-      const hours = Math.floor(diff / 3600000);
-      diff %= 3600000;
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
 
-      const minutes = Math.floor(diff / 60000);
-      const seconds = Math.floor((diff % 60000) / 1000);
+        setTime(
+          [
+            days > 0 && `${days}d`,
+            hours > 0 && `${hours}h`,
+            minutes > 0 && `${minutes}m`,
+            `${seconds}s`,
+          ]
+            .filter(Boolean)
+            .join(" "),
+        );
+      }, 1000);
 
-      setTime([days > 0 && `${days}d`,hours > 0 && `${hours}h`,minutes > 0 && `${minutes}m`,`${seconds}s`,].filter(Boolean).join(" "));
-    }, 1000);
+      return () => clearInterval(interval);
+    }, [startDate]);
 
-    return () => clearInterval(interval);
-  }, [startDate]);
-
-  return <div className="flex flex-col mt-2 group">
-      <div className={`
+    return (
+      <div className="flex flex-col mt-2 group">
+        <div
+          className={`
         inline-flex items-center gap-2 px-2 py-1 
         rounded-md bg-slate-50 border border-slate-100 
         transition-all duration-300 hover:border-blue-200 hover:bg-white hover:shadow-sm
-      `}>
-        {/* Animated Pulse Dot */}
-        <span className="relative flex h-2 w-2">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400`}></span>
-          <span className={`relative inline-flex rounded-full h-2 w-2 bg-emerald-500`}></span>
-        </span>
-
-        <div className="flex items-center gap-1.5">
-          <Clock size={12} className="text-slate-400 animate-pulse group-hover:text-blue-500 transition-colors" />
-          <span className="text-[11px] font-mono font-medium tracking-tight text-slate-600 tabular-nums">
-            {time}
+      `}
+        >
+          {/* Animated Pulse Dot */}
+          <span className="relative flex h-2 w-2">
+            <span
+              className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400`}
+            ></span>
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 bg-emerald-500`}
+            ></span>
           </span>
+
+          <div className="flex items-center gap-1.5">
+            <Clock
+              size={12}
+              className="text-slate-400 animate-pulse group-hover:text-blue-500 transition-colors"
+            />
+            <span className="text-[11px] font-mono font-medium tracking-tight text-slate-600 tabular-nums">
+              {time}
+            </span>
+          </div>
         </div>
       </div>
-      
-    
-    </div>;
-}
+    );
+  }
 
-const StaticDuration = ({ duration }) => {
-  return (
-    <div className="flex flex-col mt-2 group">
-      <div className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-gray-50 border border-gray-200/60 shadow-sm transition-all duration-300 hover:bg-white">
-        {/* Static Indicator (No pulse, represents completed/locked state) */}
-        <div className="flex items-center justify-center h-2 w-2">
-           <div className="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
-        </div>
+  const StaticDuration = ({ duration }) => {
+    return (
+      <div className="flex flex-col mt-2 group">
+        <div className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-gray-50 border border-gray-200/60 shadow-sm transition-all duration-300 hover:bg-white">
+          {/* Static Indicator (No pulse, represents completed/locked state) */}
+          <div className="flex items-center justify-center h-2 w-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-slate-300"></div>
+          </div>
 
-        <div className="flex items-center gap-1.5">
-          <Timer size={12} className="text-slate-400" />
-          <span className="text-[11px] font-mono font-semibold tracking-tight text-slate-500 tabular-nums">
-            {duration}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <Timer size={12} className="text-slate-400" />
+            <span className="text-[11px] font-mono font-semibold tracking-tight text-slate-500 tabular-nums">
+              {duration}
+            </span>
+          </div>
+
+          {/* Subtle Checkmark to indicate completion */}
+          <CheckCircle2 size={10} className="text-emerald-500 ml-0.5" />
         </div>
-        
-        {/* Subtle Checkmark to indicate completion */}
-        <CheckCircle2 size={10} className="text-emerald-500 ml-0.5" />
       </div>
-    </div>
+    );
+  };
+
+  const hasFilters = Object.values(searchFilters || {}).some(
+    (value) => value && value.trim() !== "",
   );
-};
-
-
 
   // --- Helpers ---
   const formatCurrency = (val) =>
@@ -394,7 +423,7 @@ const StaticDuration = ({ duration }) => {
               </h1>
             </div>
             <button
-                onClick={handleRefresh}
+              onClick={handleRefresh}
               className="px-6 py-3 cursor-pointer bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg shadow-slate-200 active:scale-95"
             >
               Reset Filters
@@ -508,12 +537,10 @@ const StaticDuration = ({ duration }) => {
                     >
                       <td className="px-6 py-5 whitespace-nowrap text-sm font-black text-emerald-800">
                         <div className="grid items-center">
-                          <p> 
-                        {c.caseId}
-                            </p>  
-                            <p className="font-mono text-[10px] font-bold text-slate-400">
-                              {c.customerID}
-                            </p>
+                          <p>{c.caseId}</p>
+                          <p className="font-mono text-[10px] font-bold text-slate-400">
+                            {c.customerID}
+                          </p>
                         </div>
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
@@ -534,59 +561,48 @@ const StaticDuration = ({ duration }) => {
                       <td className="px-6 py-5 whitespace-nowrap text-center text-[13px] text-slate-500 font-bold italic">
                         {/* {c.caseCreatedBy || "N/A"} */}
                         <div className="space-y-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-bold text-gray-500 uppercase w-8">Sale:</span>
-                          <span className="text-xs font-bold text-slate-600">{c.caseCreatedBy || "N/A"}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-bold text-gray-500 uppercase w-8">Tech:</span>
-                          <span className={`px-2 py-1 rounded text-[10px] font-black uppercase
-                                ${c.assignedTo === "Unassigned"
-                                ? "bg-rose-100 text-rose-700"
-                                : "bg-emerald-50 text-emerald-700"}
-                            `}
-                            >
-                            {c.assignedTo}</span>
-                        </div>
-                      </div>
-                      </td>
-                      {/* {role === "admin" && (
-                        <td className="px-6 py-5 whitespace-nowrap text-center">
-                          {c.assignedTo ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase w-8">
+                              Sale:
+                            </span>
+                            <span className="text-xs font-bold text-slate-600">
+                              {c.caseCreatedBy || "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase w-8">
+                              Tech:
+                            </span>
                             <span
-                            className={`px-2 py-1 rounded text-[10px] font-black uppercase
-                                ${c.assignedTo === "Unassigned"
-                                ? "bg-rose-100 text-rose-700 border border-rose-200"
-                                : "bg-emerald-50 text-emerald-700"}
+                              className={`px-2 py-1 rounded text-[10px] font-black uppercase
+                                ${
+                                  c.assignedTo === "Unassigned"
+                                    ? "bg-rose-100 text-rose-700"
+                                    : "bg-emerald-50 text-emerald-700"
+                                }
                             `}
                             >
-                            {c.assignedTo}
+                              {c.assignedTo}
                             </span>
-                          ) : (
-                            <span className="text-slate-300 text-[10px] font-bold uppercase">
-                              N/A
-                            </span>
-                          )}
-                        </td>
-                      )} */}
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-6 py-5 whitespace-nowrap text-[13px] font-bold text-slate-400">
                         {formatCurrency(c.saleAmount)}
                       </td>
-                      {/* <td className="px-6 py-5 whitespace-nowrap text-[13px] font-bold text-rose-400">
-                        -{formatCurrency(c.deduction)}
-                      </td> */}
-                      {/* <td className="px-6 py-5 whitespace-nowrap text-sm font-black text-slate-800">
-                        {formatCurrency(c.netAmount)}
-                      </td> */}
                       <td className="px-6 py-5 whitespace-nowrap">
                         <span
                           className={`px-3 py-1 text-[10px] font-black rounded-full border shadow-sm ${getStatusStyle(
-                            c.issueStatus
+                            c.issueStatus,
                           )} uppercase tracking-tighter`}
                         >
                           {c.issueStatus}
                         </span>
-                          {c.caseDurationTimer ? (<StaticDuration duration={c.caseDurationTimer} />) : (<LiveTimer startDate={c.date}/>)}
+                        {c.caseDurationTimer ? (
+                          <StaticDuration duration={c.caseDurationTimer} />
+                        ) : (
+                          <LiveTimer startDate={c.date} />
+                        )}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex flex-col">
@@ -594,52 +610,35 @@ const StaticDuration = ({ duration }) => {
                             {/* {c.date} */}
                             {c.date.split(" ")[0]}
                           </span>
-                          
                         </div>
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
                           {/* View Case */}
-                          <button 
+                          <button
                             title="View Case"
                             className="p-2 cursor-pointer text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90"
                             onClick={() => {
-                                console.log("Case item:", c);
-                                fetchCaseDetails(c.caseId, false);
-                              }}
+                              console.log("Case item:", c);
+                              fetchCaseDetails(c.caseId, false);
+                            }}
                           >
                             <Eye size={18} strokeWidth={2.5} />
                           </button>
-                          
+
                           {/* Edit Case */}
-                          {isAdmin &&
-                          <button 
-                            title="Edit Case"
-                            className="p-2 cursor-pointer text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
-                          onClick={() => {
-                              console.log("Case item:", c);
-                              fetchCaseDetails(c.caseId, true);
-                            }}
-                          >
-                            <Pencil size={18} strokeWidth={2.5} />
-                          </button>
-                          }
-                          
-                          {/* Assign Tech */}
-                          {/* <button 
-                            title="Assign Tech"
-                            className="p-2 cursor-pointer text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all active:scale-90"
-                          >
-                            <UserPlus size={18} strokeWidth={2.5} />
-                          </button>
-                          
-                          // Charge Back 
-                          <button 
-                            title="Add Chargeback"
-                            className="p-2 cursor-pointer text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-90"
-                          >
-                            <ShieldAlert size={18} strokeWidth={2.5} />
-                          </button> */}
+                          {isAdmin && (
+                            <button
+                              title="Edit Case"
+                              className="p-2 cursor-pointer text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
+                              onClick={() => {
+                                console.log("Case item:", c);
+                                fetchCaseDetails(c.caseId, true);
+                              }}
+                            >
+                              <Pencil size={18} strokeWidth={2.5} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -651,12 +650,39 @@ const StaticDuration = ({ duration }) => {
                         <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 text-slate-200">
                           <User size={48} />
                         </div>
-                        <h3 className="text-lg font-black text-slate-700">
-                          No Records Found
-                        </h3>
-                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
-                          Adjust filters to see results
-                        </p>
+                        
+                        {isTech ? (
+                          !hasFilters ? (
+                            <>
+                              <h3 className="text-lg font-black text-slate-700">
+                                Search Cases
+                              </h3>
+                              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
+                                Enter Customer Name, Phone, Email or Customer ID
+                              </p>
+                            </>
+                          ) : (
+                            !hasSearch && (
+                              <>
+                                <h3 className="text-lg font-black text-slate-700">
+                                  No Records Found
+                                </h3>
+                                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
+                                  Adjust filters to see results
+                                </p>
+                              </>
+                            )
+                          )
+                        ) : (
+                          <>
+                            <h3 className="text-lg font-black text-slate-700">
+                              No Records Found
+                            </h3>
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">
+                              Adjust filters to see results
+                            </p>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -715,7 +741,7 @@ const StaticDuration = ({ duration }) => {
                   disabled={currentPage === totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
                   className=" px-6 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 "
-                                >
+                >
                   Next
                 </button>
               </div>

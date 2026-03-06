@@ -128,6 +128,15 @@ const techUserSlice = createSlice({
       state.isError = false;
       state.message = "";
     },
+    clearTechCases: (state) => {
+      state.cases = [];
+      state.pagination = {
+        currentPage: 1,
+        totalPages: 0,
+        totalCount: 0,
+        pageSize: 10,
+      };
+    },
     setTechSearchFilters: (state, action) => {
       state.searchFilters = {
         ...state.searchFilters,
@@ -250,7 +259,8 @@ export const {
   setTechPageSize,
   setTechCurrentPage,
   setTechShowModal,
-  updateTechSelectedCase
+  updateTechSelectedCase,
+  clearTechCases
 } = techUserSlice.actions;
 
 export default techUserSlice.reducer;
