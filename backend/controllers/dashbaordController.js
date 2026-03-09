@@ -41,8 +41,8 @@ export const getDashboardData = async (req, res) => {
             //admin dashboard
             if (userRole === "Admin") {
                 const allCases = await Case.findAll({
-                     limit: 50,                          
-                        order: [["createdAt", "DESC"]],
+                    limit: 50,
+                    order: [["createdAt", "DESC"]],
                     include: [
                         { model: User, as: "saleUser", attributes: ["id", "name", "email"] },
                         { model: User, as: "techUser", attributes: ["id", "name", "email"] },
@@ -51,6 +51,18 @@ export const getDashboardData = async (req, res) => {
 
                 const totalCases = await Case.count();
                 const totalSales = await Case.sum("saleAmount");
+                const openCases = await Case.count({
+                    where: {
+                        status: 'Open',
+                        createdAt: { [Op.gte]: startOfMonth }
+                    }
+                });
+                const closedCases = await Case.count({
+                    where: {
+                        status: 'Closed',
+                        createdAt: { [Op.gte]: startOfMonth }
+                    }
+                });
 
 
                 // 📊 Monthly sales - use the specific query result
@@ -75,6 +87,8 @@ export const getDashboardData = async (req, res) => {
                     totalSales: totalSales,
                     monthlySales: monthlySales.reduce((sum, c) => sum + c.saleAmount, 0), // ✅ Use monthlySales query
                     todayRefunds: todayRefunds.reduce((sum, c) => sum + c.saleAmount, 0), // ✅ Use todayRefunds query
+                    openCases: openCases,
+                    closedCases: closedCases,
                     cases: allCases,
                 });
             }
@@ -88,7 +102,7 @@ export const getDashboardData = async (req, res) => {
                 const notices = await AdminNotice.findAll({
                     where: {
                         noticeType: {
-                            [Op.in] : ["SALE", "ALL"],
+                            [Op.in]: ["SALE", "ALL"],
                         },
                         isActive: true,
                     }
@@ -144,13 +158,14 @@ export const getDashboardData = async (req, res) => {
                     where: { techUserId: userId },
                 });
 
-                
+
                 const notices = await AdminNotice.findAll({
-                    where: { noticeType: {
-                        [Op.in]: ["Tech","ALL"]
+                    where: {
+                        noticeType: {
+                            [Op.in]: ["Tech", "ALL"]
+                        },
+                        isActive: true,
                     },
-                    isActive: true,
-                },
                 });
 
                 // Group cases by status
