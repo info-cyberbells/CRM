@@ -1,7 +1,7 @@
 import express from "express";
 import { createUser, getUsers, getUserById, createAgent, updateAgentDetails, viewAgentDetails, getAllAgents } from "../controllers/userController.js";
 import roleGuard from "../middleware/roleGuard.js";
-import { getDashboardData } from "../controllers/dashbaordController.js";
+import { getAgentsMonitor, getDashboardData } from "../controllers/dashbaordController.js";
 import { addCaseNote, getAllCases, getCaseById, getCaseNotes, getOverallSummary, saleReportGraph, searchTechUser, updateCase } from "../controllers/caseController.js";
 import { createAdminNotice, deleteAdminNotice, getAllAdminNotices, updateAdminNotice } from "../controllers/noticeController.js";
 import { getAdminNotifications } from "../controllers/notificationController.js";
@@ -12,6 +12,7 @@ const router = express.Router();
 router.use(roleGuard("Admin"));
 
 router.get("/dashboard", getDashboardData);
+router.get("/get-agent/status", getAgentsMonitor);
 
 router.get('/all-cases', getAllCases);
 router.get('/getCaseByID/:caseId', getCaseById);

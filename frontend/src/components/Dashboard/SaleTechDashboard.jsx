@@ -165,8 +165,9 @@ const DashboardMetricCard = ({
   icon: Icon,
   colorClass,
   iconBg,
+  onClick
 }) => (
-  <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+  <div onClick={onClick} className="bg-white p-6 cursor-pointer rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-md transition-all group">
     <div className="flex items-center justify-between mb-4">
       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
         {title || "N/A"}
@@ -370,7 +371,7 @@ const SaleTechDashboard = () => {
         },
       ];
     } else if (userRole === "tech") {
-      const { totalAssignedCases = 0, statusCounts = {} } = data || {};
+      const { totalAssignedCases = 0, statusCounts = {}, casesByStatus={} } = data || {};
 
       return [
         {
@@ -380,30 +381,34 @@ const SaleTechDashboard = () => {
           icon: ClipboardList,
           colorClass: "text-indigo-600",
           iconBg: "bg-indigo-50",
+          path: "/my-cases"
         },
         {
           title: "Open Cases",
-          value: statusCounts.open ?? 0,
+          value: casesByStatus?.Open ?? 0,
           subtitle: "Awaiting Action",
           icon: AlertCircle,
           colorClass: "text-amber-600",
           iconBg: "bg-amber-50",
+          path: "/my-cases?status=open"
         },
         {
-          title: "In Progress",
-          value: statusCounts.inProgress ?? 0,
-          subtitle: "Currently Working",
+          title: "In Pending",
+          value: casesByStatus?.Pending ?? 0,
+          subtitle: "Currently Pending",
           icon: Wrench,
           colorClass: "text-blue-600",
           iconBg: "bg-blue-50",
+          path: "/my-cases?status=Pending"
         },
         {
           title: "Closed Cases",
-          value: statusCounts.closed ?? 0,
+          value: casesByStatus?.Closed ?? 0,
           subtitle: "Successfully Closed",
           icon: CheckCircle2,
           colorClass: "text-emerald-600",
           iconBg: "bg-emerald-50",
+          path: "/my-cases?status=Closed"
         },
       ];
     } 
@@ -462,7 +467,7 @@ const SaleTechDashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {getMetricCards().map((card, idx) => (
-              <DashboardMetricCard key={idx} {...card} />
+              <DashboardMetricCard key={idx} {...card} onClick={() => card.path && navigate(card.path)} />
             ))}
           </div>
 

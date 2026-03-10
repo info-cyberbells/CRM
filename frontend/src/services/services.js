@@ -225,6 +225,8 @@ export const getTechUserCasesService = async (page, limit, filters, assignedTo =
         if (filters.phone?.trim()) queryParams.append('phone', filters.phone.trim());
         if (filters.customerID?.trim()) queryParams.append('customerID', filters.customerID.trim());
         if (filters.email?.trim()) queryParams.append('email', filters.email.trim());
+        if (filters.status?.trim()) queryParams.append("status", filters.status.trim());
+
 
         const response = await axios.get(`${USER_ENDPOINTS.TECH_USER_MY_CASES}?${queryParams}`, {
             withCredentials: true,
@@ -361,6 +363,7 @@ export const adminSearchAllCasesService = async(page, limit, filters) =>{
         if (filters.customerID?.trim()) queryParams.append('customerID', filters.customerID.trim());
         if (filters.email?.trim()) queryParams.append('email', filters.email.trim());
         if (filters.phone?.trim()) queryParams.append('phone', filters.phone.trim());
+        if (filters.status?.trim()) queryParams.append("status", filters.status.trim());
 
         const response = await axios.get(
             `${USER_ENDPOINTS.ADMIN_SEARCH_CASES}?${queryParams}`,{

@@ -188,6 +188,7 @@ const AddMemberModal = ({
               </label>
               <select
                 value={formData.role}
+                disabled={isEditMode}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value })
                 }

@@ -189,6 +189,7 @@ export const getAllCases = async (req, res) => {
         const customerID = req.query.customerID ? req.query.customerID.trim() : "";
         const email = req.query.email ? req.query.email.trim() : "";
         const phone = req.query.phone ? req.query.phone.trim() : "";
+        const status = req.query.status ? req.query.status.trim() : "";
         const startDate = req.query.startDate;
         const endDate = req.query.endDate;
 
@@ -230,6 +231,9 @@ export const getAllCases = async (req, res) => {
         where.createdAt = {
             [Op.lte]: new Date(`${endDate}T23:59:59.999Z`),
         };
+        }
+        if (status) {
+            where.status = status;
         }
 
          if (searchConditions.length > 0) {

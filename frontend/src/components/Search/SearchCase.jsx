@@ -53,7 +53,7 @@ import {
   updateCaseDetailsByAdmin,
   searchTechUser,
 } from "../../features/ADMIN/adminSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const SearchCase = () => {
   const dispatch = useDispatch();
@@ -101,6 +101,8 @@ const SearchCase = () => {
   const debounceRef = useRef();
   const isInitialMount = useRef(true);
   const [hasSearch, setHasSearched] = useState(false);
+  const [searchParams] = useSearchParams();
+  const status = searchParams.get("status");
 
   const [filters, setFilters] = useState({
     customerName: "",
@@ -153,7 +155,7 @@ const SearchCase = () => {
 
   const fetchCases = ({ page, limit, filters }) => {
     if (role === "admin") {
-      dispatch(fetchAllCasesAdmin({ page, limit, filters }));
+      dispatch(fetchAllCasesAdmin({ page, limit, filters: {...filters, status} }));
     }
     if (role === "tech") {
       const hasFilterValue = Object.values(filters || {}).some(

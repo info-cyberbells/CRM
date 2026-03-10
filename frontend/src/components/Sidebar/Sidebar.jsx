@@ -61,6 +61,7 @@ const ROLE_BASED_MENUS = {
     { id: "dashboard", title: "Tech Monitor", icon: Wrench },
     {id: "search-cases",title: "Search",icon: Search,},
     {id: "update-status",title: "Update Case Status",icon: Edit,},
+    {id: "my-cases",title: "My Cases",icon: FileText,},
         // { id: "manage-notes", title: "Notes Feed", icon: FileText },
         //   { id: "chat", title: "Chat", icon: MessageSquare,},
     { id: "notifications", title: "Notifications", icon: Bell,},
