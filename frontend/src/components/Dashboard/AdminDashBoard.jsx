@@ -407,19 +407,25 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div onClick={() => navigate('/search-cases')} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 transition-all">
+          <div onClick={() => navigate('/search-cases?status=open')} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 transition-all">
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Open Cases</p>
             <h4 className="text-2xl font-black text-emerald-600">{data?.openCases || 0}</h4>
-            <p className="mt-4 text-[10px] text-slate-400 font-medium italic">Current month</p>
+            {/* <p className="mt-4 text-[10px] text-slate-400 font-medium italic">Current month</p> */}
+            <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-400 font-medium">
+              <span className="bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">All Time</span>
+            </div>
           </div>
 
-          <div onClick={() => navigate('/search-cases')} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 transition-all">
+          <div onClick={() => navigate('/search-cases?status=closed')} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 transition-all">
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Closed Cases</p>
             <h4 className="text-2xl font-black text-slate-800">{data?.closedCases || 0}</h4>
-            <p className="mt-4 text-[10px] text-slate-400 font-medium italic">Current month</p>
+            {/* <p className="mt-4 text-[10px] text-slate-400 font-medium italic">Current month</p> */}
+            <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-400 font-medium">
+              <span className="bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">All Time</span>
+            </div>
           </div>
 
-          <div onClick={() => navigate('/sales-report')} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 transition-all">
+          <div onClick={() => navigate('/sales-report', { state: { type: "monthly" } })} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 transition-all">
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Monthly Sales</p>
             <h4 className="text-2xl font-black text-slate-800">{formatCurrency(data?.monthlySales) || "9999"}</h4>
             {/* <div className="mt-4 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -427,7 +433,7 @@ const AdminDashboard = () => {
             </div> */}
           </div>
 
-          <div onClick={() => navigate('/sales-report')} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 transition-all">
+          <div onClick={() => navigate('/sales-report', { state: { type: "daily" } })} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 transition-all">
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Today's Sales</p>
             <h4 className="text-2xl font-black text-emerald-600">{formatCurrency(data?.todaySales || 0)}</h4>
             <p className="mt-4 text-[10px] text-slate-400 font-medium italic">Current session progress</p>

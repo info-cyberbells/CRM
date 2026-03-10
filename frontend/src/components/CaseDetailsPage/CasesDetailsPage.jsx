@@ -502,9 +502,31 @@ const CaseDetailPage = () => {
     setShowConfirm(true);
   };
 
-  const confirmStatusChange = () => {
+  const confirmStatusChange = async () => {
+    if (isTech) {
+          const normalizedData = normalizeCaseData({
+            ...formData,
+            status: pendingStatus
+          });
+    try {
+      await dispatch(
+            updateCaseByTech({
+              caseId: normalizedData.caseId,
+              caseData: normalizedData,
+            }),
+          ).unwrap();
+          // Re-fetch to get updated data
+          await dispatch(getSingleCaseById(caseId)).unwrap();
+          setFormData((prev) => ({ ...prev, status: pendingStatus }));
+
+      showToast("Case status updated successfully", "success");
+    } catch (error) {
+      showToast("Failed to update status", "error");
+    }
+  } else {
     setFormData((prev) => ({ ...prev, status: pendingStatus }));
     showToast("Click Save Records button to save changes.", "info");
+  }
     setShowConfirm(false);
     setPendingStatus(null);
   };
@@ -1349,19 +1371,19 @@ const handlePostNote = async () => {
                 <select
                   value={formData.status}
                   onChange={(e) => handleStatusUpdate(e.target.value)}
-                  disabled={!editing}
-                  className={`w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-black text-xs uppercase transition-all shadow-sm appearance-none ${editing ? "cursor-pointer" : "cursor-default"}`}
+                  disabled={(isSale && !editing) || (isAdmin && !editing)}
+                  className={`w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-[#f9fafb] focus:bg-white focus:border-emerald-500 outline-none font-black text-xs uppercase transition-all shadow-sm appearance-none ${(isTech || (isAdmin && editing)) ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
                 >
                   <option value="Open">Open</option>
                   <option value="Pending">Pending</option>
                   <option value="Closed">Closed</option>
-                  {/* {isAdmin && (
-                    <> */}
+                  {isAdmin && (
+                    <>
                   <option value="Void">Void</option>
                   <option value="Refund">Refund</option>
                   <option value="Chargeback">Chargeback</option>
-                  {/* </>
-                  )} */}
+                  </>
+                  )}
                 </select>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                   <ChevronRight size={14} className="rotate-90" />

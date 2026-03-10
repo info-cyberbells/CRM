@@ -23,12 +23,15 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOverAllSummary, getSalesReportData } from "../../features/ADMIN/adminSlice";
+import { useLocation } from "react-router-dom";
 
 const SalesReportPage = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const initialType = location.state?.type || "weekly";
   const { salesReportData: currentData, isLoading, error, isError, overAllSummary } = useSelector((state) => state.admin);
 
-  const [reportType, setReportType] = useState("weekly");
+  const [reportType, setReportType] = useState(initialType);
 
   const formatCurrency = (val) =>
     new Intl.NumberFormat("en-US", {

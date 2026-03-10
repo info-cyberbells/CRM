@@ -3,6 +3,7 @@ import Case from "../models/case.js";
 import User from "../models/user.js";
 import { Op, where } from 'sequelize';
 import AdminNotice from "../models/notice.js";
+import UserSession from "../models/UserSession.js";
 
 
 //Get dashboard data of user/admin
@@ -54,13 +55,11 @@ export const getDashboardData = async (req, res) => {
                 const openCases = await Case.count({
                     where: {
                         status: 'Open',
-                        createdAt: { [Op.gte]: startOfMonth }
                     }
                 });
                 const closedCases = await Case.count({
                     where: {
                         status: 'Closed',
-                        createdAt: { [Op.gte]: startOfMonth }
                     }
                 });
 
@@ -80,6 +79,12 @@ export const getDashboardData = async (req, res) => {
                     }
                 });
 
+                const todaySales = await Case.findAll({
+                  where: {
+                    createdAt: { [Op.gte]: startOfToday, [Op.lt]: endOfToday }
+                  }
+                })
+
                 return res.json({
                     user,
                     totalCases: totalCases,
@@ -87,6 +92,7 @@ export const getDashboardData = async (req, res) => {
                     totalSales: totalSales,
                     monthlySales: monthlySales.reduce((sum, c) => sum + c.saleAmount, 0), // ✅ Use monthlySales query
                     todayRefunds: todayRefunds.reduce((sum, c) => sum + c.saleAmount, 0), // ✅ Use todayRefunds query
+                    todaySales: todaySales.reduce((sum, c)=> sum + c.saleAmount,0),
                     openCases: openCases,
                     closedCases: closedCases,
                     cases: allCases,
@@ -220,3 +226,148 @@ export const getDashboardData = async (req, res) => {
     }
 };
 
+
+
+export const getAgentsMonitor = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const roles = ["Tech", "Sale"];
+
+    const statsData = await User.findAll({
+      attributes: [
+        "role",
+        "status",
+        [Sequelize.fn("COUNT", Sequelize.col("id")), "count"],
+      ],
+      where: { role: roles },
+      group: ["role", "status"],
+      raw: true,
+    });
+
+    let stats = {
+      totalAgents: 0,
+      totalTech: 0,
+      totalSale: 0,
+
+      online: { total: 0, tech: 0, sale: 0 },
+      offline: { total: 0, tech: 0, sale: 0 },
+      onBreak: { total: 0, tech: 0, sale: 0 },
+    };
+
+    statsData.forEach((item) => {
+      const role = item.role;
+      const status = item.status;
+      const count = parseInt(item.count);
+
+      stats.totalAgents += count;
+
+      if (role === "Tech") stats.totalTech += count;
+      if (role === "Sale") stats.totalSale += count;
+
+      if (status === "ONLINE") {
+        stats.online.total += count;
+        stats.online[role.toLowerCase()] += count;
+      }
+
+      if (status === "OFFLINE") {
+        stats.offline.total += count;
+        stats.offline[role.toLowerCase()] += count;
+      }
+
+      if (status === "ON_BREAK") {
+        stats.onBreak.total += count;
+        stats.onBreak[role.toLowerCase()] += count;
+      }
+    });
+
+    const { rows, count } = await User.findAndCountAll({
+      where: { role: roles },
+
+      attributes: ["id", "name", "role", "status"],
+
+      include: [
+        {
+          model: UserSession,
+          attributes: [
+            "clockInTime",
+            "clockOutTime",
+            "breakStartTime",
+            "totalBreakSeconds",
+          ],
+          required: false,
+        },
+      ],
+
+      order: [
+        [
+          Sequelize.literal(`
+      CASE 
+        WHEN status = 'ON_BREAK' THEN 1
+        WHEN status = 'ONLINE' THEN 2
+        WHEN status = 'OFFLINE' THEN 3
+      END
+    `),
+          "ASC",
+        ],
+        [{ model: UserSession }, "clockInTime", "DESC"],
+      ],
+
+      limit,
+      offset,
+    });
+
+    const agents = rows.map((agent) => {
+      let session = null;
+
+      if (agent.status === "ONLINE" || agent.status === "ON_BREAK") {
+        session = agent.UserSessions?.find((s) => s.clockOutTime === null);
+      } else {
+        session = agent.UserSessions?.sort(
+          (a, b) => new Date(b.clockInTime) - new Date(a.clockInTime),
+        )[0];
+      }
+
+      return {
+        id: agent.id,
+        name: agent.name,
+        role: agent.role,
+        status: agent.status,
+
+        clockInTime: session?.clockInTime || null,
+        clockOutTime: session?.clockOutTime || null,
+
+        date: session?.clockInTime
+          ? new Date(session.clockInTime).toISOString().split("T")[0]
+          : null,
+
+        breakStartTime: session?.breakStartTime || null,
+        totalBreakSeconds: session?.totalBreakSeconds || 0,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+
+      stats,
+
+      pagination: {
+        totalRecords: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+        limit,
+      },
+
+      agents,
+    });
+  } catch (error) {
+    console.error("Admin monitor error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
