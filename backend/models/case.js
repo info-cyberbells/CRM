@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
 import User from "./user.js";
+import PlanUpgrade from "./planUpgrade.js";
 
 const Case = sequelize.define("Case", {
     caseId: {
@@ -67,9 +68,9 @@ const Case = sequelize.define("Case", {
     },
     caseDurationTimer: { type: DataTypes.STRING, allowNull: true },
     remoteAccess: {
-  type: DataTypes.JSON,
-  allowNull: true
-},
+        type: DataTypes.JSON,
+        allowNull: true
+    },
 }, {
     tableName: "cases",
     freezeTableName: true
@@ -78,5 +79,10 @@ const Case = sequelize.define("Case", {
 // Relations
 Case.belongsTo(User, { as: "saleUser", foreignKey: "saleUserId" });
 Case.belongsTo(User, { as: "techUser", foreignKey: "techUserId" });
+Case.hasMany(PlanUpgrade, { 
+    as: "planUpgrades", 
+    foreignKey: "caseId", 
+    sourceKey: "caseId" 
+});
 
 export default Case;

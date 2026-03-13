@@ -4,6 +4,7 @@ import { getDashboardData } from "../controllers/dashbaordController.js";
 import roleGuard from "../middleware/roleGuard.js";
 import { getNotifications } from "../controllers/notificationController.js";
 
+
 const router = express.Router();
 
 router.use(roleGuard("Sale"));
@@ -27,5 +28,7 @@ router.get("/notifications", getNotifications);
 // sale note 
 router.post("/createNote/:caseId", addCaseNote);
 router.get('/getCaseNotes/:caseId', getCaseNotes);
+
+
 
 export default router;

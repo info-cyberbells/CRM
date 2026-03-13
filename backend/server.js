@@ -14,6 +14,7 @@ import authGuard from "./middleware/authGuard.js";
 import User from "./models/user.js";
 import CaseNote from "./models/casenotes.js";
 import UserSession from "./models/UserSession.js";
+import "./models/planUpgrade.js";
 
 
 dotenv.config();
@@ -21,8 +22,8 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: true,
-    credentials: true,
+  origin: true,
+  credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -59,9 +60,9 @@ app.use('/api/user-session', sessionRoutes);
 
 // Database connection
 sequelize.authenticate().then(() => {
-    console.log("✅ Database connected");
+  console.log("✅ Database connected");
 }).catch(err => {
-    console.error("❌ Database connection failed:", err);
+  console.error("❌ Database connection failed:", err);
 });
 
 const PORT = process.env.PORT || 9000;

@@ -10,6 +10,7 @@ import {
 import { getDashboardData } from "../controllers/dashbaordController.js";
 import { addCaseNote, getAssignedCases, getCaseById, getCaseNotes, updateCase } from "../controllers/caseController.js";
 import { getTechUserNotifications } from "../controllers/notificationController.js";
+import { addPlanUpgrade, getPlanUpgrades } from "../controllers/planUpgradeController.js";
 
 
 const router = express.Router();
@@ -26,6 +27,9 @@ router.get('/getCaseNotes/:caseId', getCaseNotes);
 
 
 router.get('/notifications', getTechUserNotifications);
+
+router.post("/upgrade-plan/:caseId", addPlanUpgrade);
+router.get("/get-plan/:caseId", getPlanUpgrades);
 
 
 // router.post("/createCustomer", createCustomer);         //create customer
