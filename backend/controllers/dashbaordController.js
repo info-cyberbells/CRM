@@ -87,12 +87,12 @@ export const getDashboardData = async (req, res) => {
           }
         })
 
-        const todayDate = startOfToday.toISOString().split("T")[0];
+        const todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
         const todayAttendance = await Attendance.findAll({
           where: { date: todayDate },
           include: [{ model: User, as: "user", attributes: ["id", "name", "role"] }]
         });
-        const presentToday = todayAttendance.filter(a => ["P", "HD", "WO", "L"].includes(a.status)).length;
+        const presentToday = todayAttendance.filter(a => ["P", "HD"].includes(a.status)).length;
         const totalActiveEmployees = await User.count({ where: { role: ["Sale", "Tech"] } });
 
 

@@ -179,7 +179,7 @@ const DashboardMetricCard = ({
       </div>
     </div>
     <div className="flex flex-col">
-      <span className="text-2xl font-black text-slate-800">{value }</span>
+      <span className="text-2xl font-black text-slate-800">{value}</span>
       {subtitle && (
         <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
           {subtitle || "N/A"}
@@ -194,7 +194,7 @@ const SaleTechDashboard = () => {
   const navigate = useNavigate();
 
   const {
-    data : saleData,
+    data: saleData,
     loading,
     error,
   } = useSelector((state) => state.dashboard);
@@ -203,67 +203,67 @@ const SaleTechDashboard = () => {
   );
 
   const {
-      cases: salesCases,
-      selectedCase: salesSelectedCase,
-      loading: salesLoading,
-      modalLoading,
-      error: salesError,
-      showModal: saleShowModal,
-      pagination: salesPagination,
-      searchFilters: salesSearchFilters,
-    } = useSelector((state) => state.salesCases);
+    cases: salesCases,
+    selectedCase: salesSelectedCase,
+    loading: salesLoading,
+    modalLoading,
+    error: salesError,
+    showModal: saleShowModal,
+    pagination: salesPagination,
+    searchFilters: salesSearchFilters,
+  } = useSelector((state) => state.salesCases);
 
-      const {
-        cases: techCases,
-        selectedCase: techSelectedCase,
-        pagination: techPagination,
-        isLoading: techLoading,
-        error: techError,
-        showModal: techShowModal,
-        searchFilters: techSearchFilters,
-      } = useSelector((state) => state.techUser);
+  const {
+    cases: techCases,
+    selectedCase: techSelectedCase,
+    pagination: techPagination,
+    isLoading: techLoading,
+    error: techError,
+    showModal: techShowModal,
+    searchFilters: techSearchFilters,
+  } = useSelector((state) => state.techUser);
 
-      const {showToast} = useToast();
+  const { showToast } = useToast();
 
   const userRole = localStorage.getItem("Role").toLowerCase();
 
   const dashboardLoading = userRole === "tech" ? dbLoading : loading;
 
-    const cases = userRole === "tech" ? techCases : salesCases;
-    const pagination = userRole === "tech" ? techPagination : salesPagination;
+  const cases = userRole === "tech" ? techCases : salesCases;
+  const pagination = userRole === "tech" ? techPagination : salesPagination;
 
   const Loading = userRole === "tech" ? techLoading : salesLoading;
 
   const Error = userRole === "tech" ? techError : salesError;
 
-    const { currentPage, pageSize, totalPages, totalCount } = pagination;
+  const { currentPage, pageSize, totalPages, totalCount } = pagination;
 
-    useEffect(() => {
-      const loadDashboard = async () => {
-          try {
-              if (userRole === "sale") {
-                  await dispatch(fetchDashboardData()).unwrap();
-              }
-              if (userRole === "tech") {
-                  await dispatch(techUserDashboard()).unwrap();
-              }
-          } catch (error) {
-              console.log("Dashboard auth failed:", error);
-              localStorage.clear();
-              dispatch(logoutUserThunk());
-              window.location.replace("/");
-          }
-      };
-      loadDashboard();
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        if (userRole === "sale") {
+          await dispatch(fetchDashboardData()).unwrap();
+        }
+        if (userRole === "tech") {
+          await dispatch(techUserDashboard()).unwrap();
+        }
+      } catch (error) {
+        console.log("Dashboard auth failed:", error);
+        localStorage.clear();
+        dispatch(logoutUserThunk());
+        window.location.replace("/");
+      }
+    };
+    loadDashboard();
   }, [dispatch, userRole]);
 
   useEffect(() => {
-      if (userRole === "sale") {
-          dispatch(fetchSaleUserCases({ page: currentPage, limit: pageSize }));
-      }
-      if (userRole === "tech") {
-          dispatch(getTechUserAssignedCases({ page: currentPage, limit: pageSize, assignedTo: "me" }));
-      }
+    if (userRole === "sale") {
+      dispatch(fetchSaleUserCases({ page: currentPage, limit: pageSize }));
+    }
+    if (userRole === "tech") {
+      dispatch(getTechUserAssignedCases({ page: currentPage, limit: pageSize, assignedTo: "me" }));
+    }
   }, [dispatch, userRole]);
 
   const data = userRole === "sale" ? saleData : dashboardData;
@@ -281,39 +281,39 @@ const SaleTechDashboard = () => {
       <div className="flex justify-center items-center h-[60vh]">
         {/* <Loader2 className="animate-spin text-indigo-600" size={40} /> */}
         <div className="relative w-14 h-14" style={{
-        animation: 'spin 2s linear infinite'
-      }}>
-        <div 
-          className="absolute top-0 left-0 w-3 h-3 bg-emerald-600 rounded-full" 
-          style={{
-            animation: 'pulse 1.5s ease-in-out infinite',
-            animationDelay: '0s'
-          }}
-        ></div>
-        <div 
-          className="absolute top-0 right-0 w-3 h-3 bg-emerald-500 rounded-full" 
-          style={{
-            animation: 'pulse 1.5s ease-in-out infinite',
-            animationDelay: '0.2s'
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full" 
-          style={{
-            animation: 'pulse 1.5s ease-in-out infinite',
-            animationDelay: '0.4s'
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-0 left-0 w-3 h-3 bg-emerald-300 rounded-full" 
-          style={{
-            animation: 'pulse 1.5s ease-in-out infinite',
-            animationDelay: '0.6s'
-          }}
-        ></div>
-      </div>
+          animation: 'spin 2s linear infinite'
+        }}>
+          <div
+            className="absolute top-0 left-0 w-3 h-3 bg-emerald-600 rounded-full"
+            style={{
+              animation: 'pulse 1.5s ease-in-out infinite',
+              animationDelay: '0s'
+            }}
+          ></div>
+          <div
+            className="absolute top-0 right-0 w-3 h-3 bg-emerald-500 rounded-full"
+            style={{
+              animation: 'pulse 1.5s ease-in-out infinite',
+              animationDelay: '0.2s'
+            }}
+          ></div>
+          <div
+            className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full"
+            style={{
+              animation: 'pulse 1.5s ease-in-out infinite',
+              animationDelay: '0.4s'
+            }}
+          ></div>
+          <div
+            className="absolute bottom-0 left-0 w-3 h-3 bg-emerald-300 rounded-full"
+            style={{
+              animation: 'pulse 1.5s ease-in-out infinite',
+              animationDelay: '0.6s'
+            }}
+          ></div>
+        </div>
 
-      <style>{`
+        <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
@@ -341,8 +341,8 @@ const SaleTechDashboard = () => {
       return [
         {
           title: "Today Sales",
-          value:  `${formatCurrency(todaySales)}`,
-          subtitle: `${todayCases || 0} cases` ,
+          value: `${formatCurrency(todaySales)}`,
+          subtitle: `${todayCases || 0} cases`,
           icon: FileText,
           colorClass: "text-blue-600",
           iconBg: "bg-blue-50",
@@ -376,9 +376,31 @@ const SaleTechDashboard = () => {
           iconBg: "bg-indigo-50",
           path: '/search-cases?status=refund_chargeback'
         },
+        {
+          title: "Today's Attendance",
+          value: data?.myAttendance?.status ?? "N/A",
+          subtitle: data?.myAttendance
+            ? `Marked • ${data.myAttendance.comments || "No comments"}`
+            : "Not added yet",
+          icon: Calendar,
+          colorClass: data?.myAttendance?.status === "P" ? "text-emerald-600" :
+            data?.myAttendance?.status === "AB" ? "text-rose-600" :
+              data?.myAttendance?.status === "HD" ? "text-blue-600" :
+                data?.myAttendance?.status === "NCNS" ? "text-red-700" :
+                  data?.myAttendance?.status === "WO" ? "text-slate-500" :
+                    data?.myAttendance?.status === "L" ? "text-amber-600" :
+                      "text-slate-400",
+          iconBg: data?.myAttendance?.status === "P" ? "bg-emerald-50" :
+            data?.myAttendance?.status === "AB" ? "bg-rose-50" :
+              data?.myAttendance?.status === "HD" ? "bg-blue-50" :
+                data?.myAttendance?.status === "NCNS" ? "bg-red-50" :
+                  data?.myAttendance?.status === "WO" ? "bg-slate-50" :
+                    data?.myAttendance?.status === "L" ? "bg-amber-50" :
+                      "bg-slate-50",
+        },
       ];
     } else if (userRole === "tech") {
-      const { totalAssignedCases = 0, statusCounts = {}, casesByStatus={} } = data || {};
+      const { totalAssignedCases = 0, statusCounts = {}, casesByStatus = {} } = data || {};
 
       return [
         {
@@ -417,22 +439,38 @@ const SaleTechDashboard = () => {
           iconBg: "bg-emerald-50",
           path: "/my-cases?status=Closed"
         },
+        {
+          title: "Today's Attendance",
+          value: data?.myAttendance?.status ?? "—",
+          subtitle: data?.myAttendance ? "Marked by admin" : "Not marked yet",
+          icon: Calendar,
+          colorClass: data?.myAttendance?.status === "P" ? "text-emerald-600" :
+            data?.myAttendance?.status === "AB" ? "text-rose-600" :
+              data?.myAttendance?.status === "HD" ? "text-blue-600" :
+                data?.myAttendance?.status === "NCNS" ? "text-red-700" :
+                  "text-slate-400",
+          iconBg: data?.myAttendance?.status === "P" ? "bg-emerald-50" :
+            data?.myAttendance?.status === "AB" ? "bg-rose-50" :
+              data?.myAttendance?.status === "HD" ? "bg-blue-50" :
+                data?.myAttendance?.status === "NCNS" ? "bg-red-50" :
+                  "bg-slate-50",
+        },
       ];
-    } 
+    }
   };
 
-   const fetchCaseDetails = async (caseId, editMode = false) => {
+  const fetchCaseDetails = async (caseId, editMode = false) => {
     try {
       // Wait for the fetch to complete
       if (userRole === "tech") {
         await dispatch(getSingleCaseById(caseId)).unwrap();
-      }  else {
+      } else {
         await dispatch(fetchCaseById(caseId)).unwrap();
       }
-  
+
       // Navigate with editing state after data is loaded
-      navigate(`/case/${caseId}`, { 
-        state: { editing: editMode, fromPage: currentPage } 
+      navigate(`/case/${caseId}`, {
+        state: { editing: editMode, fromPage: currentPage }
       });
     } catch (error) {
       console.error("Failed to fetch case:", error);
@@ -441,29 +479,29 @@ const SaleTechDashboard = () => {
   };
 
   const handlePageChange = (newPage) => {
-      if (userRole === "tech") {
-        dispatch(setTechCurrentPage(newPage));
-        dispatch(getTechUserAssignedCases({page: newPage, limit: pageSize}));
-      }
-      else {
-        dispatch(setCurrentPage(newPage));
-        dispatch(fetchSaleUserCases({page: newPage, limit: pageSize}));
-      }
-    };
+    if (userRole === "tech") {
+      dispatch(setTechCurrentPage(newPage));
+      dispatch(getTechUserAssignedCases({ page: newPage, limit: pageSize }));
+    }
+    else {
+      dispatch(setCurrentPage(newPage));
+      dispatch(fetchSaleUserCases({ page: newPage, limit: pageSize }));
+    }
+  };
 
-     const handlePageSizeChange = (newPageSize) => {
-        if (userRole === "tech") {
-          dispatch(setTechPageSize(newPageSize));
-          dispatch(setTechCurrentPage(1));
-          dispatch(getTechUserAssignedCases({limit: newPageSize}));
-        } else {
-          dispatch(setPageSize(newPageSize));
-          dispatch(setCurrentPage(1));
-          dispatch(fetchSaleUserCases({limit: newPageSize}));
+  const handlePageSizeChange = (newPageSize) => {
+    if (userRole === "tech") {
+      dispatch(setTechPageSize(newPageSize));
+      dispatch(setTechCurrentPage(1));
+      dispatch(getTechUserAssignedCases({ limit: newPageSize }));
+    } else {
+      dispatch(setPageSize(newPageSize));
+      dispatch(setCurrentPage(1));
+      dispatch(fetchSaleUserCases({ limit: newPageSize }));
 
-        }
+    }
 
-      };
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
@@ -472,7 +510,7 @@ const SaleTechDashboard = () => {
         <div className="lg:col-span-8 xl:col-span-9 space-y-8">
           <UserWelcomeHeader user={data.user || ""} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
             {getMetricCards().map((card, idx) => (
               <DashboardMetricCard key={idx} {...card} onClick={() => card.path && navigate(card.path)} />
             ))}
@@ -486,9 +524,9 @@ const SaleTechDashboard = () => {
                   Recent Assignments
                 </h3>
               </div>
-              <button 
-              onClick={()=>navigate("/search-cases")}
-              className="text-[10px] cursor-pointer font-black uppercase text-indigo-600 hover:text-indigo-700 hover:scale-[1.10] active:scale-95 tracking-widest bg-indigo-50 px-4 py-2 rounded-xl transition-all">
+              <button
+                onClick={() => navigate("/search-cases")}
+                className="text-[10px] cursor-pointer font-black uppercase text-indigo-600 hover:text-indigo-700 hover:scale-[1.10] active:scale-95 tracking-widest bg-indigo-50 px-4 py-2 rounded-xl transition-all">
                 View All Cases
               </button>
             </div>
@@ -551,82 +589,80 @@ const SaleTechDashboard = () => {
                       <td className="px-8 py-5">
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
-                          ${
-                            c.issueStatus === "Open"
+                          ${c.issueStatus === "Open"
                               ? "bg-amber-50 text-amber-600 border border-amber-100"
                               : "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                          }`}
+                            }`}
                         >
                           <span
-                            className={`w-1 h-1 rounded-full ${
-                              c.issueStatus === "Open"
-                                ? "bg-amber-500"
-                                : "bg-emerald-500"
-                            }`}
+                            className={`w-1 h-1 rounded-full ${c.issueStatus === "Open"
+                              ? "bg-amber-500"
+                              : "bg-emerald-500"
+                              }`}
                           ></span>
                           {c.issueStatus}
                         </span>
                       </td>
                       <td className="px-8 py-5">
                         <button
-                        title="View Case"
-                            className="p-2 cursor-pointer text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90"
-                            onClick={() => {
-                                console.log("Case:", c.caseId);
-                                fetchCaseDetails(c.caseId, false);
-                              }}
+                          title="View Case"
+                          className="p-2 cursor-pointer text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90"
+                          onClick={() => {
+                            console.log("Case:", c.caseId);
+                            fetchCaseDetails(c.caseId, false);
+                          }}
                         >
-                          <Eye size={18} strokeWidth={2.5}/>
+                          <Eye size={18} strokeWidth={2.5} />
                         </button>
                       </td>
                     </tr>
                   )) : (
-                  <tr>
-                    <td colSpan="12" className="py-24 text-center">
-                      <div className="flex flex-col items-center justify-center">
-                        <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 text-slate-200">
-                          <User size={48} />
+                    <tr>
+                      <td colSpan="12" className="py-24 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 text-slate-200">
+                            <User size={48} />
+                          </div>
+                          <h3 className="text-lg font-black text-slate-700">
+                            No Records Found
+                          </h3>
                         </div>
-                        <h3 className="text-lg font-black text-slate-700">
-                          No Records Found
-                        </h3>
-                      </div>
-                    </td>
-                  </tr>                    
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
             </div>
             {/* Pagination Section */}
-          {cases.length > 0 && (
-            <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex flex-wrap justify-between items-center gap-6">
-              <div className="flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                <span>Show:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                  className="bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none font-black text-slate-700 focus:border-emerald-500 transition-all shadow-sm"
-                >
-                  {[10, 20, 30, 50].map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-                <span>entries</span>
-              </div>
+            {cases.length > 0 && (
+              <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex flex-wrap justify-between items-center gap-6">
+                <div className="flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  <span>Show:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                    className="bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none font-black text-slate-700 focus:border-emerald-500 transition-all shadow-sm"
+                  >
+                    {[10, 20, 30, 50].map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                  <span>entries</span>
+                </div>
 
-              <div className="text-[9px] font-black text-slate-800 uppercase tracking-[tight] hidden lg:block">
-                Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                {Math.min(currentPage * pageSize, totalCount)} of {totalCount}{" "}
-                entries
-              </div>
+                <div className="text-[9px] font-black text-slate-800 uppercase tracking-[tight] hidden lg:block">
+                  Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                  {Math.min(currentPage * pageSize, totalCount)} of {totalCount}{" "}
+                  entries
+                </div>
 
-              <div className="flex items-center gap-4">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className="
+                <div className="flex items-center gap-4">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="
                     px-4 py-3 cursor-pointer
                     text-[10px] font-black uppercase tracking-widest
                     rounded-2xl
@@ -637,22 +673,22 @@ const SaleTechDashboard = () => {
                     transition-all
                     active:scale-95
                 "
-                >
-                  Previous
-                </button>
-                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-4 py-2 rounded-xl uppercase tracking-widest shadow-sm border border-emerald-100">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className=" px-6 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 "
-                                >
-                  Next
-                </button>
+                  >
+                    Previous
+                  </button>
+                  <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-4 py-2 rounded-xl uppercase tracking-widest shadow-sm border border-emerald-100">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className=" px-6 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 "
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </div>
         </div>
 

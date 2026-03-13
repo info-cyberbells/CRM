@@ -354,28 +354,23 @@ const AdminDashboard = () => {
             </div>
 
             {/* Right: Location & Metadata */}
-            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-6 lg:gap-4 xl:gap-8 w-full lg:w-auto">
-              {/* <div className="flex-1 bg-slate-50 border border-slate-100 p-4 rounded-2xl flex items-center gap-4">
+            {/* Right: Location & Metadata */}
+            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-4 w-full lg:w-auto">
+              <div onClick={() => navigate('/attendance')} className="cursor-pointer flex-1 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center gap-4 hover:border-emerald-300 transition-all">
                 <div className="bg-white p-2.5 rounded-xl shadow-sm">
-                  <MapPin size={18} className="text-emerald-500" />
+                  <Users size={18} className="text-emerald-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Location</p>
-                  <p className="text-xs font-bold text-slate-700">{data?.user?.city}, {data?.user?.state || "state"}</p>
-                  <p className="text-[10px] text-slate-400">{data?.user?.country || "country"}</p>
+                  <p className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">Present Today</p>
+                  <p className="text-lg font-black text-emerald-700 leading-none">
+                    {data?.presentToday ?? 0}
+                    <span className="text-xs font-bold text-emerald-400"> / {data?.totalActiveEmployees ?? 0}</span>
+                  </p>
+                  <p className="text-[9px] text-emerald-400 font-bold mt-0.5">
+                    {data?.presentToday === 0 ? "Not marked yet" : "employees present"}
+                  </p>
                 </div>
               </div>
-
-              <div className="flex-1 bg-slate-50 border border-slate-100 p-4 rounded-2xl flex items-center gap-4">
-                <div className="bg-white p-2.5 rounded-xl shadow-sm">
-                  <Calendar size={18} className="text-emerald-500" />
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Joined Date</p>
-                  <p className="text-xs font-bold text-slate-700">{formatDate(data.user.createdAt) || "Date"}</p>
-                  <p className="text-[10px] text-slate-400">ID: #{data.user.id || "id"}</p>
-                </div>
-              </div> */}
             </div>
           </div>
         </div>
