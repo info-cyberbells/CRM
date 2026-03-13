@@ -6,6 +6,7 @@ import Notification from "../models/notification.js";
 import sequelize from "../config/db.js";
 import CaseCounter from "../models/caseCounter.js";
 import CaseNote from "../models/casenotes.js";
+import PlanUpgrade from "../models/planUpgrade.js";
 
 
 // Generate CaseID
