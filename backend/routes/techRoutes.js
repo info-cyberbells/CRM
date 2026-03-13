@@ -1,16 +1,18 @@
 import express from "express";
 import roleGuard from "../middleware/roleGuard.js";
-import {
-    createCustomer,
-    getCustomers,
-    getCustomerById,
-    updateCustomer,
-    deleteCustomer
-} from "../controllers/customerController.js";
+// import {
+//     createCustomer,
+//     getCustomers,
+//     getCustomerById,
+//     updateCustomer,
+//     deleteCustomer
+// } from "../controllers/customerController.js";
 import { getDashboardData } from "../controllers/dashbaordController.js";
 import { addCaseNote, getAssignedCases, getCaseById, getCaseNotes, updateCase } from "../controllers/caseController.js";
 import { getTechUserNotifications } from "../controllers/notificationController.js";
 import { addPlanUpgrade, getPlanUpgrades } from "../controllers/planUpgradeController.js";
+import { getMyAttendance } from "../controllers/attendanceController.js";
+
 
 
 const router = express.Router();
@@ -30,6 +32,8 @@ router.get('/notifications', getTechUserNotifications);
 
 router.post("/upgrade-plan/:caseId", addPlanUpgrade);
 router.get("/get-plan/:caseId", getPlanUpgrades);
+
+router.get("/my-attendance", getMyAttendance);
 
 
 // router.post("/createCustomer", createCustomer);         //create customer

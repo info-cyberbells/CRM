@@ -15,6 +15,7 @@ import User from "./models/user.js";
 import CaseNote from "./models/casenotes.js";
 import UserSession from "./models/UserSession.js";
 import "./models/planUpgrade.js";
+import "./models/attendance.js";
 
 
 dotenv.config();
@@ -59,11 +60,10 @@ app.use("/api/admin", adminRoutes);
 app.use('/api/user-session', sessionRoutes);
 
 // Database connection
-sequelize.authenticate().then(() => {
-  console.log("✅ Database connected");
+sequelize.sync({ alter: false }).then(() => {
+  console.log("✅ Database connected and all tables synced");
+  const PORT = process.env.PORT || 9000;
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }).catch(err => {
   console.error("❌ Database connection failed:", err);
 });
-
-const PORT = process.env.PORT || 9000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

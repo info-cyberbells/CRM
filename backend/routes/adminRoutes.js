@@ -6,6 +6,8 @@ import { addCaseNote, getAllCases, getCaseById, getCaseNotes, getOverallSummary,
 import { createAdminNotice, deleteAdminNotice, getAllAdminNotices, updateAdminNotice } from "../controllers/noticeController.js";
 import { getAdminNotifications } from "../controllers/notificationController.js";
 import { addPlanUpgrade, getPlanUpgrades } from "../controllers/planUpgradeController.js";
+import { markAttendance, getMonthlyAttendanceAdmin, getDailyAttendanceAdmin } from "../controllers/attendanceController.js";
+
 
 
 
@@ -59,6 +61,10 @@ router.get('/getCaseNotes/:caseId', getCaseNotes);
 
 router.post("/upgrade-plan/:caseId", addPlanUpgrade);
 router.get("/get-plan/:caseId", getPlanUpgrades);
+
+router.post("/attendance/mark", markAttendance);
+router.get("/attendance/monthly", getMonthlyAttendanceAdmin);
+router.get("/attendance/daily", getDailyAttendanceAdmin);
 
 
 export default router;
