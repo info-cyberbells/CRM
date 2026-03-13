@@ -22,7 +22,9 @@ import {
   HelpCircle,
   Briefcase,
   Edit,
-  ChartNoAxesCombined
+  ChartNoAxesCombined,
+  CalendarDays,
+  CalendarCheck
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { loginUserThunk, logoutUserThunk } from '../../features/UserSlice/UserSlice';
@@ -31,6 +33,7 @@ const ROLE_BASED_MENUS = {
   Admin: [
     { id: "admin-dashboard", title: "Admin Dashboard", icon: LayoutDashboard },
     {id: "search-cases",title: "Search",icon: Search,},
+    { id: "attendance", title: "Attendance", icon: CalendarCheck  },
         { id: "my-team", title: "My Team", icon: Users },
   { id: "notices", title: "Notices",icon: FileText,},
   { id: "sales-report", title: "Sales Report",icon: ChartNoAxesCombined,},
@@ -52,6 +55,7 @@ const ROLE_BASED_MENUS = {
     ],
     },
     {id: "search-cases",title: "Search",icon: Search,},
+    {id: "my-attendance",title: "My Attendance",icon: CalendarDays,},
     // { id: "notes", title: "Notes", icon: FileText },
     // { id: "manage-notes", title: "Notes Feed", icon: FileText },
     //   { id: "chat", title: "Chat", icon: MessageSquare,},
@@ -62,6 +66,7 @@ const ROLE_BASED_MENUS = {
     {id: "search-cases",title: "Search",icon: Search,},
     {id: "update-status",title: "Update Case Status",icon: Edit,},
     {id: "my-cases",title: "My Cases",icon: FileText,},
+    {id: "my-attendance",title: "My Attendance",icon: CalendarDays,},
         // { id: "manage-notes", title: "Notes Feed", icon: FileText },
         //   { id: "chat", title: "Chat", icon: MessageSquare,},
     { id: "notifications", title: "Notifications", icon: Bell,},

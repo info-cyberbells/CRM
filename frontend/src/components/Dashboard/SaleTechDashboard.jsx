@@ -397,6 +397,7 @@ const SaleTechDashboard = () => {
                   data?.myAttendance?.status === "WO" ? "bg-slate-50" :
                     data?.myAttendance?.status === "L" ? "bg-amber-50" :
                       "bg-slate-50",
+                      path: "/my-attendance"
         },
       ];
     } else if (userRole === "tech") {
@@ -454,6 +455,8 @@ const SaleTechDashboard = () => {
               data?.myAttendance?.status === "HD" ? "bg-blue-50" :
                 data?.myAttendance?.status === "NCNS" ? "bg-red-50" :
                   "bg-slate-50",
+
+                  path: "/my-attendance"
         },
       ];
     }

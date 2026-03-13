@@ -16,6 +16,8 @@ import TechUpdateCaseStatus from "./components/TechUserPages/TechUpdateCaseStatu
 import SalesReportPage from "./components/SalesReportPage/SalesReportPage";
 import ManageAgentsTeam from "./components/ManageAgentsTeam/ManageAgentsTeam";
 import TechMyCases from "./components/TechMyCases/TechMyCases";
+import MyAttendance from "./components/MyAttendance/MyAttendance";
+import AdminAttendance from "./components/AdminAttendance/AdminAttendance";
 
 function App() {
   const dispatch = useDispatch();
@@ -55,6 +57,8 @@ function App() {
           <Route path="/create-case/:caseType" element={<CreateNewCase />} />
           <Route path="/sales-report" element={<SalesReportPage /> } />
           <Route path="/my-cases" element={<TechMyCases />}/>
+          <Route path="/my-attendance" element={<MyAttendance />} />
+          <Route path="/attendance" element={<AdminAttendance />} />
         </Route>
       </Routes>
     </>

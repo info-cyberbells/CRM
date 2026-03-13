@@ -16,6 +16,12 @@ export const USER_ENDPOINTS = {
     SALE_USER_CREATE_NOTE: `${API_BASE_URL}/sale-user/createNote`,
     SALE_USER_GET_NOTES: `${API_BASE_URL}/sale-user/getCaseNotes`,
 
+    SALE_USER_MY_ATTENDANCE: `${API_BASE_URL}/sale-user/my-attendance`,
+
+
+
+
+
     TECH_USER_DASHBOARD: `${API_BASE_URL}/tech-user/dashboard`,
 
     TECH_USER_MY_CASES: `${API_BASE_URL}/tech-user/my-cases`,
@@ -24,6 +30,10 @@ export const USER_ENDPOINTS = {
 
     TECH_USER_CREATE_NOTE: `${API_BASE_URL}/tech-user/createNote`,
     TECH_USER_GET_NOTES: `${API_BASE_URL}/tech-user/getCaseNotes`,
+
+    TECH_USER_UPGRADE_PLAN: `${API_BASE_URL}/tech-user/upgrade-plan`,
+
+    TECH_USER_MY_ATTENDANCE: `${API_BASE_URL}/tech-user/my-attendance`,
 
 
     TECH_USER_NOTIFICATIONS: `${API_BASE_URL}/tech-user/notifications`,
@@ -52,4 +62,8 @@ export const USER_ENDPOINTS = {
 
     ADMIN_CREATE_NOTE: `${API_BASE_URL}/admin/createNote`,
     ADMIN_GET_NOTES: `${API_BASE_URL}/admin/getCaseNotes`,
+
+      ADMIN_ADD_ATTENDANCE: `${API_BASE_URL}/admin/attendance/mark`,
+ GET_DAILY_ATTENDANCE: `${API_BASE_URL}/admin/attendance/daily`,
+GET_MONTHLY_ATTENDANCE: `${API_BASE_URL}/admin/attendance/monthly`,
 };

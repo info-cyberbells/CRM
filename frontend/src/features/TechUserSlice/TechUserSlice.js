@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
+  addPlanUpgardeService,
   getCaseByIdService,
+  getMyAttendanceTechService,
   getTechDashboardData,
   getTechUserCasesService,
   getTechUserOngoingCasesService,
@@ -59,7 +61,7 @@ export const getSingleCaseById = createAsyncThunk(
 );
 
 export const updateCaseByTech = createAsyncThunk(
-    'salesCases/updateCase',
+    'techUser/updateCase',
     async ({ caseId, caseData }, thunkAPI) => {
         try {
             const response = await updateCaseByTechUserService(caseId, caseData);
@@ -71,7 +73,7 @@ export const updateCaseByTech = createAsyncThunk(
 );
 
 export const fetchTechUserOngoingCases = createAsyncThunk(
-    'salesCases/fetchSaleUserOngoingCases',
+    'techUser/fetchSaleUserOngoingCases',
     async ({ page = 1, limit = 10}, { rejectWithValue }) => {
         try {
             const response = await getTechUserOngoingCasesService(page, limit);
@@ -89,6 +91,22 @@ export const fetchTechUserOngoingCases = createAsyncThunk(
         }
     }
 );
+
+// TECH USER UPGARDE PLAN
+export const techUpgradePlan = createAsyncThunk(
+  'techUser/upgradePlan',
+  async({caseId, payload}, {rejectWithValue})=>{
+    try {
+      const respone = await addPlanUpgardeService(caseId, payload);
+      return respone;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+)
+
+
+
 
 
 const techUserSlice = createSlice({
@@ -249,6 +267,20 @@ const techUserSlice = createSlice({
             state.isLoading = false;
             state.error = action.payload;
             })
+
+            .addCase(techUpgradePlan.pending, (state)=>{
+              state.isLoading = true;
+              state.error = null;
+            })
+            .addCase(techUpgradePlan.fulfilled, (state)=>{
+              state.isLoading = false;
+            })
+            .addCase(techUpgradePlan.rejected, (state, action)=>{
+              state.isLoading = false;
+              state.error = action.payload;
+            })
+
+            
 
   },
 });
