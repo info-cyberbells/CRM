@@ -29,6 +29,10 @@ import {
   AlertCircle,
   MessageSquare,
   Send,
+  ArrowUpCircle,
+  History,
+  X,
+  CheckCircle2
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -38,6 +42,7 @@ import {
 } from "../../features/SearchSlice/searchSlice";
 import {
   getSingleCaseById,
+  techUpgradePlan,
   updateCaseByTech,
 } from "../../features/TechUserSlice/TechUserSlice";
 import {
@@ -281,6 +286,15 @@ const CaseDetailPage = () => {
     : formData.remoteAccess?.length
       ? [formData.remoteAccess[0]]
       : [];
+
+      const [showUpgradeForm, setShowUpgradeForm] = useState(false);
+      const [showUpgradesList, setShowUpgradesList] = useState(false);
+
+      const [upgradePlanData, setUpgradePlanData] = useState({
+          product: "",
+          amount: "",
+          validity: ""
+        });
 
   // Update formData when data loads
   useEffect(() => {
@@ -694,6 +708,57 @@ const handlePostNote = async () => {
     showToast("Failed to add note", "error");
   }
 };
+
+const handleUpgradeChange = (e) => {
+    const { name, value } = e.target;
+    setUpgradePlanData(prev => ({ ...prev, [name]: value }));
+  };
+
+ const handleUpgradeSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const payload = {
+      product: upgradePlanData.product.trim(),
+      amount: Number(upgradePlanData.amount),
+      validity: upgradePlanData.validity
+    };
+
+    await dispatch(techUpgradePlan({caseId, payload})).unwrap();
+
+    // Refresh case data
+    dispatch(getSingleCaseById(caseId));
+
+    // Success toast
+    showToast("Upgrade plan added successfully", "success");
+
+    // Reset form
+    setUpgradePlanData({
+      product: "",
+      amount: "",
+      validity: ""
+    });
+
+    setShowUpgradeForm(false);
+
+  } catch (error) {
+    console.error("Upgrade failed:", error);
+
+    showToast(
+      error?.response?.data?.message || "Failed to add upgrade plan",
+      "error"
+    );
+  }
+};
+
+   const formatDate = (dateStr) => {
+    if (!dateStr) return "—";
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
   return (
     <div className="max-w-7xl font-[Poppins] mx-auto animate-in slide-in-from-right duration-500 pb-20 space-y-6">
@@ -1745,7 +1810,160 @@ const handlePostNote = async () => {
                 </div>
               </div>
             </div>
+            
           </div>
+          {/* Action Buttons */}
+      <div className="w-full max-w-md grid grid-cols-2 gap-4">
+        {isTech && <button
+          onClick={() => {
+            setShowUpgradeForm(true);
+            setShowUpgradesList(false);
+          }}
+          className={`border-2 cursor-pointer  py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all active:scale-95 ${
+          showUpgradesList 
+              ? ' bg-white border-emerald-600 text-emerald-600 hover:bg-slate-50 shadow-slate-100' 
+              : 'bg-emerald-600 border-emerald-600 text-white'
+          }`}
+        >
+          <ArrowUpCircle size={16} />
+          Upgrade Plan
+        </button>}
+        <button
+          onClick={() => {
+            setShowUpgradesList(!showUpgradesList);
+            setShowUpgradeForm(false);
+          }}
+          className={`py-4 rounded-2xl cursor-pointer font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 border-2 ${
+            showUpgradesList 
+              ? 'bg-emerald-600 border-emerald-600 text-white' 
+              : 'bg-white border-emerald-600 text-emerald-600 hover:bg-slate-50 shadow-slate-100'
+          }`}
+        >
+          <History size={16} />
+          View Upgrades ({data?.planUpgrades?.length || 0})
+        </button>
+      </div>
+
+{showUpgradeForm && (
+        <div className="w-full max-w-md bg-white rounded-[2rem] p-6 border-2 border-emerald-100 shadow-xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
+                <ArrowUpCircle size={20} />
+              </div>
+              <h3 className="font-black uppercase tracking-widest text-emerald-800 text-sm">
+                Upgrade Plan
+              </h3>
+            </div>
+            <button onClick={() => setShowUpgradeForm(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer ">
+              <X size={20} />
+            </button>
+          </div>
+
+          <form onSubmit={handleUpgradeSubmit} className="space-y-5">
+            <div className="space-y-0.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Product</label>
+              <input
+                type="text" name="product"
+                value={upgradePlanData.product}
+                onChange={handleUpgradeChange}
+                placeholder="Enter Product"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 outline-none font-bold text-sm focus:border-emerald-500 transition-all"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <div className="space-y-0.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Amount</label>
+                <input
+                  type="number" name="amount" value={upgradePlanData.amount} onChange={handleUpgradeChange}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 outline-none font-bold text-sm focus:border-emerald-500"
+                  placeholder="399"
+                  required
+                />
+              </div>
+              <div className="space-y-0.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Validity</label>
+                <input
+                  type="date" name="validity" value={upgradePlanData.validity} onChange={handleUpgradeChange}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 outline-none font-bold text-sm focus:border-emerald-500"
+                  required
+                />
+              </div>
+            </div>
+            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 cursor-pointer rounded-xl font-semibold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-200">
+              <CheckCircle2 size={18} /> Confirm Upgrade
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Upgraded Plans List Section */}
+      {showUpgradesList && (
+        <div className="w-full max-w-md space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="font-black uppercase tracking-widest text-slate-400 text-[10px]">
+              Upgrade History
+            </h3>
+            <button onClick={() => setShowUpgradesList(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <X size={16} />
+            </button>
+          </div>
+
+          {data.planUpgrades.length === 0 ? (
+            <div className="bg-white rounded-3xl p-10 border-2 border-dashed border-slate-200 text-center">
+              <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">No upgrades found</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {data.planUpgrades.map((upgrade) => (
+                <div key={upgrade.id} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-3 group hover:border-emerald-200 transition-all">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <p className="font-black text-slate-800 text-sm leading-none">
+                          {upgrade.product}
+                        </p>
+                        <span className="bg-slate-100 text-slate-500 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">
+                          ID: {upgrade.id.toString().slice(-4)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-normal">
+                        <span className="flex items-center gap-1">
+                          <Calendar size={10} /> Valid: {formatDate(upgrade.validity)}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-emerald-600 font-black text-lg">
+                      +{formatCurrency(upgrade.amount)}
+                    </p>
+                  </div>
+                  
+                  <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                        <User size={12} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-700 uppercase leading-none">
+                          {upgrade.addedBy.name}
+                        </span>
+                        {/* <span className="text-[8px] font-bold text-slate-400 uppercase">
+                          Staff ID: {upgrade.addedBy.id}
+                        </span> */}
+                      </div>
+                    </div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase text-right">
+                      Created: {formatDate(upgrade.createdAt)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
         </div>
       </div>
     </div>

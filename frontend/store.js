@@ -8,6 +8,7 @@ import techUserReducer from './src/features/TechUserSlice/TechUserSlice'
 import adminSliceReducer from './src/features/ADMIN/adminSlice';
 import adminNoticeReducer from './src/features/NoticeSlice/NoticeSlice';
 import caseNotesReducer from './src/features/CaseNotes/casenotesSlice';
+import attendanceReducer from "./src/features/AttendanceSlice/attendanceSlice";
 
 
 export const store = configureStore({
@@ -20,6 +21,7 @@ export const store = configureStore({
         techUser: techUserReducer,
         admin: adminSliceReducer,
         notice :  adminNoticeReducer,
-        caseNotes: caseNotesReducer
+        caseNotes: caseNotesReducer,
+        attendance: attendanceReducer
     },
 });
