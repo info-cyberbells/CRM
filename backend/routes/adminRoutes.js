@@ -5,6 +5,8 @@ import { getAgentsMonitor, getDashboardData } from "../controllers/dashbaordCont
 import { addCaseNote, getAllCases, getCaseById, getCaseNotes, getOverallSummary, saleReportGraph, searchTechUser, updateCase } from "../controllers/caseController.js";
 import { createAdminNotice, deleteAdminNotice, getAllAdminNotices, updateAdminNotice } from "../controllers/noticeController.js";
 import { getAdminNotifications } from "../controllers/notificationController.js";
+import { addPlanUpgrade, getPlanUpgrades } from "../controllers/planUpgradeController.js";
+
 
 
 const router = express.Router();
@@ -54,5 +56,9 @@ router.get("/getAllAgents", getAllAgents);
 // admin note
 router.post("/createNote/:caseId", addCaseNote);
 router.get('/getCaseNotes/:caseId', getCaseNotes);
+
+router.post("/upgrade-plan/:caseId", addPlanUpgrade);
+router.get("/get-plan/:caseId", getPlanUpgrades);
+
 
 export default router;
