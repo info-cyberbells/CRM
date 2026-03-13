@@ -101,6 +101,7 @@ export const searchSaleUserCases = async (page, limit, filters) => {
         if (filters.customerID?.trim()) queryParams.append('customerID', filters.customerID.trim());
         if (filters.email?.trim()) queryParams.append('email', filters.email.trim());
         if (filters.status?.trim()) queryParams.append('status', filters.status.trim());
+        if (filters.dateFilter?.trim()) queryParams.append('dateFilter', filters.dateFilter.trim());
 
         const response = await axios.get(`${USER_ENDPOINTS.SEARCH_SALE_USER_CASES}?${queryParams}`, {
             withCredentials: true,

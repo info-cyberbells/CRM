@@ -322,6 +322,7 @@ export const getMyCases = async (req, res) => {
         const customerID = req.query.customerID ? req.query.customerID.trim() : "";
         const email = req.query.email ? req.query.email.trim() : "";
         const phone = req.query.phone ? req.query.phone.trim() : "";
+        const dateFilter = req.query.dateFilter ? req.query.dateFilter.trim() : "";
 
         let where = { saleUserId: userId };
 
@@ -348,6 +349,25 @@ export const getMyCases = async (req, res) => {
         if (phone) {
             searchConditions.push({ phone: { [Op.like]: `%${phone}%` } });
         }
+        if (dateFilter === "today") {
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+
+            const endOfToday = new Date();
+            endOfToday.setHours(23, 59, 59, 999);
+
+            where.createdAt = {
+                [Op.between]: [startOfToday, endOfToday],
+            };
+        }
+
+        if (dateFilter === "monthly") {
+            const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+            where.createdAt = {
+                [Op.gte]: startOfMonth,
+            };
+        }
 
 
         if (searchConditions.length > 0) {
@@ -359,7 +379,16 @@ export const getMyCases = async (req, res) => {
         if (status) {
             if (status === "ongoing") {
                 where = { ...where, status: "Open" };
-            } else {
+            }
+            else if (status === "refund_chargeback") {
+                where = {
+                    ...where,
+                    status: {
+                        [Op.in]: ["Refund", "Chargeback"],
+                    },
+                };
+            } 
+            else {
                 where = { ...where, status };
             }
         }
@@ -786,20 +815,26 @@ if (
 export const getCaseById = async (req, res) => {
     try {
         const { caseId } = req.params;
-        const caseData = await Case.findOne( {
-            where: {caseId},
+        const caseData = await Case.findOne({
+            where: { caseId },
             include: [
                 { model: User, as: "saleUser", attributes: ["id", "name"] },
                 { model: User, as: "techUser", attributes: ["id", "name"] },
+                {                      
+                    model: PlanUpgrade,
+                    as: "planUpgrades",
+                    include: [{ model: User, as: "addedBy", attributes: ["id", "name"] }],
+                    order: [["createdAt", "DESC"]],
+                },
             ],
         });
         const remoteAccess = typeof caseData.remoteAccess === "string"
             ? JSON.parse(caseData.remoteAccess)
             : Array.isArray(caseData.remoteAccess)
-            ? caseData.remoteAccess
-            : [];
-
-        res.json({ success: true, case: {...caseData.toJSON(), remoteAccess} });
+                ? caseData.remoteAccess
+                : [];
+ 
+        res.json({ success: true, case: { ...caseData.toJSON(), remoteAccess } });
     } catch (error) {
         res.status(500).json({ success: false, message: "Failed to fetch case", error });
     }
