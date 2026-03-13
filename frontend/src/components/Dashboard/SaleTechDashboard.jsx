@@ -334,40 +334,47 @@ const SaleTechDashboard = () => {
         monthlySales = 0,
         casesGrowth = 0,
         salesGrowth = 0,
+        openCases = 0,
+        refundChargeBackAmount = 0,
       } = data;
 
       return [
         {
-          title: "Today Cases",
-          value: todayCases || 0,
-          subtitle: `${formatCurrency(todaySales)} Generated`,
+          title: "Today Sales",
+          value:  `${formatCurrency(todaySales)}`,
+          subtitle: `${todayCases || 0} cases` ,
           icon: FileText,
           colorClass: "text-blue-600",
           iconBg: "bg-blue-50",
+          path: '/search-cases?dateFilter=today'
         },
         {
-          title: "Monthly Total",
-          value: monthlyCases,
-          subtitle: `${formatCurrency(monthlySales)} Sales`,
+          title: "Monthly Sales",
+          value: `${formatCurrency(monthlySales)}`,
+          subtitle: `${monthlyCases || 0} cases`,
           icon: TrendingUp,
           colorClass: "text-emerald-600",
           iconBg: "bg-emerald-50",
+          path: '/search-cases?dateFilter=monthly'
+
         },
         {
-          title: "Cases Growth",
-          value: `${casesGrowth}%`,
-          subtitle: "Vs Last Month",
+          title: "Open Cases",
+          value: openCases,
+          subtitle: "",
           icon: Activity,
           colorClass: "text-amber-600",
           iconBg: "bg-amber-50",
+          path: '/search-cases?status=open'
         },
         {
-          title: "Sales Growth",
-          value: `${salesGrowth}%`,
-          subtitle: "Vs Last Month",
+          title: "Refund / ChargeBack Amount",
+          value: `${formatCurrency(refundChargeBackAmount)}`,
+          subtitle: "",
           icon: DollarSign,
           colorClass: "text-indigo-600",
           iconBg: "bg-indigo-50",
+          path: '/search-cases?status=refund_chargeback'
         },
       ];
     } else if (userRole === "tech") {

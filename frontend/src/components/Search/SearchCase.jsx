@@ -103,6 +103,7 @@ const SearchCase = () => {
   const [hasSearch, setHasSearched] = useState(false);
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
+  const dateFilter = searchParams.get("dateFilter");
 
   const [filters, setFilters] = useState({
     customerName: "",
@@ -171,7 +172,7 @@ const SearchCase = () => {
       }
     }
     if (role === "sale") {
-      dispatch(fetchSaleUserCases({ page, limit, filters }));
+      dispatch(fetchSaleUserCases({ page, limit, filters: {...filters, status, dateFilter} }));
     }
   };
 

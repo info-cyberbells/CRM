@@ -119,6 +119,8 @@ export const getDashboardData = async (req, res) => {
                     new Date(c.createdAt) >= startOfToday && new Date(c.createdAt) < endOfToday
                 );
 
+                const openCases = saleCases.filter(c => c.status === "Open");
+
                 // Cases created this month
                 const monthlyCases = saleCases.filter(c => new Date(c.createdAt) >= startOfMonth);
 
@@ -133,6 +135,14 @@ export const getDashboardData = async (req, res) => {
                 const monthlySales = monthlyCases.reduce((sum, c) => sum + c.saleAmount, 0);
                 const prevMonthlySales = prevMonthlyCases.reduce((sum, c) => sum + c.saleAmount, 0);
 
+                // Refund amount
+                const refundChargebackTotal = saleCases.reduce((sum, c) => {
+                    if (c.status === "Refund") {
+                        return sum + (c.saleAmount || 0);
+                    }
+                    return sum + (c.chargeBack || 0);
+                }, 0);
+
                 return res.json({
                     user,
                     // admin notices
@@ -144,6 +154,9 @@ export const getDashboardData = async (req, res) => {
                     // This month's metrics
                     monthlyCases: monthlyCases.length,
                     monthlySales: monthlySales,
+
+                    openCases: openCases.length,
+                    refundChargeBackAmount: refundChargebackTotal,
 
                     // Previous month comparison
                     prevMonthlyCases: prevMonthlyCases.length,
