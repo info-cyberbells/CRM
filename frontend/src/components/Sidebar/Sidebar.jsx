@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HashRouter as Router, Routes, Route, NavLink, useLocation, Navigate, Outlet, useNavigate  } from 'react-router-dom';
-import { 
-  UserCircle, 
-  Settings, 
-  Bell, 
-  Menu, 
-  X, 
-  ChevronDown, 
-  ChevronRight, 
-  LogOut, 
-  ShieldCheck, 
-  Search, 
+import { HashRouter as Router, Routes, Route, NavLink, useLocation, Navigate, Outlet, useNavigate } from 'react-router-dom';
+import {
+  UserCircle,
+  Settings,
+  Bell,
+  Menu,
+  X,
+  ChevronDown,
+  ChevronRight,
+  LogOut,
+  ShieldCheck,
+  Search,
   ChevronLeft,
   LayoutDashboard,
   PieChart,
@@ -28,48 +28,50 @@ import {
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { loginUserThunk, logoutUserThunk } from '../../features/UserSlice/UserSlice';
+import { resetChat } from "../../features/chat/chatSlice";
+import { disconnectSocket } from "../../hooks/useSocket";
 
 const ROLE_BASED_MENUS = {
   Admin: [
     { id: "admin-dashboard", title: "Admin Dashboard", icon: LayoutDashboard },
-    {id: "search-cases",title: "Search",icon: Search,},
-    { id: "attendance", title: "Attendance", icon: CalendarCheck  },
-        { id: "my-team", title: "My Team", icon: Users },
-  { id: "notices", title: "Notices",icon: FileText,},
-  { id: "sales-report", title: "Sales Report",icon: ChartNoAxesCombined,},
-//   { id: "chat", title: "Chat", icon: MessageSquare,},
-  { id: "notifications", title: "Notifications", icon: Bell,},
+    { id: "search-cases", title: "Search", icon: Search, },
+    { id: "attendance", title: "Attendance", icon: CalendarCheck },
+    { id: "my-team", title: "My Team", icon: Users },
+    { id: "notices", title: "Notices", icon: FileText, },
+    { id: "sales-report", title: "Sales Report", icon: ChartNoAxesCombined, },
+    { id: "chat", title: "Chat", icon: MessageSquare, },
+    { id: "notifications", title: "Notifications", icon: Bell, },
   ],
   Sale: [
     { id: "dashboard", title: "Sales Overview", icon: TrendingUp },
     {
-  id: "create-case",
-  title: "Create Case",
-  icon: FileText,
-  children: [
-    {id: "create-case-dig", title: "DIG",path: "create-case/DIG",},
-    { id: "create-case-cbh", title: "CBH",path: "create-case/CBH",},
-    { id: "create-case-td", title: "TD", path: "create-case/TD",},
-    {id: "create-case-pws", title: "PWS",path: "create-case/PWS",},
-    { id: "create-case-no-sale", title: "No Sale", path: "create-case/NOSALE",},
-    ],
+      id: "create-case",
+      title: "Create Case",
+      icon: FileText,
+      children: [
+        { id: "create-case-dig", title: "DIG", path: "create-case/DIG", },
+        { id: "create-case-cbh", title: "CBH", path: "create-case/CBH", },
+        { id: "create-case-td", title: "TD", path: "create-case/TD", },
+        { id: "create-case-pws", title: "PWS", path: "create-case/PWS", },
+        { id: "create-case-no-sale", title: "No Sale", path: "create-case/NOSALE", },
+      ],
     },
-    {id: "search-cases",title: "Search",icon: Search,},
-    {id: "my-attendance",title: "My Attendance",icon: CalendarDays,},
+    { id: "search-cases", title: "Search", icon: Search, },
+    { id: "my-attendance", title: "My Attendance", icon: CalendarDays, },
     // { id: "notes", title: "Notes", icon: FileText },
     // { id: "manage-notes", title: "Notes Feed", icon: FileText },
-    //   { id: "chat", title: "Chat", icon: MessageSquare,},
-  { id: "notifications", title: "Notifications", icon: Bell,},
+    { id: "chat", title: "Chat", icon: MessageSquare, },
+    { id: "notifications", title: "Notifications", icon: Bell, },
   ],
   Tech: [
     { id: "dashboard", title: "Tech Monitor", icon: Wrench },
-    {id: "search-cases",title: "Search",icon: Search,},
-    {id: "update-status",title: "Update Case Status",icon: Edit,},
-    {id: "my-cases",title: "My Cases",icon: FileText,},
-    {id: "my-attendance",title: "My Attendance",icon: CalendarDays,},
-        // { id: "manage-notes", title: "Notes Feed", icon: FileText },
-        //   { id: "chat", title: "Chat", icon: MessageSquare,},
-    { id: "notifications", title: "Notifications", icon: Bell,},
+    { id: "search-cases", title: "Search", icon: Search, },
+    { id: "update-status", title: "Update Case Status", icon: Edit, },
+    { id: "my-cases", title: "My Cases", icon: FileText, },
+    { id: "my-attendance", title: "My Attendance", icon: CalendarDays, },
+    // { id: "manage-notes", title: "Notes Feed", icon: FileText },
+    { id: "chat", title: "Chat", icon: MessageSquare, },
+    { id: "notifications", title: "Notifications", icon: Bell, },
   ],
 };
 
@@ -90,7 +92,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const currentRole = localStorage.getItem("Role") || 'Admin';
-  
+
   const profileRef = useRef(null);
   const location = useLocation();
 
@@ -123,16 +125,18 @@ const Sidebar = () => {
 
 
   const handleLogout = () => {
-    dispatch(logoutUserThunk()).then(()=>{
-        navigate('/');
+    dispatch(logoutUserThunk()).then(() => {
+      dispatch(resetChat());
+      disconnectSocket();
+      navigate('/');
     })
   }
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
-      
+
       {/* --- SIDEBAR --- */}
-      <aside 
+      <aside
         className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out lg:relative 
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${isCollapsed ? 'lg:w-20' : 'lg:w-64 w-64'}
@@ -143,7 +147,7 @@ const Sidebar = () => {
             {/* <div className="bg-emerald-600 p-2 rounded-xl text-white shrink-0 shadow-sm">
             //   {/* <ShieldCheck size={20} /> 
             </div> */}
-              <img src="/cyberhub_Logo.png" alt="" className='w-18' />
+            <img src="/cyberhub_Logo.png" alt="" className='w-18' />
             {!isCollapsed && <span className="text-xl font-bold tracking-tight text-emerald-800">CYBERHUB</span>}
           </div>
           <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:bg-slate-100">
@@ -174,7 +178,7 @@ const Sidebar = () => {
                           key={child.id}
                           to={"/" + (child.path || child.id)}
                           onClick={() => setIsSidebarOpen(false)}
-                          className={({ isActive }) => 
+                          className={({ isActive }) =>
                             `flex w-full items-center px-4 py-2 text-xs font-medium rounded-lg transition-all
                             ${isActive ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'text-slate-400 hover:text-emerald-600'}`
                           }
@@ -189,10 +193,10 @@ const Sidebar = () => {
                 <NavLink
                   to={"/" + item.id}
                   onClick={() => setIsSidebarOpen(false)}
-                  className={({ isActive }) => 
+                  className={({ isActive }) =>
                     `flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-                    ${isActive 
-                      ? 'bg-emerald-600 !text-white shadow-lg shadow-emerald-600/20 font-semibold [&_svg]:text-white' 
+                    ${isActive
+                      ? 'bg-emerald-600 !text-white shadow-lg shadow-emerald-600/20 font-semibold [&_svg]:text-white'
                       : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'
                     }`
                   }
@@ -225,8 +229,8 @@ const Sidebar = () => {
             </div>
           )} */}
           <button
-          onClick={handleLogout}
-          className={`flex cursor-pointer w-full items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all ${isCollapsed ? 'justify-center px-0' : ''}`}>
+            onClick={handleLogout}
+            className={`flex cursor-pointer w-full items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all ${isCollapsed ? 'justify-center px-0' : ''}`}>
             <div className="shrink-0"><LogOut size={20} /></div>
             {!isCollapsed && <span>Logout</span>}
           </button>
@@ -235,7 +239,7 @@ const Sidebar = () => {
 
       {/* --- FRAME CONTENT --- */}
       <div className="flex flex-col flex-1 min-w-0">
-        
+
         {/* --- TOP BAR --- */}
         <header className="flex h-16 items-center justify-between px-4 sm:px-8 bg-white border-b border-slate-200 z-40 shrink-0">
           <div className="flex items-center gap-4">
@@ -254,7 +258,7 @@ const Sidebar = () => {
               <Search className="absolute left-3 text-slate-400" size={16} />
               <input type="text" placeholder="Search..." className="pl-10 pr-4 py-2 bg-slate-50 border border-transparent focus:border-emerald-500 rounded-full text-sm outline-none w-48 lg:w-64" />
             </div>
-            <button onClick={()=> navigate('/notifications')} className="p-2 cursor-pointer text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:scale-[1.08] rounded-full relative">
+            <button onClick={() => navigate('/notifications')} className="p-2 cursor-pointer text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:scale-[1.08] rounded-full relative">
               <Bell size={20} />
               <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white"></span>
             </button>
@@ -275,10 +279,10 @@ const Sidebar = () => {
           </div>
         </header>
 
-               <main className="flex-1 overflow-y-auto p-6 bg-slate-50">
-                    <Outlet />
-                </main>
-       
+        <main className={`flex-1 overflow-hidden bg-slate-50 ${location.pathname.includes('chat') ? 'flex flex-col' : 'overflow-y-auto p-6'}`}>
+          <Outlet />
+        </main>
+
       </div>
 
       {/* Mobile Overlay */}

@@ -2,9 +2,10 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { createUser, loginUser, logoutUserAPI } from "../../services/services";
 
 const initialState = {
-    user: null,
+    user: JSON.parse(localStorage.getItem("user") || "null"),
     isLoading: false,
     isError: false,
+    token: localStorage.getItem("token") || null,
     isSuccess: false,
     message: "",
 };
@@ -65,10 +66,14 @@ const userSlice = createSlice({
         },
         logout: (state) => {
             state.user = null;
+            state.token = null;
             state.isLoading = false;
             state.isError = false;
             state.isSuccess = false;
             state.message = '';
+            localStorage.removeItem("token");
+            localStorage.removeItem("Role");
+            localStorage.removeItem("user");
         },
     },
 
@@ -105,8 +110,11 @@ const userSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 state.user = action.payload.user;
+                state.token = action.payload.token;
+                localStorage.setItem("token", action.payload.token);
 
                 localStorage.setItem('Role', action.payload.user.role);
+                localStorage.setItem("user", JSON.stringify(action.payload.user));
             })
             .addCase(loginUserThunk.rejected, (state, action) => {
                 state.isLoading = false;
@@ -125,8 +133,11 @@ const userSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 state.user = null;
+                state.token = null;
                 state.message = action.payload.message;
+                localStorage.removeItem("token");
                 localStorage.removeItem("Role");
+                localStorage.removeItem("user");
             })
             .addCase(logoutUserThunk.rejected, (state, action) => {
                 state.isLoading = false;
@@ -138,5 +149,5 @@ const userSlice = createSlice({
 });
 
 //export
-export const { reset, logout  } = userSlice.actions;
+export const { reset, logout } = userSlice.actions;
 export default userSlice.reducer;

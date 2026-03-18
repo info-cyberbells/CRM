@@ -19,6 +19,11 @@ axios.interceptors.response.use(
   },
 );
 
+const config = {
+  withCredentials: true,
+  headers: { "Content-Type": "application/json" },
+};
+
 // Create User
 export const createUser = async (userData) => {
   try {
@@ -792,4 +797,128 @@ export const getMonthlyAttendanceService = async (month) => {
     { withCredentials: true },
   );
   return response.data;
+};
+
+
+
+
+export const getChatUsersService = async () => {
+  try {
+    const response = await axios.get(USER_ENDPOINTS.CHAT_GET_USERS, config);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getMyRoomsService = async () => {
+  try {
+    const response = await axios.get(USER_ENDPOINTS.CHAT_GET_MY_ROOMS, config);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getOrCreateDirectService = async (otherUserId) => {
+  try {
+    const response = await axios.post(
+      USER_ENDPOINTS.CHAT_CREATE_DIRECT,
+      { otherUserId },
+      config
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getMessagesService = async (roomId, offset = 0) => {
+  try {
+    const response = await axios.get(
+      `${USER_ENDPOINTS.CHAT_GET_MESSAGES}/${roomId}/messages?limit=50&offset=${offset}`,
+      config
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export const uploadFileService = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await axios.post(
+      USER_ENDPOINTS.CHAT_UPLOAD_FILE,
+      formData,
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createGroupService = async (name, memberIds) => {
+  try {
+    const response = await axios.post(
+      USER_ENDPOINTS.CHAT_CREATE_GROUP,
+      { name, memberIds },
+      config
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const addMemberService = async (roomId, userId) => {
+  try {
+    const response = await axios.post(
+      `${USER_ENDPOINTS.CHAT_ADD_MEMBER}/${roomId}/members`,
+      { userId },
+      config
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const removeMemberService = async (roomId, userId) => {
+  try {
+    const response = await axios.delete(
+      `${USER_ENDPOINTS.CHAT_REMOVE_MEMBER}/${roomId}/members/${userId}`,
+      config
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllRoomsAdminService = async () => {
+  try {
+    const response = await axios.get(USER_ENDPOINTS.CHAT_ALL_ROOMS, config);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRoomMembersService = async (roomId) => {
+  try {
+    const response = await axios.get(
+      `${USER_ENDPOINTS.CHAT_GET_MEMBERS}/${roomId}/members`,
+      config
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };

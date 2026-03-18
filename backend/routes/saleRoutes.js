@@ -6,7 +6,6 @@ import { getNotifications } from "../controllers/notificationController.js";
 import { getMyAttendance } from "../controllers/attendanceController.js";
 
 
-
 const router = express.Router();
 
 router.use(roleGuard("Sale"));
@@ -32,7 +31,6 @@ router.post("/createNote/:caseId", addCaseNote);
 router.get('/getCaseNotes/:caseId', getCaseNotes);
 
 router.get("/my-attendance", getMyAttendance);
-
 
 
 export default router;
