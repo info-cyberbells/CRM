@@ -78,4 +78,14 @@ export const USER_ENDPOINTS = {
   CHAT_REMOVE_MEMBER: `${API_BASE_URL}/chat/rooms`,
   CHAT_ALL_ROOMS: `${API_BASE_URL}/chat/admin/rooms`,
   CHAT_GET_MEMBERS: `${API_BASE_URL}/chat/rooms`,
+
+
+  // USER SESSIONS ENDPOINTS
+  USER_CLOCK_IN: `${API_BASE_URL}/user-session/clockIn`,
+  USER_START_BREAK: `${API_BASE_URL}/user-session/start-break`,
+  USER_END_BREAK: `${API_BASE_URL}/user-session/end-break`,
+  USER_CLOCK_OUT: `${API_BASE_URL}/user-session/clock-out`,
+  USER_GET_MY_SESSION: `${API_BASE_URL}/user-session/get-my-session-status`,
+
+  ADMIN_GET_AGENTS_MONITOR: `${API_BASE_URL}/admin/get-agent/status`,
 };

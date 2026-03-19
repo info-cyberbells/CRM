@@ -922,3 +922,83 @@ export const getRoomMembersService = async (roomId) => {
     throw error;
   }
 };
+
+
+// Clock In
+export const userClockInService = async (payload) => {
+  try {
+    const response = await axios.post(
+      USER_ENDPOINTS.USER_CLOCK_IN,
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Start Break
+export const userStartBreakService = async (payload) => {
+  try {
+    const response = await axios.post(
+      USER_ENDPOINTS.USER_START_BREAK,
+      payload,
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// End Break
+export const userEndBreakService = async (payload) => {
+  try {
+    const response = await axios.post(
+      USER_ENDPOINTS.USER_END_BREAK,
+      payload,
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//  Clock Out
+export const userClockOutService = async (payload) => {
+  try {
+    const response = await axios.post(
+      USER_ENDPOINTS.USER_CLOCK_OUT,
+      payload,
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Get My Session Status
+export const getMySessionStatusService = async () => {
+  try {
+    const response = await axios.get(
+      USER_ENDPOINTS.USER_GET_MY_SESSION
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+ 
+export const getAgentsMonitorService = async () => {
+  try {
+    const response = await axios.get(USER_ENDPOINTS.ADMIN_GET_AGENTS_MONITOR, {
+      withCredentials: true,
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+ 

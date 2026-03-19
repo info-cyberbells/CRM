@@ -10,6 +10,7 @@ import adminNoticeReducer from './src/features/NoticeSlice/NoticeSlice';
 import caseNotesReducer from './src/features/CaseNotes/casenotesSlice';
 import attendanceReducer from "./src/features/AttendanceSlice/attendanceSlice";
 import chatReducer from "./src/features/chat/chatSlice";
+import userSessionReducer from "./src/features/UserSessionSlice/userSessionSlice";
 
 
 export const store = configureStore({
@@ -25,5 +26,6 @@ export const store = configureStore({
         caseNotes: caseNotesReducer,
         attendance: attendanceReducer,
         chat: chatReducer,
+        userSession: userSessionReducer
     },
 });
