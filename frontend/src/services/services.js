@@ -990,12 +990,21 @@ export const getMySessionStatusService = async () => {
 
 
  
-export const getAgentsMonitorService = async () => {
+export const getAgentsMonitorService = async (page, limit) => {
   try {
-    const response = await axios.get(USER_ENDPOINTS.ADMIN_GET_AGENTS_MONITOR, {
-      withCredentials: true,
-      headers: { "Content-Type": "application/json" },
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
     });
+
+    const response = await axios.get(
+      `${USER_ENDPOINTS.ADMIN_GET_AGENTS_MONITOR}?${queryParams}`,
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
     return response.data;
   } catch (error) {
     throw error;
