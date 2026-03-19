@@ -5,6 +5,7 @@ import { Op, where } from 'sequelize';
 import AdminNotice from "../models/notice.js";
 import UserSession from "../models/UserSession.js";
 import Attendance from "../models/attendance.js";
+import { Sequelize } from "sequelize";
 
 
 
