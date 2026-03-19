@@ -13,11 +13,6 @@ import {
   Bell,
   Menu,
   X,
-  ChevronDown,
-  ChevronRight,
-  LogOut,
-  ShieldCheck,
-  Search,
   ChevronLeft,
   LayoutDashboard,
   PieChart,
@@ -45,11 +40,12 @@ import {
   SearchCode,
   ExternalLink,
   MoreVertical,
-  Loader2,
   AlertCircle,
   RefreshCw,
   CheckCircle2,
   Eye,
+  LogIn, LogOut, PlayCircle,
+  Loader2,Timer,
 } from "lucide-react";
 import { getSingleCaseById, getTechUserAssignedCases, techUserDashboard, setTechCurrentPage, setTechPageSize } from "../../features/TechUserSlice/TechUserSlice";
 import { useSelector, useDispatch } from "react-redux";
@@ -57,6 +53,7 @@ import { fetchDashboardData } from "../../features/DashboardSlice/dashboardSlice
 import { fetchCaseById, fetchSaleUserCases, setPageSize, setCurrentPage } from "../../features/SearchSlice/searchSlice";
 import { useToast } from "../../ToastContext/ToastContext";
 import { logoutUserThunk } from "../../features/UserSlice/UserSlice";
+import { clearSessionState, getMySessionStatus, userClockIn, userClockOut, userEndBreak, userStartBreak } from "../../features/UserSessionSlice/userSessionSlice";
 
 const NoticeBoard = ({ notices }) => (
   <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
@@ -92,67 +89,393 @@ const NoticeBoard = ({ notices }) => (
   </div>
 );
 
+const fmtDur = (s) => {
+  if (!s || s < 0) return "00:00:00";
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  return [h, m, sec].map((v) => String(v).padStart(2, "0")).join(":");
+};
+
+const fmtTime = (d) =>
+  new Date(d).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+
+const fmtDate = (d) =>
+  new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+// ── Skeleton shimmer ─────────────────────────────────────────
+
+const Shimmer = ({ className = "" }) => (
+  <div className={`bg-slate-100 rounded-2xl animate-pulse ${className}`} />
+);
+
+// ── Stat card ────────────────────────────────────────────────
+
+const StatCard = ({ icon: Icon, label, value, sub, active = false, warn = false }) => {
+  const accent = active ? "border-emerald-200 bg-emerald-50/60" : warn ? "border-amber-200 bg-amber-50/60 " : "border-slate-100 bg-slate-50";
+  const valColor = active ? "text-emerald-700" : warn ? "text-amber-700" : "text-slate-600";
+  const iconColor = active ? "text-emerald-400" : warn ? "text-amber-400" : "text-slate-300";
+  return (
+    <div className={`flex-1 min-w-0 border rounded-2xl p-4 flex flex-col gap-1.5 transition-colors ${accent}`}>
+      <div className="flex items-center gap-1.5">
+        <Icon size={12} className={iconColor} />
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</span>
+      </div>
+      <span className={`text-xl font-black font-mono tracking-tight leading-none ${valColor}`}>{value}</span>
+      {sub && <span className="text-[11px] text-slate-400 leading-tight">{sub}</span>}
+    </div>
+  );
+};
+
+// const UserWelcomeHeader = ({ user }) => {
+//   const formatDate = (dateStr) =>
+//     new Date(dateStr).toLocaleDateString("en-US", {
+//       month: "long",
+//       day: "numeric",
+//       year: "numeric",
+//     });
+
+//   return (
+//     <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden relative mb-8">
+//       <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-emerald-500 to-indigo-600 opacity-5"></div>
+//       <div className="relative p-8 flex flex-col xl:flex-row items-start justify-between gap-8">
+//         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+//           <div className="relative">
+//             <div className="w-24 h-24 rounded-3xl bg-slate-800 flex items-center justify-center text-white text-3xl font-black shadow-xl ring-4 ring-white">
+//               {user.name?.charAt(0) || "N/A"}
+//             </div>
+//             <div className="absolute -bottom-1 -right-1 w-6 h-6 border-4 border-white rounded-full bg-emerald-500 animate-pulse"></div>
+//           </div>
+//           <div>
+//             <div className="flex items-center gap-2 mb-1">
+//               <h1 className="text-2xl font-black text-slate-800 tracking-tight">
+//                 Welcome back, {user.name || "N/A"}
+//               </h1>
+//               <BadgeCheck className="text-emerald-500" size={20} />
+//             </div>
+//             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-3">
+//               {user.role || "N/A"} Account Dashboard
+//             </p>
+//             <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-500">
+//               <span className="flex items-center gap-1.5">
+//                 <Mail size={14} className="text-slate-300" /> {user.email || "N/A"}
+//               </span>
+//               {user.phone && (
+//                 <span className="flex items-center gap-1.5">
+//                   <Phone size={14} className="text-slate-300" /> {user.phone}
+//                 </span>
+//               )}
+
+//               {(user.city || user.state) && (
+//                 <span className="flex items-center gap-1.5">
+//                   <MapPin size={14} className="text-slate-300" />
+//                   {[user.city, user.state].filter(Boolean).join(", ")}
+//                 </span>
+//               )}
+//             </div>
+//           </div>
+//         </div>
+//         <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100">
+//           <div className="bg-white p-3 rounded-2xl shadow-sm text-indigo-500">
+//             <Calendar size={20} />
+//           </div>
+//           <div>
+//             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+//               Current Session
+//             </p>
+//             <p className="text-xs font-black text-slate-700">
+//               {formatDate(new Date())}
+//             </p>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
 const UserWelcomeHeader = ({ user }) => {
-  const formatDate = (dateStr) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
+  const dispatch = useDispatch();
+  const {showToast} = useToast();
+  const { session, loading, actionLoading, actionLoading2, error } = useSelector((s) => s.userSession);
+
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => { dispatch(getMySessionStatus()); }, [dispatch]);
+  useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
+
+  const isActive  = Boolean(session?.activeSession);
+  const isOnBreak = Boolean(session?.isOnBreak);
+
+  const shiftSec = useMemo(() => {
+    if (!isActive || !session?.clockInTime) return 0;
+    return Math.floor((now - new Date(session.clockInTime)) / 1000);
+  }, [isActive, session?.clockInTime, now]);
+
+  const liveBkSec = useMemo(() => {
+    if (!isOnBreak || !session?.breakStartTime) return 0;
+    return Math.floor((now - new Date(session.breakStartTime)) / 1000);
+  }, [isOnBreak, session?.breakStartTime, now]);
+
+  const totalBreakSec = (session?.totalBreakSeconds || 0) + liveBkSec;
+  const netSec        = Math.max(0, shiftSec - totalBreakSec);
+
+  const dotCls    = isActive ? (isOnBreak ? "bg-amber-400" : "bg-emerald-500 animate-pulse") : "bg-slate-300";
+  const statusTxt = isActive ? (isOnBreak ? "On Break" : "Online") : "Offline";
+  const statusClr = isActive ? (isOnBreak ? "text-amber-500" : "text-emerald-500") : "text-slate-400";
+
+
+  const handleClockIn = async () => {
+    try {
+      const res = await dispatch(userClockIn());
+
+      if (userClockIn.fulfilled.match(res)) {
+        showToast("Clocked in successfully", "success");
+
+        dispatch(getMySessionStatus());
+      } else {
+        showToast(res.payload || "Clock-in failed", "error");
+      }
+    } catch (err) {
+      showToast("Something went wrong", "error");
+    }
+  };
+
+  const handleEndBreak = async () => {
+    try {
+      const res = await dispatch(userEndBreak());
+
+      if (userEndBreak.fulfilled.match(res)) {
+        showToast("Break ended successfully", "success");
+
+        dispatch(getMySessionStatus());
+      } else {
+        showToast(res.payload || "Failed to end break", "error");
+      }
+    } catch (err) {
+      showToast("Something went wrong", "error");
+    }
+  };
+
+  const handleStartBreak = async () => {
+    try {
+      const res = await dispatch(userStartBreak());
+
+      if (userStartBreak.fulfilled.match(res)) {
+        showToast("Break started", "success");
+
+        dispatch(getMySessionStatus());
+      } else {
+        showToast(res.payload || "Failed to start break", "error");
+      }
+    } catch (err) {
+      showToast("Something went wrong", "error");
+    }
+  };
+
+  const handleClockOut = async () => {
+    try {
+      const res = await dispatch(userClockOut());
+
+      if (userClockOut.fulfilled.match(res)) {
+        showToast("Clocked out successfully", "success");
+
+        dispatch(getMySessionStatus());
+      } else {
+        showToast(res.payload || "Clock-out failed", "error");
+      }
+    } catch (err) {
+      showToast("Something went wrong", "error");
+    }
+  };
 
   return (
     <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden relative mb-8">
-      <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-emerald-500 to-indigo-600 opacity-5"></div>
-      <div className="relative p-8 flex flex-col xl:flex-row items-start justify-between gap-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-3xl bg-slate-800 flex items-center justify-center text-white text-3xl font-black shadow-xl ring-4 ring-white">
-              {user.name?.charAt(0) || "N/A"}
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 border-4 border-white rounded-full bg-emerald-500 animate-pulse"></div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-                Welcome back, {user.name || "N/A"}
-              </h1>
-              <BadgeCheck className="text-emerald-500" size={20} />
-            </div>
-            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-3">
-              {user.role || "N/A"} Account Dashboard
-            </p>
-            <div className="flex flex-wrap gap-4 text-xs font-bold text-slate-500">
-              <span className="flex items-center gap-1.5">
-                <Mail size={14} className="text-slate-300" /> {user.email || "N/A"}
-              </span>
-              {user.phone && (
-                <span className="flex items-center gap-1.5">
-                  <Phone size={14} className="text-slate-300" /> {user.phone}
-                </span>
-              )}
 
-              {(user.city || user.state) && (
-                <span className="flex items-center gap-1.5">
-                  <MapPin size={14} className="text-slate-300" />
-                  {[user.city, user.state].filter(Boolean).join(", ")}
-                </span>
-              )}
+      {/* tint accent */}
+      <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-emerald-500 to-indigo-600 opacity-5 pointer-events-none" />
+
+      <div className="relative p-6 sm:p-8 flex flex-col gap-5">
+
+        {/* ── Error banner ── */}
+        {error && (
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold px-4 py-3 rounded-2xl">
+            <AlertCircle size={15} className="flex-shrink-0 text-red-400 mt-px" />
+            <span className="flex-1">{error}</span>
+            <button
+              onClick={() => dispatch(clearSessionState())}
+              className="flex-shrink-0 text-red-300 hover:text-red-500 transition-colors leading-none"
+            >✕</button>
+          </div>
+        )}
+
+        {/* ── Row 1 : Profile  +  Buttons ── */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+
+          {/* Profile — never changed */}
+          <div className="flex items-center gap-5">
+            <div className="relative flex-shrink-0">
+              <div className="w-20 h-20 rounded-3xl bg-slate-800 flex items-center justify-center text-white text-2xl font-black shadow-xl ring-4 ring-white select-none">
+                {user?.name?.charAt(0) || "?"}
+              </div>
+              <div className={`absolute -bottom-1 -right-1 w-5 h-5 border-[3px] border-white rounded-full ${dotCls}`} />
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight leading-none">
+                  Welcome back, {user?.name || "N/A"}
+                </h1>
+                {/* <BadgeCheck className="text-emerald-500 flex-shrink-0" size={20} /> */}
+              </div>
+
+              <p className="text-[10px] font-black uppercase tracking-widest mb-2 text-slate-400">
+                {user?.role || "N/A"} Account Dashboard &nbsp;•&nbsp;
+                <span className={statusClr}>{statusTxt}</span>
+              </p>
+
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold text-slate-500">
+                {user?.email && (
+                  <span className="flex items-center gap-1.5">
+                    <Mail size={13} className="text-slate-300" />{user.email}
+                  </span>
+                )}
+                {/* {user?.phone && (
+                  <span className="flex items-center gap-1.5">
+                    <Phone size={13} className="text-slate-300" />{user.phone}
+                  </span>
+                )}
+                {(user?.city || user?.state) && (
+                  <span className="flex items-center gap-1.5">
+                    <MapPin size={13} className="text-slate-300" />
+                    {[user?.city, user?.state].filter(Boolean).join(", ")}
+                  </span>
+                )} */}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100">
-          <div className="bg-white p-3 rounded-2xl shadow-sm text-indigo-500">
-            <Calendar size={20} />
+
+          {/* ── Action Buttons ── */}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-shrink-0">
+            {/* Skeleton while initial fetch */}
+            {loading ? (
+              <>
+                <Shimmer className="h-11 w-28 !rounded-2xl" />
+                <Shimmer className="h-11 w-28 !rounded-2xl" />
+              </>
+            ) : !session ? (
+              /* no session data — still allow clock-in */
+              <button
+                onClick={handleClockIn}
+                disabled={actionLoading}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all cursor-pointer"
+              >
+                {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
+                Clock In
+              </button>
+            ) : !isActive ? (
+              <button
+                onClick={handleClockIn}
+                disabled={actionLoading}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all cursor-pointer"
+              >
+                {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
+                Clock In
+              </button>
+            ) : isOnBreak ? (
+              <button
+                onClick={handleEndBreak}
+                disabled={actionLoading}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black bg-amber-500 hover:bg-amber-400 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all cursor-pointer"
+              >
+                {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <PlayCircle size={16} />}
+                End Break
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleStartBreak}
+                  disabled={actionLoading}
+                  className="flex items-center cursor-pointer gap-2 px-5 py-2.5 rounded-2xl text-sm font-black bg-white hover:bg-slate-50 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-slate-600 border border-slate-200 transition-all"
+                >
+                  {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <Coffee size={16} />}
+                  Break
+                </button>
+                <button
+                  onClick={handleClockOut}
+                  disabled={actionLoading2}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black bg-rose-600 hover:bg-rose-500 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-white transition-all cursor-pointer"
+                >
+                  {actionLoading2 ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+                  Clock Out
+                </button>
+              </>
+            )}
           </div>
-          <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              Current Session
-            </p>
-            <p className="text-xs font-black text-slate-700">
-              {formatDate(new Date())}
-            </p>
-          </div>
         </div>
+
+        {/* ── Row 2 : Stat Cards ── */}
+        {loading ? (
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Shimmer className="h-20 flex-1" />
+            <Shimmer className="h-20 flex-1" />
+            <Shimmer className="h-20 flex-1" />
+            <Shimmer className="h-20 flex-1" />
+          </div>
+        ) : !session ? (
+          <div className="flex items-center justify-center gap-2 py-5 text-sm text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-100">
+            <AlertCircle size={15} className="text-slate-300" />
+            No session data found
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row gap-3">
+            <StatCard
+              icon={Timer}
+              label={isActive ? "Shift time" : "Last Clock In"}
+              value={session?.clockInTime ? (isActive ? fmtDur(shiftSec) : fmtTime(session.clockInTime)) : "—"}
+              sub={session?.clockInTime ? (isActive ? `Since ${fmtTime(session.clockInTime)}` : `${fmtDate(session.clockInTime)}`) : "Not clocked in"}
+                active={isActive && !isOnBreak}
+            />
+            <StatCard
+              icon={Coffee}
+              label={
+                      isOnBreak
+                        ? "On Break"
+                        : isActive
+                          ? "Break time"
+                          : "Total Break"
+                    }
+              value={isOnBreak ? fmtDur(liveBkSec) : fmtDur(totalBreakSec)}
+              sub={
+                  isOnBreak
+                    ? `Prev Break Time ${fmtDur(session?.totalBreakSeconds || 0)}`
+                    : totalBreakSec > 0
+                      ? "Total Break Time"
+                      : "No break yet"
+                }
+              warn={isOnBreak}
+            />
+            <StatCard
+              icon={Clock}
+              label={isActive ? "Net time" : "Last Clock Out"}
+              value={isActive ? fmtDur(netSec) : session?.clockOutTime ? fmtTime(session.clockOutTime) : "—"}
+              sub={isActive ? "Shift minus breaks" : session?.clockOutTime ? `${fmtDate(session.clockOutTime)}`  : ""}
+              active={isActive && !isOnBreak}
+            />
+            <div className="flex-1 min-w-0 bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5">
+                <Calendar size={12} className="text-slate-300" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Session date</span>
+              </div>
+              <span className="text-sm font-black text-slate-700 leading-snug">
+                {session.clockInTime ? fmtDate(session.clockInTime) : fmtDate(new Date())}
+              </span>
+              {/* {session.clockOutTime && (
+                <span className="text-[11px] text-slate-400">Out {fmtTime(session.clockOutTime)}</span>
+              )} */}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

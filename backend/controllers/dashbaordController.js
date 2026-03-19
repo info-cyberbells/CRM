@@ -268,7 +268,7 @@ export const getDashboardData = async (req, res) => {
 export const getAgentsMonitor = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 5;
     const offset = (page - 1) * limit;
 
     const roles = ["Tech", "Sale"];

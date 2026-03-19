@@ -207,14 +207,16 @@ export const fetchMonthlyAttendanceThunk = createAsyncThunk(
 );
 
 export const getAgentsMonitorThunk = createAsyncThunk(
-    "admin/getAgentsMonitor",
-    async (_, { rejectWithValue }) => {
-        try {
-            return await getAgentsMonitorService();
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || "Failed to get agents monitor");
-        }
+  "admin/getAgentsMonitor",
+  async ({ page = 1, limit = 5 }, { rejectWithValue }) => {
+    try {
+      return await getAgentsMonitorService(page, limit);
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to get agents monitor"
+      );
     }
+  }
 );
 
 

@@ -103,6 +103,13 @@ const AdminDashboard = () => {
   const [pendingTechUser, setPendingTechUser] = useState(null);
   const [currentCaseForAssignment, setCurrentCaseForAssignment] = useState(null);
 
+  const [agentPage, setAgentPage] = useState(1);
+  const [agentPageSize, setAgentPageSize] = useState(5);
+
+  const agents = agentsMonitor?.agents || [];
+  const agentTotalCount = agentsMonitor?.pagination?.totalRecords || 0;
+  const agentTotalPages = agentsMonitor?.pagination?.totalPages || 1;
+
   const dropdownRef = useRef(null);
 
   const searchKeyword = techSearch[activeCaseId] || "";
@@ -133,9 +140,14 @@ const AdminDashboard = () => {
     loadDashboard();
   }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(getAgentsMonitorThunk());
-  }, [dispatch]);
+   useEffect(() => {
+    dispatch(
+      getAgentsMonitorThunk({
+        page: agentPage,
+        limit: agentPageSize,
+      })
+    );
+  }, [dispatch, agentPage, agentPageSize]);
 
   // Re-run when pagination changes
   useEffect(() => {
@@ -181,6 +193,15 @@ const AdminDashboard = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleAgentPageChange = (page) => {
+    setAgentPage(page);
+  };
+
+  const handleAgentPageSizeChange = (size) => {
+    setAgentPageSize(size);
+    setAgentPage(1);
   };
 
   const handleRetry = () => {
@@ -450,8 +471,22 @@ const AdminDashboard = () => {
             Agent Status Summary
           </h2>
           <div className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-100 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-            LIVE TRACKING
+            <button
+              onClick={()=>dispatch(
+                  getAgentsMonitorThunk({
+                    page: agentPage,
+                    limit: agentPageSize,
+                  })
+                )}
+              className="flex items-center cursor-pointer gap-2 px-3 py-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Refresh"
+            >
+              <RefreshCw
+                size={14}
+                className={isLoading ? 'animate-spin' : ''}
+              />
+              <span className="text-xs font-medium">REFRESH</span>
+            </button>           
           </div>
         </div>
 
@@ -488,7 +523,7 @@ const AdminDashboard = () => {
               <tbody className="divide-y divide-slate-100 text-sm">
                 {(agentsMonitor?.agents || []).map((agent, i) => (
                   <tr key={i} className="hover:bg-slate-50/30 transition-colors">
-                    <td className="px-8 py-5">
+                    <td className="px-8 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">
                           {agent.name?.charAt(0)}
@@ -496,8 +531,8 @@ const AdminDashboard = () => {
                         <span className="font-bold text-slate-700">{agent.name}</span>
                       </div>
                     </td>
-                    <td className="px-8 py-5 text-slate-400 font-medium">{agent.role}</td>
-                    <td className="px-8 py-5">
+                    <td className="px-8 py-3 text-slate-400 font-medium">{agent.role}</td>
+                    <td className="px-8 py-3">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase
                 ${agent.status === 'ONLINE' ? 'bg-emerald-50 text-emerald-600' :
                           agent.status === 'ON_BREAK' ? 'bg-amber-50 text-amber-600' :
@@ -510,15 +545,81 @@ const AdminDashboard = () => {
                           agent.status === 'ONLINE' ? 'Online' : 'Offline'}
                       </span>
                     </td>
-                    <td className="px-8 py-5 text-slate-500 font-mono text-xs">
-                      {agent.status === 'ONLINE' ? 'Active' :
-                        agent.status === 'ON_BREAK' ? 'On Break' : '--'}
+                    <td className="px-8 py-3 text-slate-500 font-mono text-xs">
+                      {agent.status === 'ONLINE' && agent.clockInTime
+                        ? `Clocked In: ${new Date(agent.clockInTime).toLocaleTimeString()}`
+                        : agent.status === 'OFFLINE' && agent.clockOutTime
+                        ? `Clocked Out: ${new Date(agent.clockOutTime).toLocaleTimeString()}`
+                        : agent.status === 'ON_BREAK' && agent.breakStartTime
+                        ? `On Break From: ${new Date(agent.breakStartTime).toLocaleTimeString()}`
+                        : '--'}
                     </td>
                   </tr>
                 ))}
               </tbody>
+              
             </table>
           </div>
+          {agents.length > 0 && (
+        <div className="px-8 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-wrap justify-between items-center gap-6">
+              <div className="flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <span>Show:</span>
+            <select
+              value={agentPageSize}
+              onChange={(e) =>
+                handleAgentPageSizeChange(Number(e.target.value))
+              }
+                  className="bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none font-black text-slate-700 focus:border-emerald-500 transition-all shadow-sm"
+            >
+              {[5, 8, 10, 15].map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+            <span>entries</span>
+          </div>
+
+          {/* Info */}
+              <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hidden lg:block">
+            Showing {(agentPage - 1) * agentPageSize + 1} to{" "}
+            {Math.min(agentPage * agentPageSize, agentTotalCount)} of {agentTotalCount}
+          </div>
+
+          {/* Buttons */}
+          <div className="flex item-center gap-4">
+            <button
+              disabled={agentPage === 1}
+              onClick={() => handleAgentPageChange(agentPage - 1)}
+              className="
+                    px-4 py-3 cursor-pointer
+                    text-[10px] font-black uppercase tracking-widest
+                    rounded-2xl
+                    border border-slate-200
+                    bg-white text-slate-400
+                    hover:bg-slate-50 hover:text-slate-700
+                    disabled:opacity-30 disabled:cursor-not-allowed
+                    transition-all
+                    active:scale-95
+                "
+            >
+              Prev
+            </button>
+
+                <span className="text-[10px] flex items-center justify-center font-black text-emerald-600 bg-emerald-50 px-4 py-2 rounded-xl uppercase tracking-widest shadow-sm border border-emerald-100">
+             Page {agentPage} of {agentTotalPages}
+            </span>
+
+            <button
+              disabled={agentPage === agentTotalPages}
+              onClick={() => handleAgentPageChange(agentPage + 1)}
+                  className=" px-6 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 "
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
         </div>
       </section>
 

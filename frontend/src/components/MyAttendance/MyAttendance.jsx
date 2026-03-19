@@ -93,7 +93,13 @@ const MyAttendance = () => {
       year:  'numeric',
     });
 
-  const handleRefresh = () => dispatch(getMyAttendanceTech(currentMonth));
+  const handleRefresh = () => {
+      if (isTech) {
+        dispatch(getMyAttendanceTech(currentMonth));
+      } else {
+        dispatch(getMyAttendanceSale(currentMonth));
+      }
+    };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900 p-4 md:p-8">
