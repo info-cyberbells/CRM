@@ -41,7 +41,7 @@ import {
   User,
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { adminDashboard, adminViewCase, fetchAllCasesAdmin, searchTechUser, setAdminCurrentPage, setAdminPageSize, updateCaseDetailsByAdmin, } from '../../features/ADMIN/adminSlice';
+import { adminDashboard, adminViewCase, fetchAllCasesAdmin, searchTechUser, setAdminCurrentPage, setAdminPageSize, updateCaseDetailsByAdmin, getAgentsMonitorThunk } from '../../features/ADMIN/adminSlice';
 import { useToast } from '../../ToastContext/ToastContext';
 import { logoutUserThunk } from '../../features/UserSlice/UserSlice';
 
@@ -89,6 +89,7 @@ const ErrorBanner = ({ message, onRetry }) => {
 const AdminDashboard = () => {
 
   const { dashboardData: data, dbLoading, isError, error, searchLoading, isLoading, searchTechusers, cases, pagination, } = useSelector((state) => state.admin);
+  const { agentsMonitor, monitorLoading } = useSelector((state) => state.admin);
   const { currentPage, pageSize, totalPages, totalCount } = pagination;
 
   const dispatch = useDispatch();
@@ -130,6 +131,10 @@ const AdminDashboard = () => {
       }
     };
     loadDashboard();
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(getAgentsMonitorThunk());
   }, [dispatch]);
 
   // Re-run when pagination changes
@@ -438,7 +443,7 @@ const AdminDashboard = () => {
       </section>
 
       {/* SECTION: AGENT STATUS SUMMARY */}
-      {/* <section>
+      <section>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
             <Activity className="text-emerald-600" size={24} />
@@ -452,10 +457,10 @@ const AdminDashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: 'Online', value: '12', icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-            { label: 'On Break', value: '2', icon: Coffee, color: 'text-amber-600', bg: 'bg-amber-50' },
-            { label: 'Offline', value: '4', icon: UserMinus, color: 'text-slate-400', bg: 'bg-slate-50' },
-            { label: 'Total Cases', value: data.totalCases, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
+            { label: 'Online', value: agentsMonitor?.stats?.online?.total || 0, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+            { label: 'On Break', value: agentsMonitor?.stats?.onBreak?.total || 0, icon: Coffee, color: 'text-amber-600', bg: 'bg-amber-50' },
+            { label: 'Offline', value: agentsMonitor?.stats?.offline?.total || 0, icon: UserMinus, color: 'text-slate-400', bg: 'bg-slate-50' },
+            { label: 'Total', value: agentsMonitor?.stats?.totalAgents || 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
           ].map((stat, i) => (
             <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 flex items-center gap-4 shadow-sm">
               <div className={`${stat.bg} ${stat.color} p-3 rounded-2xl`}>
@@ -481,31 +486,33 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
-                {[
-                  { name: "Ram", role: "Sales", status: "Break", type: "amber" },
-                  { name: "sham", role: "Tech", status: "Online", type: "emerald" },
-                  { name: "Admin", role: "Management", status: "Offline", type: "slate" },
-                ].map((agent, i) => (
+                {(agentsMonitor?.agents || []).map((agent, i) => (
                   <tr key={i} className="hover:bg-slate-50/30 transition-colors">
                     <td className="px-8 py-5">
-                       <div className="flex items-center gap-3">
-                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-100 text-slate-600 uppercase`}>
-                           {agent.name.charAt(0)}
-                         </div>
-                         <span className="font-bold text-slate-700">{agent.name}</span>
-                       </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">
+                          {agent.name?.charAt(0)}
+                        </div>
+                        <span className="font-bold text-slate-700">{agent.name}</span>
+                      </div>
                     </td>
                     <td className="px-8 py-5 text-slate-400 font-medium">{agent.role}</td>
                     <td className="px-8 py-5">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase
-                        ${agent.type === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 
-                          agent.type === 'amber' ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${agent.type === 'emerald' ? 'bg-emerald-500' : agent.type === 'amber' ? 'bg-amber-500' : 'bg-slate-400'}`}></span>
-                        {agent.status}
+                ${agent.status === 'ONLINE' ? 'bg-emerald-50 text-emerald-600' :
+                          agent.status === 'ON_BREAK' ? 'bg-amber-50 text-amber-600' :
+                            'bg-slate-100 text-slate-400'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full
+                    ${agent.status === 'ONLINE' ? 'bg-emerald-500 animate-pulse' :
+                            agent.status === 'ON_BREAK' ? 'bg-amber-500' :
+                              'bg-slate-400'}`} />
+                        {agent.status === 'ON_BREAK' ? 'On Break' :
+                          agent.status === 'ONLINE' ? 'Online' : 'Offline'}
                       </span>
                     </td>
                     <td className="px-8 py-5 text-slate-500 font-mono text-xs">
-                      {agent.status === "Break" ? formatTime(breakTimers[agent.name]) : agent.status === "Online" ? "Active" : "--:--"}
+                      {agent.status === 'ONLINE' ? 'Active' :
+                        agent.status === 'ON_BREAK' ? 'On Break' : '--'}
                     </td>
                   </tr>
                 ))}
@@ -513,7 +520,7 @@ const AdminDashboard = () => {
             </table>
           </div>
         </div>
-      </section> */}
+      </section>
 
       {/* SECTION: CASES TABLE */}
       <section>

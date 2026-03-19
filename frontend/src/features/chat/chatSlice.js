@@ -158,6 +158,11 @@ const chatSlice = createSlice({
                 if (!exists) state.messages.push(msg);
             }
         },
+        updateUserStatus(state, action) {
+            const { userId, status } = action.payload;
+            const user = state.users.find(u => u.id === userId);
+            if (user) user.status = status;
+        },
         clearMessages(state) {
             state.messages = [];
         },
@@ -254,5 +259,5 @@ const chatSlice = createSlice({
     },
 });
 
-export const { setActiveRoom, addIncomingMessage, clearMessages, resetChat } = chatSlice.actions;
+export const { setActiveRoom, addIncomingMessage, clearMessages, resetChat, updateUserStatus  } = chatSlice.actions;
 export default chatSlice.reducer;

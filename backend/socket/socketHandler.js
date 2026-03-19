@@ -17,9 +17,18 @@ export default function socketHandler(io) {
             next(new Error("Invalid token"));
         }
     });
-
-    io.on("connection", (socket) => {
+    io.on("connection", async (socket) => {
         console.log(`🟢 User ID: ${socket.user.id} Role: ${socket.user.role} connected`);
+
+        // set user ONLINE
+        await User.update(
+            { status: "ONLINE" },
+            { where: { id: socket.user.id } }
+        );
+
+        // broadcast to everyone that this user is now online
+        io.emit("user_status_changed", { userId: socket.user.id, status: "ONLINE" });
+
 
         // JOIN ROOM 
         socket.on("join_room", async (roomId) => {
@@ -92,8 +101,16 @@ export default function socketHandler(io) {
             socket.to(String(roomId)).emit("user_stop_typing", { userId: socket.user.id });
         });
 
-        socket.on("disconnect", () => {
-            console.log(`🔴 User ID: ${socket.user?.id} disconnected`);
+        socket.on("disconnect", async (reason) => {
+            console.log(`🔴 User ID: ${socket.user?.id} disconnected — reason: ${reason}`);
+
+            await User.update(
+                { status: "OFFLINE" },
+                { where: { id: socket.user.id } }
+            );
+
+    
+            io.emit("user_status_changed", { userId: socket.user.id, status: "OFFLINE" });
         });
     });
 }

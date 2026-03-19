@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
-import { addIncomingMessage } from "../features/chat/chatSlice.js";
+import { addIncomingMessage, updateUserStatus } from "../features/chat/chatSlice.js";
 
 let socketInstance = null;
 
@@ -46,6 +46,16 @@ export function useSocket() {
 
         socketInstance.on("new_message", (msg) => {
             dispatch(addIncomingMessage(msg));
+
+            const state = socketInstance._store?.getState?.();
+            const activeRoomId = state?.chat?.activeRoomId;
+
+            if (String(msg.room_id) !== String(activeRoomId)) {
+                dispatch(incrementUnread(msg.room_id));
+            }
+        });
+        socketInstance.on("user_status_changed", ({ userId, status }) => {
+            dispatch(updateUserStatus({ userId, status }));
         });
 
         socketRef.current = socketInstance;

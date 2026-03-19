@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import "emoji-picker-element";
 import {
     MessageSquare, Users, Send, Paperclip,
     Plus, X, Check, Search, ChevronDown
@@ -184,47 +185,62 @@ const MessageBubble = ({ message, isOwn, showAvatar, showName }) => {
                 )}
 
                 {/* bubble */}
-                <div className={`px-3.5 py-2 text-sm leading-relaxed
-                    ${isOwn
-                        ? "bg-emerald-600 text-white rounded-2xl rounded-br-none"
-                        : "bg-white text-slate-700 rounded-2xl rounded-bl-none border border-slate-100 shadow-sm"}`}>
-                    {message.content && <p className="whitespace-pre-wrap">{message.content}</p>}
-                    {message.file_url && (() => {
-                        const name = message.file_name || "";
-                        const ext = name.split(".").pop()?.toLowerCase();
-                        const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+                {(() => {
+                    const isEmojiOnly = message.content &&
+                        /^[\p{Emoji}\s]+$/u.test(message.content.trim()) &&
+                        !message.file_url &&
+                        message.content.trim().length <= 8;
 
-                        return isImage ? (
-                            <a href={`${import.meta.env.VITE_API_URL}${message.file_url}`} target="_blank" rel="noreferrer">
-                                <img
-                                    src={`${import.meta.env.VITE_API_URL}${message.file_url}`}
-                                    alt={name}
-                                    onError={e => {
-                                        e.target.style.display = "none";
-                                        e.target.nextSibling.style.display = "flex";
-                                    }}
-                                    className="max-w-[200px] max-h-[160px] rounded-xl mt-1 object-cover cursor-pointer"
-                                />
-                                <div style={{ display: "none" }}
-                                    className="max-w-[200px] h-24 rounded-xl mt-1 bg-white/20 border border-white/30 flex-col items-center justify-center gap-1 cursor-pointer">
-                                    <Paperclip size={20} />
-                                    <span className="text-[10px] font-bold">{name}</span>
-                                </div>
-                                <span className="text-[10px] mt-1 block opacity-70">{name}</span>
-                            </a>
-                        ) : (
-                            <a
-                                href={`${import.meta.env.VITE_API_URL}${message.file_url}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className={`flex items-center gap-2 text-xs font-bold mt-1 ${isOwn ? "text-white/80" : "text-emerald-600"}`}
-                            >
-                                <Paperclip size={11} />
-                                {name || "Download file"}
-                            </a>
-                        );
-                    })()}
-                </div>
+                    return (
+                        <div className={`px-3.5 py-2 text-sm leading-relaxed
+            ${isEmojiOnly
+                                ? ""
+                                : isOwn
+                                    ? "bg-emerald-600 text-white rounded-2xl rounded-br-none"
+                                    : "bg-white text-slate-700 rounded-2xl rounded-bl-none border border-slate-100 shadow-sm"}`}>
+                            {message.content && (
+                                <p className={`whitespace-pre-wrap ${isEmojiOnly ? "text-4xl leading-none" : ""}`}>
+                                    {message.content}
+                                </p>
+                            )}
+                            {message.file_url && (() => {
+                                const name = message.file_name || "";
+                                const ext = name.split(".").pop()?.toLowerCase();
+                                const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+
+                                return isImage ? (
+                                    <a href={`${import.meta.env.VITE_API_URL}${message.file_url}`} target="_blank" rel="noreferrer">
+                                        <img
+                                            src={`${import.meta.env.VITE_API_URL}${message.file_url}`}
+                                            alt={name}
+                                            onError={e => {
+                                                e.target.style.display = "none";
+                                                e.target.nextSibling.style.display = "flex";
+                                            }}
+                                            className="max-w-[200px] max-h-[160px] rounded-xl mt-1 object-cover cursor-pointer"
+                                        />
+                                        <div style={{ display: "none" }}
+                                            className="max-w-[200px] h-24 rounded-xl mt-1 bg-white/20 border border-white/30 flex-col items-center justify-center gap-1 cursor-pointer">
+                                            <Paperclip size={20} />
+                                            <span className="text-[10px] font-bold">{name}</span>
+                                        </div>
+                                        <span className="text-[10px] mt-1 block opacity-70">{name}</span>
+                                    </a>
+                                ) : (
+                                    <a
+                                        href={`${import.meta.env.VITE_API_URL}${message.file_url}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className={`flex items-center gap-2 text-xs font-bold mt-1 ${isOwn ? "text-white/80" : "text-emerald-600"}`}
+                                    >
+                                        <Paperclip size={11} />
+                                        {name || "Download file"}
+                                    </a>
+                                );
+                            })()}
+                        </div>
+                    );
+                })()}
 
                 {/* time — only on last message of a group */}
                 {showAvatar && (
@@ -419,6 +435,9 @@ const Chat = () => {
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [showScrollDown, setShowScrollDown] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiPickerRef = useRef(null);
     const msgContainerRef = useRef(null);
 
     const { users, rooms, messages, activeRoomId, activeRoomName, activeRoomType,
@@ -432,6 +451,35 @@ const Chat = () => {
         dispatch(getMyRoomsThunk());
     }, [dispatch]);
 
+    useEffect(() => {
+        const picker = emojiPickerRef.current;
+        if (!picker) return;
+
+        const handler = (e) => {
+            setText(prev => prev + e.detail.unicode);
+        };
+
+        picker.addEventListener("emoji-click", handler);
+        return () => picker.removeEventListener("emoji-click", handler);
+    }, [showEmojiPicker]);
+
+    useEffect(() => {
+        if (!showEmojiPicker) return;
+
+        function handleClickOutside(e) {
+            const pickerEl = emojiPickerRef.current;
+            const buttonEl = document.getElementById("emoji-btn");
+            if (
+                pickerEl && !pickerEl.contains(e.target) &&
+                buttonEl && !buttonEl.contains(e.target)
+            ) {
+                setShowEmojiPicker(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [showEmojiPicker]);
 
     useEffect(() => {
         if (!activeRoomId) return;
@@ -583,8 +631,11 @@ const Chat = () => {
     }
 
     async function handleScroll(e) {
-        if (e.target.scrollTop !== 0) return;   // only triggers at very top
-        if (!hasMore || loadingMore) return;
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        setShowScrollDown(!isNearBottom);
+
+        if (scrollTop !== 0) return;
 
         setLoadingMore(true);
         const newOffset = offset + 50;
@@ -744,7 +795,7 @@ const Chat = () => {
             </div>
 
             {/* ── MAIN CHAT AREA ── */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden relative">
                 {activeRoomId ? (
                     <>
                         {/* chat header */}
@@ -826,6 +877,14 @@ const Chat = () => {
                             )}
                             <div ref={bottomRef} />
                         </div>
+                        {showScrollDown && (
+                            <button
+                                onClick={() => bottomRef.current?.scrollIntoView({ behavior: "smooth" })}
+                                className="absolute bottom-24 right-8 bg-emerald-600 text-white p-2.5 rounded-full shadow-lg hover:bg-emerald-700 transition-all cursor-pointer z-10"
+                            >
+                                <ChevronDown size={18} />
+                            </button>
+                        )}
 
                         {/* input bar */}
                         <div className="bg-white border-t border-slate-100 p-4 flex-shrink-0">
@@ -837,16 +896,42 @@ const Chat = () => {
                                     accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
                                     onChange={handleFile}
                                 />
-                                <button
-                                    onClick={() => fileRef.current?.click()}
-                                    disabled={isUploading}
-                                    className={`p-2 rounded-xl transition-all flex-shrink-0
+                                <div className="flex items-center flex-shrink-0">
+                                    <button
+                                        onClick={() => fileRef.current?.click()}
+                                        disabled={isUploading}
+                                        className={`p-2 rounded-xl transition-all flex-shrink-0
         ${isUploading
-                                            ? "text-slate-300 cursor-not-allowed"
-                                            : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 cursor-pointer"}`}
-                                >
-                                    <Paperclip size={18} />
-                                </button>
+                                                ? "text-slate-300 cursor-not-allowed"
+                                                : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 cursor-pointer"}`}
+                                    >
+                                        <Paperclip size={18} />
+                                    </button>
+
+                                    <div className="relative flex-shrink-0">
+                                        <button
+                                            id="emoji-btn"
+                                            onClick={() => setShowEmojiPicker(prev => !prev)}
+                                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all cursor-pointer"
+                                        >
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                                                <line x1="9" y1="9" x2="9.01" y2="9" />
+                                                <line x1="15" y1="9" x2="15.01" y2="9" />
+                                            </svg>
+                                        </button>
+                                        {showEmojiPicker && (
+                                            <div className="absolute bottom-12 left-0 z-50 shadow-xl rounded-2xl overflow-hidden">
+                                                <emoji-picker
+                                                    ref={emojiPickerRef}
+                                                    style={{ '--num-columns': 8 }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
                                 <textarea
                                     value={text}
                                     onChange={e => {

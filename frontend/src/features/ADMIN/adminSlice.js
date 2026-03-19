@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
     adminSearchAllCasesService, adminSearchTechUserService, adminViewCaseDetailService, createAgentService, getAdminDashboardDataService, getAdminSaleReportService, getAllAgentsService, getOverallSummaryService, updateAgentService, updateCaseByAdminService, viewAgentDetailsService, markAttendanceService,
-    getDailyAttendanceService, getMonthlyAttendanceService
+    getDailyAttendanceService, getMonthlyAttendanceService, getAgentsMonitorService
 } from "../../services/services";
 
 // ADMIN DASBOARD THUNK
@@ -206,7 +206,16 @@ export const fetchMonthlyAttendanceThunk = createAsyncThunk(
     }
 );
 
-
+export const getAgentsMonitorThunk = createAsyncThunk(
+    "admin/getAgentsMonitor",
+    async (_, { rejectWithValue }) => {
+        try {
+            return await getAgentsMonitorService();
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to get agents monitor");
+        }
+    }
+);
 
 
 const adminSlice = createSlice({
@@ -217,6 +226,9 @@ const adminSlice = createSlice({
         agents: [],
         dailyAttendance: [],
         monthlyAttendance: [],
+        agentsMonitor: null,
+        monitorLoading: false,
+        monitorError: null,
         selectedCase: null,
         selectedAgent: null,
         searchTechusers: [],
@@ -495,6 +507,18 @@ const adminSlice = createSlice({
                 state.isError = true;
                 state.error = action.payload;
             })
+
+            .addCase(getAgentsMonitorThunk.pending, (state) => {
+                state.monitorLoading = true;
+            })
+            .addCase(getAgentsMonitorThunk.fulfilled, (state, action) => {
+                state.monitorLoading = false;
+                state.agentsMonitor = action.payload;
+            })
+            .addCase(getAgentsMonitorThunk.rejected, (state, action) => {
+                state.monitorLoading = false;
+                state.monitorError = action.payload;
+            });
     }
 })
 
