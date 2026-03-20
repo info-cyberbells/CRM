@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import "emoji-picker-element";
 import {
     MessageSquare, Users, Send, Paperclip,
@@ -454,8 +455,11 @@ const Chat = () => {
     const dispatch = useDispatch();
     const socket = useSocket();
     const { showToast } = useToast();
+    const location = useLocation();
+    const navigate = useNavigate();
     const bottomRef = useRef(null);
     const fileRef = useRef(null);
+    const hasOpenedRef = useRef(false);
 
     const [text, setText] = useState("");
     const [showGroupModal, setShowGroupModal] = useState(false);
@@ -479,6 +483,20 @@ const Chat = () => {
         dispatch(getChatUsersThunk());
         dispatch(getMyRoomsThunk());
     }, [dispatch]);
+
+    // Auto-open a direct chat when navigated from Dashboard with openUserId
+    useEffect(() => {
+        const targetUserId = location.state?.openUserId;
+        if (!targetUserId || users.length === 0 || hasOpenedRef.current) return;
+
+        const targetUser = users.find(u => u.id === targetUserId);
+        if (targetUser) {
+            hasOpenedRef.current = true;
+            openDirect(targetUser);
+            // Clear the state so refresh doesn't re-trigger
+            navigate("/chat", { replace: true, state: {} });
+        }
+    }, [users, location.state]);
 
     useEffect(() => {
         const picker = emojiPickerRef.current;
@@ -801,8 +819,8 @@ const Chat = () => {
                                 <button
                                     key={room.id}
                                     onClick={() => openRoom(room)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left cursor-pointer
-                    ${activeRoomId === room.id ? "bg-emerald-50 border border-emerald-100" : "hover:bg-slate-50"}`}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left cursor-pointer outline-none
+                    ${activeRoomId === room.id ? "bg-emerald-50 border border-emerald-100" : "border border-transparent hover:bg-slate-50"}`}
                                 >
                                     <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-xs flex-shrink-0">
                                         {room.name?.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase()).join("")}
@@ -840,8 +858,8 @@ const Chat = () => {
                                     <button
                                         key={user.id}
                                         onClick={() => openDirect(user)}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left cursor-pointer
-                      ${isActive ? "bg-emerald-50 border border-emerald-100" : "hover:bg-slate-50"}`}
+                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left cursor-pointer outline-none
+                      ${isActive ? "bg-emerald-50 border border-emerald-100" : "border border-transparent hover:bg-slate-50"}`}
                                     >
                                         <div className="relative flex-shrink-0">
                                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs
