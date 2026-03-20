@@ -27,6 +27,11 @@ const Message = sequelize.define("Message", {
         type: DataTypes.STRING(255),
         allowNull: true,
     },
+    read_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null,
+    },
 }, {
     tableName: "messages",
     freezeTableName: true,

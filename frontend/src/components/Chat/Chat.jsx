@@ -245,7 +245,35 @@ const MessageBubble = ({ message, isOwn, showAvatar, showName }) => {
 
                 {/* time — only on last message of a group */}
                 {showAvatar && (
-                    <span className="text-[10px] text-slate-400 mt-1 px-0.5">{time}</span>
+                    <div className="flex items-center gap-1 mt-1 px-0.5">
+                        <span className="text-[10px] text-slate-400">{time}</span>
+                        {isOwn && (() => {
+                            const status = message._status;
+                            if (!status || status === "sending") {
+                                return (
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                        <circle cx="6" cy="6" r="5" stroke="#9ca3af" strokeWidth="1.2" />
+                                        <path d="M6 3.5V6l1.5 1.5" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
+                                    </svg>
+                                );
+                            }
+                            if (status === "sent") {
+                                return (
+                                    <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
+                                        <path d="M1 5l3.5 3.5L12 1" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                );
+                            }
+                            if (status === "read") {
+                                return (
+                                    <svg width="20" height="10" viewBox="0 0 20 10" fill="none">
+                                        <path d="M1 5l3.5 3.5L12 1" stroke="#E24B4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M7 5l3.5 3.5L18 1" stroke="#E24B4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                );
+                            }
+                        })()}
+                    </div>
                 )}
             </div>
         </div >
@@ -503,7 +531,10 @@ const Chat = () => {
         setHasMore(true);
         dispatch(getMessagesThunk({ roomId: activeRoomId, offset: 0 }));
 
-        if (socket) socket.emit("join_room", activeRoomId);
+        if (socket) {
+            socket.emit("join_room", activeRoomId);
+            socket.emit("mark_read", { roomId: activeRoomId });
+        }
     }, [activeRoomId, socket, dispatch]);
 
     useEffect(() => {
@@ -583,7 +614,18 @@ const Chat = () => {
 
     function sendMessage() {
         if (!text.trim() || !socket || !activeRoomId) return;
-        socket.emit("send_message", { roomId: activeRoomId, content: text.trim() });
+        const tempId = `temp-${Date.now()}`;
+        const tempMsg = {
+            id: tempId,
+            room_id: activeRoomId,
+            content: text.trim(),
+            sender_id: me.id,
+            sender: me,
+            sent_at: new Date().toISOString(),
+            _status: "sending",
+        };
+        dispatch(addIncomingMessage({ ...tempMsg, _forceAdd: true }));
+        socket.emit("send_message", { roomId: activeRoomId, content: text.trim(), tempId });
         setText("");
     }
     async function handleFile(e) {

@@ -184,7 +184,9 @@ const chatSlice = createSlice({
             const msg = action.payload;
             if (String(msg.room_id) === String(state.activeRoomId)) {
                 const exists = state.messages.find((m) => m.id === msg.id);
-                if (!exists) state.messages.push(msg);
+                if (!exists) {
+                    state.messages.push(msg);
+                }
             }
         },
         updateUserStatus(state, action) {
@@ -217,6 +219,29 @@ const chatSlice = createSlice({
         },
         clearMessages(state) {
             state.messages = [];
+        },
+        updateMessageStatus(state, action) {
+            const { messageId, status } = action.payload;
+            const msg = state.messages.find(m => m.id === messageId);
+            if (msg) msg._status = status;
+        },
+        confirmSentMessage(state, action) {
+            const { tempId, realMsg } = action.payload;
+            const idx = state.messages.findIndex(m => m.id === tempId);
+            if (idx !== -1) {
+                realMsg._status = "sent";
+                state.messages[idx] = realMsg;
+            }
+        },
+        markMessagesAsRead(state, action) {
+            const { messageIds } = action.payload;
+            const idSet = new Set(messageIds.map(String));
+            state.messages.forEach(m => {
+                if (idSet.has(String(m.id))) {
+                    m._status = "read";
+                    m.read_at = new Date().toISOString();
+                }
+            });
         },
 
         resetChat(state) {
@@ -274,10 +299,18 @@ const chatSlice = createSlice({
             })
             .addCase(getMessagesThunk.fulfilled, (state, action) => {
                 state.isLoadingMsgs = false;
+                // Derive _status for each message from read_at
+                const myId = JSON.parse(localStorage.getItem("user") || "{}").id;
+                const msgs = action.payload.map(m => {
+                    if (String(m.sender_id) === String(myId) || String(m.sender?.id) === String(myId)) {
+                        m._status = m.read_at ? "read" : "sent";
+                    }
+                    return m;
+                });
                 if (action.meta.arg.offset > 0) {
-                    state.messages = [...action.payload, ...state.messages];
+                    state.messages = [...msgs, ...state.messages];
                 } else {
-                    state.messages = action.payload;
+                    state.messages = msgs;
                 }
             })
             .addCase(getMessagesThunk.rejected, (state, action) => {
@@ -318,6 +351,7 @@ const chatSlice = createSlice({
 
 export const {
     setActiveRoom, addIncomingMessage, clearMessages, resetChat, updateUserStatus,
-    incrementUnread, clearUnread, setIncomingAlert, clearIncomingAlert, updateLastMessageTime
+    incrementUnread, clearUnread, setIncomingAlert, clearIncomingAlert, updateLastMessageTime,
+    updateMessageStatus, confirmSentMessage, markMessagesAsRead
 } = chatSlice.actions;
 export default chatSlice.reducer;
