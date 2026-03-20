@@ -16,6 +16,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import techRoutes from "./routes/techRoutes.js"
 import sessionRoutes from "./routes/userSessionRoutes.js"
 import chatRoutes from "./routes/chatRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 
 import authGuard from "./middleware/authGuard.js";
@@ -80,6 +81,8 @@ app.use("/api/tech-user", techRoutes);
 app.use("/api/admin", adminRoutes);
 app.use('/api/user-session', sessionRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/profile", profileRoutes);
+
 
 socketHandler(io);
 cleanupJob();

@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 
 export const USER_ENDPOINTS = {
@@ -88,4 +88,7 @@ export const USER_ENDPOINTS = {
   USER_GET_MY_SESSION: `${API_BASE_URL}/user-session/get-my-session-status`,
 
   ADMIN_GET_AGENTS_MONITOR: `${API_BASE_URL}/admin/get-agent/status`,
+
+  GET_PROFILE: `${API_BASE_URL}/profile/myprofile`,
+  UPDATE_PROFILE: `${API_BASE_URL}/profile/updateProfile`
 };

@@ -315,7 +315,11 @@ const UserWelcomeHeader = ({ user }) => {
           <div className="flex items-center gap-5">
             <div className="relative flex-shrink-0">
               <div className="w-20 h-20 rounded-3xl bg-slate-800 flex items-center justify-center text-white text-2xl font-black shadow-xl ring-4 ring-white select-none">
-                {user?.name?.charAt(0) || "?"}
+                {user?.profileImage ? (
+                  <img src={user.profileImage} className="w-full h-full object-cover rounded-2xl" alt={user?.name} />
+                ) : (
+                  user?.name?.charAt(0) || "?"
+                )}
               </div>
               <div className={`absolute -bottom-1 -right-1 w-5 h-5 border-[3px] border-white rounded-full ${dotCls}`} />
             </div>

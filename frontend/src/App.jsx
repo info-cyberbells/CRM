@@ -19,6 +19,7 @@ import TechMyCases from "./components/TechMyCases/TechMyCases";
 import MyAttendance from "./components/MyAttendance/MyAttendance";
 import AdminAttendance from "./components/AdminAttendance/AdminAttendance";
 import Chat from "./components/Chat/Chat";
+import MyProfile from "./components/ProfilePage/MyProfile";
 
 function App() {
   const dispatch = useDispatch();
@@ -61,6 +62,7 @@ function App() {
           <Route path="/my-attendance" element={<MyAttendance />} />
           <Route path="/attendance" element={<AdminAttendance />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/my-profile" element={<MyProfile />} />
         </Route>
       </Routes>
     </>

@@ -24,7 +24,8 @@ import {
   Edit,
   ChartNoAxesCombined,
   CalendarDays,
-  CalendarCheck
+  CalendarCheck,
+  UserCircle2Icon
 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { loginUserThunk, logoutUserThunk } from '../../features/UserSlice/UserSlice';
@@ -61,6 +62,7 @@ const ROLE_BASED_MENUS = {
     // { id: "notes", title: "Notes", icon: FileText },
     // { id: "manage-notes", title: "Notes Feed", icon: FileText },
     { id: "chat", title: "Chat", icon: MessageSquare, },
+    { id: "my-profile", title: "My Profile", icon: UserCircle2Icon, },
     { id: "notifications", title: "Notifications", icon: Bell, },
   ],
   Tech: [
@@ -71,6 +73,7 @@ const ROLE_BASED_MENUS = {
     { id: "my-attendance", title: "My Attendance", icon: CalendarDays, },
     // { id: "manage-notes", title: "Notes Feed", icon: FileText },
     { id: "chat", title: "Chat", icon: MessageSquare, },
+        { id: "my-profile", title: "My Profile", icon: UserCircle2Icon, },
     { id: "notifications", title: "Notifications", icon: Bell, },
   ],
 };
