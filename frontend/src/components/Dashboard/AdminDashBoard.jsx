@@ -140,7 +140,7 @@ const AdminDashboard = () => {
     loadDashboard();
   }, [dispatch]);
 
-   useEffect(() => {
+  useEffect(() => {
     dispatch(
       getAgentsMonitorThunk({
         page: agentPage,
@@ -303,9 +303,16 @@ const AdminDashboard = () => {
       return () => clearInterval(interval);
     }, [clockInTime]);
 
+<<<<<<< HEAD
   return <span>{label}: <span className={`font-black ${label === 'On Break' ? 'text-amber-500' : 'text-emerald-600'}`}>{elapsed}</span></span>;
   };
 
+=======
+    return <span>{label}: <span className={`font-black ${label === 'On Break' ? 'text-amber-500' : 'text-emerald-600'}`}>{elapsed}</span></span>;
+  };
+
+
+>>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
   const LoadingScreen = () => {
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-md transition-opacity duration-300">
@@ -491,12 +498,12 @@ const AdminDashboard = () => {
           </h2>
           <div className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold border border-emerald-100 flex items-center gap-2">
             <button
-              onClick={()=>dispatch(
-                  getAgentsMonitorThunk({
-                    page: agentPage,
-                    limit: agentPageSize,
-                  })
-                )}
+              onClick={() => dispatch(
+                getAgentsMonitorThunk({
+                  page: agentPage,
+                  limit: agentPageSize,
+                })
+              )}
               className="flex items-center cursor-pointer gap-2 px-3 py-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               title="Refresh"
             >
@@ -505,7 +512,7 @@ const AdminDashboard = () => {
                 className={isLoading ? 'animate-spin' : ''}
               />
               <span className="text-xs font-medium">REFRESH</span>
-            </button>           
+            </button>
           </div>
         </div>
 
@@ -549,7 +556,14 @@ const AdminDashboard = () => {
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">
                           {agent.name?.charAt(0)}
                         </div>
+<<<<<<< HEAD
                         <span className="font-bold text-slate-700 hover:text-emerald-600 transition-colors">{agent.name}</span>
+=======
+                        <span
+                          className="font-bold text-slate-700 hover:text-emerald-600 cursor-pointer transition-colors"
+                          onClick={() => navigate("/chat", { state: { openUserId: agent.id, openUserName: agent.name } })}
+                        >{agent.name}</span>
+>>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
                       </div>
                     </td>
                     <td className="px-8 py-3 text-slate-400 font-medium">{agent.role}</td>
@@ -567,6 +581,7 @@ const AdminDashboard = () => {
                       </span>
                     </td>
                     <td className="px-8 py-3 text-slate-500 font-mono text-xs">
+<<<<<<< HEAD
                         {agent.status === 'ONLINE' && agent.clockInTime
                           ? <RunningTimer clockInTime={agent.clockInTime} label="Clocked In" />
                           : agent.status === 'OFFLINE' && agent.clockOutTime
@@ -586,44 +601,65 @@ const AdminDashboard = () => {
                             })()
                           : '--'}
                       </td>
+=======
+                      {agent.status === 'ONLINE' && agent.clockInTime
+                        ? <RunningTimer clockInTime={agent.clockInTime} label="Clocked In" />
+                        : agent.status === 'OFFLINE' && agent.clockOutTime
+                          ? `Clocked Out: ${new Date(agent.clockOutTime).toLocaleTimeString()}`
+                          : agent.status === 'ON_BREAK' && agent.breakStartTime
+                            ? <RunningTimer clockInTime={agent.breakStartTime} label="On Break" />
+                            : '--'}
+                    </td>
+                    <td className="px-8 py-3 text-slate-500 font-mono text-xs ">
+                      {agent.clockInTime
+                        ? (() => {
+                          const s = agent.totalBreakSeconds || 0;
+                          const h = Math.floor(s / 3600).toString().padStart(2, '0');
+                          const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+                          const sec = (s % 60).toString().padStart(2, '0');
+                          return <span>Break Taken: <span className="text-amber-500 font-black">{h}:{m}:{sec}</span></span>;
+                        })()
+                        : '--'}
+                    </td>
+>>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
                   </tr>
                 ))}
               </tbody>
-              
+
             </table>
           </div>
           {agents.length > 0 && (
-        <div className="px-8 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-wrap justify-between items-center gap-6">
+            <div className="px-8 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-wrap justify-between items-center gap-6">
               <div className="flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-            <span>Show:</span>
-            <select
-              value={agentPageSize}
-              onChange={(e) =>
-                handleAgentPageSizeChange(Number(e.target.value))
-              }
+                <span>Show:</span>
+                <select
+                  value={agentPageSize}
+                  onChange={(e) =>
+                    handleAgentPageSizeChange(Number(e.target.value))
+                  }
                   className="bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none font-black text-slate-700 focus:border-emerald-500 transition-all shadow-sm"
-            >
-              {[5, 8, 10, 15].map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </select>
-            <span>entries</span>
-          </div>
+                >
+                  {[5, 8, 10, 15].map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+                <span>entries</span>
+              </div>
 
-          {/* Info */}
+              {/* Info */}
               <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hidden lg:block">
-            Showing {(agentPage - 1) * agentPageSize + 1} to{" "}
-            {Math.min(agentPage * agentPageSize, agentTotalCount)} of {agentTotalCount}
-          </div>
+                Showing {(agentPage - 1) * agentPageSize + 1} to{" "}
+                {Math.min(agentPage * agentPageSize, agentTotalCount)} of {agentTotalCount}
+              </div>
 
-          {/* Buttons */}
-          <div className="flex item-center gap-4">
-            <button
-              disabled={agentPage === 1}
-              onClick={() => handleAgentPageChange(agentPage - 1)}
-              className="
+              {/* Buttons */}
+              <div className="flex item-center gap-4">
+                <button
+                  disabled={agentPage === 1}
+                  onClick={() => handleAgentPageChange(agentPage - 1)}
+                  className="
                     px-4 py-3 cursor-pointer
                     text-[10px] font-black uppercase tracking-widest
                     rounded-2xl
@@ -634,25 +670,32 @@ const AdminDashboard = () => {
                     transition-all
                     active:scale-95
                 "
-            >
-              Prev
-            </button>
+                >
+                  Prev
+                </button>
 
                 <span className="text-[10px] flex items-center justify-center font-black text-emerald-600 bg-emerald-50 px-4 py-2 rounded-xl uppercase tracking-widest shadow-sm border border-emerald-100">
-             Page {agentPage} of {agentTotalPages}
-            </span>
+                  Page {agentPage} of {agentTotalPages}
+                </span>
 
+<<<<<<< HEAD
             <button
               // disabled={agentPage === agentTotalPages}
               disabled={agentPage >= agentTotalPages || agentTotalPages === 0}
               onClick={() => handleAgentPageChange(agentPage + 1)}
+=======
+                <button
+                  // disabled={agentPage === agentTotalPages}
+                  disabled={agentPage >= agentTotalPages || agentTotalPages === 0}
+                  onClick={() => handleAgentPageChange(agentPage + 1)}
+>>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
                   className=" px-6 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 "
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
