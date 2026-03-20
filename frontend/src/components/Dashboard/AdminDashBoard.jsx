@@ -287,6 +287,26 @@ const AdminDashboard = () => {
     }
   };
 
+  const RunningTimer = ({ clockInTime, label }) => {
+    const [elapsed, setElapsed] = useState('');
+
+    useEffect(() => {
+      const calc = () => {
+        const diff = Math.floor((Date.now() - new Date(clockInTime)) / 1000);
+        const h = Math.floor(diff / 3600).toString().padStart(2, '0');
+        const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+        setElapsed(`${h}:${m}:${s}`);
+      };
+      calc();
+      const interval = setInterval(calc, 1000);
+      return () => clearInterval(interval);
+    }, [clockInTime]);
+
+    return <span>{label}: <span className={`font-black ${label === 'On Break' ? 'text-amber-500' : 'text-emerald-600'}`}>{elapsed}</span></span>;
+  };
+
+
   const LoadingScreen = () => {
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-md transition-opacity duration-300">
@@ -518,6 +538,7 @@ const AdminDashboard = () => {
                   <th className="px-8 py-5">Role</th>
                   <th className="px-8 py-5">Current Status</th>
                   <th className="px-8 py-5">Activity Timer</th>
+                  <th className="px-8 py-5">Total Break Taken</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
@@ -550,12 +571,23 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-8 py-3 text-slate-500 font-mono text-xs">
                       {agent.status === 'ONLINE' && agent.clockInTime
-                        ? `Clocked In: ${new Date(agent.clockInTime).toLocaleTimeString()}`
+                        ? <RunningTimer clockInTime={agent.clockInTime} label="Clocked In" />
                         : agent.status === 'OFFLINE' && agent.clockOutTime
                           ? `Clocked Out: ${new Date(agent.clockOutTime).toLocaleTimeString()}`
                           : agent.status === 'ON_BREAK' && agent.breakStartTime
-                            ? `On Break From: ${new Date(agent.breakStartTime).toLocaleTimeString()}`
+                            ? <RunningTimer clockInTime={agent.breakStartTime} label="On Break" />
                             : '--'}
+                    </td>
+                    <td className="px-8 py-3 text-slate-500 font-mono text-xs ">
+                      {agent.clockInTime
+                        ? (() => {
+                          const s = agent.totalBreakSeconds || 0;
+                          const h = Math.floor(s / 3600).toString().padStart(2, '0');
+                          const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+                          const sec = (s % 60).toString().padStart(2, '0');
+                          return <span>Break Taken: <span className="text-amber-500 font-black">{h}:{m}:{sec}</span></span>;
+                        })()
+                        : '--'}
                     </td>
                   </tr>
                 ))}
@@ -614,7 +646,8 @@ const AdminDashboard = () => {
                 </span>
 
                 <button
-                  disabled={agentPage === agentTotalPages}
+                  // disabled={agentPage === agentTotalPages}
+                  disabled={agentPage >= agentTotalPages || agentTotalPages === 0}
                   onClick={() => handleAgentPageChange(agentPage + 1)}
                   className=" px-6 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 "
                 >
