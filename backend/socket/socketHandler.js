@@ -29,6 +29,20 @@ export default function socketHandler(io) {
         // broadcast to everyone that this user is now online
         io.emit("user_status_changed", { userId: socket.user.id, status: "ONLINE" });
 
+        // Auto-join user to ALL their chat rooms so they receive new_message events
+        // even for rooms they haven't actively opened (needed for unread notifications)
+        try {
+            const memberships = await ChatMember.findAll({
+                where: { user_id: socket.user.id },
+                attributes: ["room_id"],
+            });
+            for (const m of memberships) {
+                socket.join(String(m.room_id));
+            }
+            console.log(`Auto-joined user ${socket.user.id} to ${memberships.length} rooms`);
+        } catch (err) {
+            console.error("Auto-join rooms error:", err.message);
+        }
 
         // JOIN ROOM 
         socket.on("join_room", async (roomId) => {
@@ -109,7 +123,7 @@ export default function socketHandler(io) {
                 { where: { id: socket.user.id } }
             );
 
-    
+
             io.emit("user_status_changed", { userId: socket.user.id, status: "OFFLINE" });
         });
     });
