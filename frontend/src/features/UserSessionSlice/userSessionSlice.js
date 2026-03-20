@@ -7,7 +7,6 @@ import {
   getMySessionStatusService,
 } from "../../services/services";
 
-
 // 1. Clock In
 export const userClockIn = createAsyncThunk(
   "userSession/clockIn",
@@ -15,7 +14,9 @@ export const userClockIn = createAsyncThunk(
     try {
       return await userClockInService(payload);
     } catch (error) {
-      return rejectWithValue(error?.response?.data || error.message);
+      return rejectWithValue(
+        error?.response?.data?.message || error.message || "Clock-in failed"
+      );
     }
   }
 );
@@ -27,7 +28,9 @@ export const userStartBreak = createAsyncThunk(
     try {
       return await userStartBreakService(payload);
     } catch (error) {
-      return rejectWithValue(error?.response?.data || error.message);
+      return rejectWithValue(
+        error?.response?.data?.message || error.message || "Failed to start break"
+      );
     }
   }
 );
@@ -39,7 +42,9 @@ export const userEndBreak = createAsyncThunk(
     try {
       return await userEndBreakService(payload);
     } catch (error) {
-      return rejectWithValue(error?.response?.data || error.message);
+      return rejectWithValue(
+        error?.response?.data?.message || error.message || "Failed to end break"
+      );
     }
   }
 );
@@ -51,7 +56,9 @@ export const userClockOut = createAsyncThunk(
     try {
       return await userClockOutService(payload);
     } catch (error) {
-      return rejectWithValue(error?.response?.data || error.message);
+      return rejectWithValue(
+        error?.response?.data?.message || error.message || "Clock-out failed"
+      );
     }
   }
 );
@@ -63,19 +70,20 @@ export const getMySessionStatus = createAsyncThunk(
     try {
       return await getMySessionStatusService();
     } catch (error) {
-      return rejectWithValue(error?.response?.data || error.message);
+      return rejectWithValue(
+        error?.response?.data?.message || error.message || "Failed to fetch session"
+      );
     }
   }
 );
-
 // ---------------- SLICE ---------------- //
 
 const userSessionSlice = createSlice({
   name: "userSession",
   initialState: {
     loading: false,
-    actionLoading: false, 
-    actionLoading2: false, 
+    actionLoading: false,
+    actionLoading2: false,
     error: null,
     session: null,
     success: false,

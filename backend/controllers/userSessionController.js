@@ -1,5 +1,6 @@
 import User from "../models/user.js";
 import UserSession from "../models/UserSession.js";
+import { Op } from "sequelize";
 
 export const clockIn = async (req, res) => {
   try {
@@ -18,6 +19,30 @@ export const clockIn = async (req, res) => {
         success: false,
         message: "User already clocked in",
       });
+    }
+
+    const lastSession = await UserSession.findOne({
+      where: {
+        userId,
+        clockOutTime: { [Op.ne]: null },
+      },
+      order: [["clockOutTime", "DESC"]],
+    });
+
+    if (lastSession) {
+      const lastClockOut = new Date(lastSession.clockOutTime);
+      const now = new Date();
+
+      const hoursSinceClockOut = (now - lastClockOut) / (1000 * 60 * 60);
+
+      if (hoursSinceClockOut < 5) {
+        const hoursRemaining = (5 - hoursSinceClockOut).toFixed(2);
+
+        return res.status(400).json({
+          success: false,
+          message: `You cannot clock in yet. Please wait ${hoursRemaining} more hour(s) after your last clock-out.`,
+        });
+      }
     }
 
     const createSession = await UserSession.create({
@@ -44,13 +69,14 @@ export const clockIn = async (req, res) => {
 
 export const ClockOut = async (req, res) => {
   try {
-    
+
     const userId = req.user.id;
 
     const session = await UserSession.findOne({
       where: {
         userId,
-      clockOutTime: null,}
+        clockOutTime: null,
+      }
     });
 
     if (!session) {
@@ -95,7 +121,7 @@ export const ClockOut = async (req, res) => {
 
 export const startBreak = async (req, res) => {
   try {
-    
+
     const userId = req.user.id;
 
     const session = await UserSession.findOne({
@@ -139,11 +165,11 @@ export const startBreak = async (req, res) => {
   }
 };
 
-export const endBreak = async(req, res)=>{
-    try {
-    
+export const endBreak = async (req, res) => {
+  try {
+
     const userId = req.user.id;
-    
+
     const session = await UserSession.findOne({
       where: {
         userId,
@@ -190,15 +216,15 @@ export const endBreak = async(req, res)=>{
       breakSeconds,
       totalBreakSeconds
     });
-    
-    } catch (error) {
-        console.error("End Break Error:", error);
+
+  } catch (error) {
+    console.error("End Break Error:", error);
 
     return res.status(500).json({
       success: false,
       message: "Server error"
     });
-    }
+  }
 }
 
 export const getMySessionStatus = async (req, res) => {

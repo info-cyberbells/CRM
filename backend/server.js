@@ -93,6 +93,13 @@ async function syncCustomSchema() {
       await sequelize.query("ALTER TABLE `messages` ADD COLUMN `read_at` DATETIME NULL DEFAULT NULL AFTER `file_name` ");
       console.log("✅ 'read_at' column added.");
     }
+
+    const [profileImageCol] = await sequelize.query("SHOW COLUMNS FROM `users` LIKE 'profileImage'");
+    if (profileImageCol.length === 0) {
+      console.log("Adding missing 'profileImage' column to 'users' table...");
+      await sequelize.query("ALTER TABLE `users` ADD COLUMN `profileImage` VARCHAR(255) NULL DEFAULT NULL");
+      console.log("✅ 'profileImage' column added.");
+    }
   } catch (err) {
     console.error("❌ Schema sync error:", err.message);
   }
