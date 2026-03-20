@@ -1011,3 +1011,35 @@ export const getAgentsMonitorService = async (page, limit) => {
   }
 };
  
+
+// GET PROFILE
+export const getMyProfileService = async ()=>{
+  try {
+    const response = await axios.get(
+      USER_ENDPOINTS.GET_PROFILE,{
+        withCredentials: true
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// UPDATE PROFILE
+export const updateProfileService = async (payload)=>{
+  try {
+    const response = await axios.patch(
+      USER_ENDPOINTS.UPDATE_PROFILE,
+      payload,{
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
