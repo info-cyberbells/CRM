@@ -45,7 +45,7 @@ import {
   CheckCircle2,
   Eye,
   LogIn, LogOut, PlayCircle,
-  Loader2,Timer,
+  Loader2, Timer,
 } from "lucide-react";
 import { getSingleCaseById, getTechUserAssignedCases, techUserDashboard, setTechCurrentPage, setTechPageSize } from "../../features/TechUserSlice/TechUserSlice";
 import { useSelector, useDispatch } from "react-redux";
@@ -195,7 +195,7 @@ const StatCard = ({ icon: Icon, label, value, sub, active = false, warn = false 
 
 const UserWelcomeHeader = ({ user }) => {
   const dispatch = useDispatch();
-  const {showToast} = useToast();
+  const { showToast } = useToast();
   const { session, loading, actionLoading, actionLoading2, error } = useSelector((s) => s.userSession);
 
   const [now, setNow] = useState(new Date());
@@ -203,7 +203,7 @@ const UserWelcomeHeader = ({ user }) => {
   useEffect(() => { dispatch(getMySessionStatus()); }, [dispatch]);
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
 
-  const isActive  = Boolean(session?.activeSession);
+  const isActive = Boolean(session?.activeSession);
   const isOnBreak = Boolean(session?.isOnBreak);
 
   const shiftSec = useMemo(() => {
@@ -217,9 +217,9 @@ const UserWelcomeHeader = ({ user }) => {
   }, [isOnBreak, session?.breakStartTime, now]);
 
   const totalBreakSec = (session?.totalBreakSeconds || 0) + liveBkSec;
-  const netSec        = Math.max(0, shiftSec - totalBreakSec);
+  const netSec = Math.max(0, shiftSec - totalBreakSec);
 
-  const dotCls    = isActive ? (isOnBreak ? "bg-amber-400" : "bg-emerald-500 animate-pulse") : "bg-slate-300";
+  const dotCls = isActive ? (isOnBreak ? "bg-amber-400" : "bg-emerald-500 animate-pulse") : "bg-slate-300";
   const statusTxt = isActive ? (isOnBreak ? "On Break" : "Online") : "Offline";
   const statusClr = isActive ? (isOnBreak ? "text-amber-500" : "text-emerald-500") : "text-slate-400";
 
@@ -296,17 +296,6 @@ const UserWelcomeHeader = ({ user }) => {
 
       <div className="relative p-6 sm:p-8 flex flex-col gap-5">
 
-        {/* ── Error banner ── */}
-        {error && (
-          <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold px-4 py-3 rounded-2xl">
-            <AlertCircle size={15} className="flex-shrink-0 text-red-400 mt-px" />
-            <span className="flex-1">{error}</span>
-            <button
-              onClick={() => dispatch(clearSessionState())}
-              className="flex-shrink-0 text-red-300 hover:text-red-500 transition-colors leading-none"
-            >✕</button>
-          </div>
-        )}
 
         {/* ── Row 1 : Profile  +  Buttons ── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
@@ -437,32 +426,32 @@ const UserWelcomeHeader = ({ user }) => {
               label={isActive ? "Shift time" : "Last Clock In"}
               value={session?.clockInTime ? (isActive ? fmtDur(shiftSec) : fmtTime(session.clockInTime)) : "—"}
               sub={session?.clockInTime ? (isActive ? `Since ${fmtTime(session.clockInTime)}` : `${fmtDate(session.clockInTime)}`) : "Not clocked in"}
-                active={isActive && !isOnBreak}
+              active={isActive && !isOnBreak}
             />
             <StatCard
               icon={Coffee}
               label={
-                      isOnBreak
-                        ? "On Break"
-                        : isActive
-                          ? "Break time"
-                          : "Total Break"
-                    }
+                isOnBreak
+                  ? "On Break"
+                  : isActive
+                    ? "Break time"
+                    : "Total Break"
+              }
               value={isOnBreak ? fmtDur(liveBkSec) : fmtDur(totalBreakSec)}
               sub={
-                  isOnBreak
-                    ? `Prev Break Time ${fmtDur(session?.totalBreakSeconds || 0)}`
-                    : totalBreakSec > 0
-                      ? "Total Break Time"
-                      : "No break yet"
-                }
+                isOnBreak
+                  ? `Prev Break Time ${fmtDur(session?.totalBreakSeconds || 0)}`
+                  : totalBreakSec > 0
+                    ? "Total Break Time"
+                    : "No break yet"
+              }
               warn={isOnBreak}
             />
             <StatCard
               icon={Clock}
               label={isActive ? "Net time" : "Last Clock Out"}
               value={isActive ? fmtDur(netSec) : session?.clockOutTime ? fmtTime(session.clockOutTime) : "—"}
-              sub={isActive ? "Shift minus breaks" : session?.clockOutTime ? `${fmtDate(session.clockOutTime)}`  : ""}
+              sub={isActive ? "Shift minus breaks" : session?.clockOutTime ? `${fmtDate(session.clockOutTime)}` : ""}
               active={isActive && !isOnBreak}
             />
             <div className="flex-1 min-w-0 bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col gap-1.5">
@@ -724,7 +713,7 @@ const SaleTechDashboard = () => {
                   data?.myAttendance?.status === "WO" ? "bg-slate-50" :
                     data?.myAttendance?.status === "L" ? "bg-amber-50" :
                       "bg-slate-50",
-                      path: "/my-attendance"
+          path: "/my-attendance"
         },
       ];
     } else if (userRole === "tech") {
@@ -783,7 +772,7 @@ const SaleTechDashboard = () => {
                 data?.myAttendance?.status === "NCNS" ? "bg-red-50" :
                   "bg-slate-50",
 
-                  path: "/my-attendance"
+          path: "/my-attendance"
         },
       ];
     }

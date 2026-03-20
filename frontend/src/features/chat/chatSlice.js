@@ -123,6 +123,28 @@ export const getRoomMembersThunk = createAsyncThunk(
     }
 );
 
+// ── PERSISTENCE HELPERS ────────────────────────────────────────────────────────
+const UNREAD_KEY = "chat_unread_counts";
+const LAST_MSG_KEY = "chat_last_msg_timestamps";
+
+function loadUnread() {
+    try { return JSON.parse(localStorage.getItem(UNREAD_KEY)) || {}; }
+    catch { return {}; }
+}
+
+function loadLastMsgTimestamps() {
+    try { return JSON.parse(localStorage.getItem(LAST_MSG_KEY)) || {}; }
+    catch { return {}; }
+}
+
+function persistUnread(state) {
+    localStorage.setItem(UNREAD_KEY, JSON.stringify(state.unreadCounts));
+}
+
+function persistLastMsg(state) {
+    localStorage.setItem(LAST_MSG_KEY, JSON.stringify(state.lastMessageTimestamps));
+}
+
 // ── SLICE ─────────────────────────────────────────────────────────────────────
 
 const chatSlice = createSlice({
@@ -131,6 +153,9 @@ const chatSlice = createSlice({
         users: [],
         rooms: [],
         allRooms: [],   // admin only
+        unreadCounts: loadUnread(),    // { [roomId]: { count, lastSender } } — persisted
+        lastMessageTimestamps: loadLastMsgTimestamps(),  // { [userId]: timestamp } — persisted
+        incomingAlert: null,
         activeRoomId: null,
         activeRoomName: "",
         activeRoomType: "",
@@ -148,14 +173,20 @@ const chatSlice = createSlice({
             state.activeRoomName = action.payload.roomName;
             state.activeRoomType = action.payload.roomType;
             state.messages = [];
+            // clear unread when opening a room
+            if (action.payload.roomId) {
+                delete state.unreadCounts[String(action.payload.roomId)];
+                persistUnread(state);
+            }
         },
         // socket pushes a new message — add it to state
         addIncomingMessage(state, action) {
             const msg = action.payload;
-            if (msg.room_id === state.activeRoomId) {
-                // avoid duplicates
+            if (String(msg.room_id) === String(state.activeRoomId)) {
                 const exists = state.messages.find((m) => m.id === msg.id);
-                if (!exists) state.messages.push(msg);
+                if (!exists) {
+                    state.messages.push(msg);
+                }
             }
         },
         updateUserStatus(state, action) {
@@ -163,8 +194,54 @@ const chatSlice = createSlice({
             const user = state.users.find(u => u.id === userId);
             if (user) user.status = status;
         },
+        incrementUnread(state, action) {
+            const { roomId, senderName } = action.payload;
+            const id = String(roomId);
+            const currentCount = state.unreadCounts[id]?.count || 0;
+            state.unreadCounts[id] = { count: currentCount + 1, lastSender: senderName || "Someone" };
+            persistUnread(state);
+        },
+        clearUnread(state, action) {
+            const roomId = String(action.payload);
+            delete state.unreadCounts[roomId];
+            persistUnread(state);
+        },
+        setIncomingAlert(state, action) {
+            state.incomingAlert = action.payload;
+        },
+        clearIncomingAlert(state) {
+            state.incomingAlert = null;
+        },
+        updateLastMessageTime(state, action) {
+            const { userId } = action.payload;
+            state.lastMessageTimestamps[String(userId)] = Date.now();
+            persistLastMsg(state);
+        },
         clearMessages(state) {
             state.messages = [];
+        },
+        updateMessageStatus(state, action) {
+            const { messageId, status } = action.payload;
+            const msg = state.messages.find(m => m.id === messageId);
+            if (msg) msg._status = status;
+        },
+        confirmSentMessage(state, action) {
+            const { tempId, realMsg } = action.payload;
+            const idx = state.messages.findIndex(m => m.id === tempId);
+            if (idx !== -1) {
+                realMsg._status = "sent";
+                state.messages[idx] = realMsg;
+            }
+        },
+        markMessagesAsRead(state, action) {
+            const { messageIds } = action.payload;
+            const idSet = new Set(messageIds.map(String));
+            state.messages.forEach(m => {
+                if (idSet.has(String(m.id))) {
+                    m._status = "read";
+                    m.read_at = new Date().toISOString();
+                }
+            });
         },
 
         resetChat(state) {
@@ -176,6 +253,11 @@ const chatSlice = createSlice({
             state.activeRoomType = "";
             state.messages = [];
             state.error = null;
+            state.unreadCounts = {};
+            state.incomingAlert = null;
+            state.lastMessageTimestamps = {};
+            localStorage.removeItem(UNREAD_KEY);
+            localStorage.removeItem(LAST_MSG_KEY);
         },
     },
     extraReducers: (builder) => {
@@ -217,10 +299,18 @@ const chatSlice = createSlice({
             })
             .addCase(getMessagesThunk.fulfilled, (state, action) => {
                 state.isLoadingMsgs = false;
+                // Derive _status for each message from read_at
+                const myId = JSON.parse(localStorage.getItem("user") || "{}").id;
+                const msgs = action.payload.map(m => {
+                    if (String(m.sender_id) === String(myId) || String(m.sender?.id) === String(myId)) {
+                        m._status = m.read_at ? "read" : "sent";
+                    }
+                    return m;
+                });
                 if (action.meta.arg.offset > 0) {
-                    state.messages = [...action.payload, ...state.messages];
+                    state.messages = [...msgs, ...state.messages];
                 } else {
-                    state.messages = action.payload;
+                    state.messages = msgs;
                 }
             })
             .addCase(getMessagesThunk.rejected, (state, action) => {
@@ -259,5 +349,9 @@ const chatSlice = createSlice({
     },
 });
 
-export const { setActiveRoom, addIncomingMessage, clearMessages, resetChat, updateUserStatus  } = chatSlice.actions;
+export const {
+    setActiveRoom, addIncomingMessage, clearMessages, resetChat, updateUserStatus,
+    incrementUnread, clearUnread, setIncomingAlert, clearIncomingAlert, updateLastMessageTime,
+    updateMessageStatus, confirmSentMessage, markMessagesAsRead
+} = chatSlice.actions;
 export default chatSlice.reducer;

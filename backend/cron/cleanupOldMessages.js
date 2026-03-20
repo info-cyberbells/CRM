@@ -3,7 +3,7 @@ import Message from "../models/Message.js";
 import { Op } from "sequelize";
 
 export default function cleanupJob() {
-    cron.schedule("0 2 * * *", async () => {
+    cron.schedule("0 9 * * *", async () => {
         try {
             const sixMonthsAgo = new Date();
             sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);

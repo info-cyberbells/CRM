@@ -17,6 +17,7 @@ import {
     getRoomMembersThunk,
     setActiveRoom,
     addIncomingMessage,
+    incrementUnread, clearUnread, setIncomingAlert, clearIncomingAlert
 } from "../../features/chat/chatSlice.js";
 import { useSocket } from "../../hooks/useSocket.js";
 import { useToast } from "../../ToastContext/ToastContext.jsx";
@@ -244,7 +245,35 @@ const MessageBubble = ({ message, isOwn, showAvatar, showName }) => {
 
                 {/* time — only on last message of a group */}
                 {showAvatar && (
-                    <span className="text-[10px] text-slate-400 mt-1 px-0.5">{time}</span>
+                    <div className="flex items-center gap-1 mt-1 px-0.5">
+                        <span className="text-[10px] text-slate-400">{time}</span>
+                        {isOwn && (() => {
+                            const status = message._status;
+                            if (!status || status === "sending") {
+                                return (
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                        <circle cx="6" cy="6" r="5" stroke="#9ca3af" strokeWidth="1.2" />
+                                        <path d="M6 3.5V6l1.5 1.5" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
+                                    </svg>
+                                );
+                            }
+                            if (status === "sent") {
+                                return (
+                                    <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
+                                        <path d="M1 5l3.5 3.5L12 1" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                );
+                            }
+                            if (status === "read") {
+                                return (
+                                    <svg width="20" height="10" viewBox="0 0 20 10" fill="none">
+                                        <path d="M1 5l3.5 3.5L12 1" stroke="#E24B4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M7 5l3.5 3.5L18 1" stroke="#E24B4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                );
+                            }
+                        })()}
+                    </div>
                 )}
             </div>
         </div >
@@ -441,7 +470,7 @@ const Chat = () => {
     const msgContainerRef = useRef(null);
 
     const { users, rooms, messages, activeRoomId, activeRoomName, activeRoomType,
-        isLoadingMsgs, isUploading } = useSelector(state => state.chat);
+        isLoadingMsgs, isUploading, unreadCounts, incomingAlert, lastMessageTimestamps } = useSelector(state => state.chat);
 
     const me = useSelector((state) => state.user.user) || JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -462,6 +491,20 @@ const Chat = () => {
         picker.addEventListener("emoji-click", handler);
         return () => picker.removeEventListener("emoji-click", handler);
     }, [showEmojiPicker]);
+
+
+    useEffect(() => {
+        window.__chatActiveRoomId__ = activeRoomId;
+        return () => {
+            window.__chatActiveRoomId__ = null;
+        };
+    }, [activeRoomId]);
+
+    useEffect(() => {
+        if (!incomingAlert) return;
+        const timer = setTimeout(() => dispatch(clearIncomingAlert()), 4000);
+        return () => clearTimeout(timer);
+    }, [incomingAlert, dispatch]);
 
     useEffect(() => {
         if (!showEmojiPicker) return;
@@ -488,11 +531,10 @@ const Chat = () => {
         setHasMore(true);
         dispatch(getMessagesThunk({ roomId: activeRoomId, offset: 0 }));
 
-        if (socket) socket.emit("join_room", activeRoomId);
-
-        return () => {
-            if (socket) socket.emit("leave_room", activeRoomId);
-        };
+        if (socket) {
+            socket.emit("join_room", activeRoomId);
+            socket.emit("mark_read", { roomId: activeRoomId });
+        }
     }, [activeRoomId, socket, dispatch]);
 
     useEffect(() => {
@@ -542,8 +584,16 @@ const Chat = () => {
     }, [messages.length]);
 
     async function openDirect(user) {
+        // Skip if this user's direct chat is already open
+        const existingRoom = rooms.find(r =>
+            r.type === "direct" &&
+            r.members?.some(m => m.user?.id === user.id)
+        );
+        if (existingRoom && existingRoom.id === activeRoomId) return;
+
         try {
             const data = await dispatch(getOrCreateDirectThunk(user.id)).unwrap();
+            dispatch(clearUnread(data.roomId));
             dispatch(setActiveRoom({
                 roomId: data.roomId,
                 roomName: user.name,
@@ -556,6 +606,7 @@ const Chat = () => {
     }
 
     function openRoom(room) {
+        if (room.id === activeRoomId) return; // Already open
         const otherMember = room.members?.find(m => m.user?.id !== me.id);
         const name = room.type === "group" ? room.name : otherMember?.user?.name || "Chat";
         dispatch(setActiveRoom({ roomId: room.id, roomName: name, roomType: room.type }));
@@ -563,7 +614,18 @@ const Chat = () => {
 
     function sendMessage() {
         if (!text.trim() || !socket || !activeRoomId) return;
-        socket.emit("send_message", { roomId: activeRoomId, content: text.trim() });
+        const tempId = `temp-${Date.now()}`;
+        const tempMsg = {
+            id: tempId,
+            room_id: activeRoomId,
+            content: text.trim(),
+            sender_id: me.id,
+            sender: me,
+            sent_at: new Date().toISOString(),
+            _status: "sending",
+        };
+        dispatch(addIncomingMessage({ ...tempMsg, _forceAdd: true }));
+        socket.emit("send_message", { roomId: activeRoomId, content: text.trim(), tempId });
         setText("");
     }
     async function handleFile(e) {
@@ -663,14 +725,18 @@ const Chat = () => {
         setLoadingMore(false);
     }
 
-    // group users by role for sidebar
+    // group users by role for sidebar — sort by most recent message within each group
     const ROLE_ORDER = ["Admin", "Sale", "Tech", "Tech_Lead"];
     const groupedUsers = ROLE_ORDER.reduce((acc, role) => {
         const filtered = users.filter(u =>
             u.role === role &&
             u.id !== me.id &&
             u.name.toLowerCase().includes(search.toLowerCase())
-        );
+        ).sort((a, b) => {
+            const tA = lastMessageTimestamps[String(a.id)] || 0;
+            const tB = lastMessageTimestamps[String(b.id)] || 0;
+            return tB - tA; // most recent first
+        });
         if (filtered.length > 0) acc[role] = filtered;
         return acc;
     }, {});
@@ -741,12 +807,17 @@ const Chat = () => {
                                     <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-xs flex-shrink-0">
                                         {room.name?.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase()).join("")}
                                     </div>
-                                    <div className="min-w-0">
+                                    <div className="min-w-0 flex-1">
                                         <p className="text-sm font-black text-slate-700 truncate">{room.name}</p>
                                         <p className="text-[10px] text-slate-400 font-bold">
                                             {room.members?.length || 0} members
                                         </p>
                                     </div>
+                                    {unreadCounts[String(room.id)]?.count > 0 && (
+                                        <span className="bg-emerald-600 text-white text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center flex-shrink-0">
+                                            {unreadCounts[String(room.id)].count}
+                                        </span>
+                                    )}
                                 </button>
                             ))}
                         </div>
@@ -786,6 +857,14 @@ const Chat = () => {
                                                 {user.status?.toLowerCase().replace("_", " ") || "offline"}
                                             </p>
                                         </div>
+                                        {(() => {
+                                            const unreadData = unreadCounts[String(directRoom?.id)];
+                                            return unreadData?.count > 0 ? (
+                                                <span className="bg-emerald-600 text-white text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center flex-shrink-0">
+                                                    {unreadData.count}
+                                                </span>
+                                            ) : null;
+                                        })()}
                                     </button>
                                 );
                             })}
@@ -796,6 +875,38 @@ const Chat = () => {
 
             {/* ── MAIN CHAT AREA ── */}
             <div className="flex-1 flex flex-col overflow-hidden relative">
+                {incomingAlert && String(incomingAlert.roomId) !== String(activeRoomId) && (
+                    <div
+                        onClick={() => {
+                            const room = rooms.find(r => String(r.id) === String(incomingAlert.roomId));
+                            if (room) openRoom(room);
+                            else {
+                                // it's a direct room — find by roomId among rooms
+                                dispatch(setActiveRoom({
+                                    roomId: incomingAlert.roomId,
+                                    roomName: incomingAlert.senderName,
+                                    roomType: "direct",
+                                }));
+                            }
+                            dispatch(clearIncomingAlert());
+                        }}
+                        className="absolute top-4 right-4 z-50 bg-white border border-emerald-100 shadow-2xl rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-emerald-50 transition-all max-w-xs animate-fade-in"
+                    >
+                        <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
+                            {incomingAlert.senderName[0]}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs font-black text-slate-800">{incomingAlert.senderName}</p>
+                            <p className="text-[11px] text-slate-500 truncate">{incomingAlert.preview}</p>
+                        </div>
+                        <button
+                            onClick={e => { e.stopPropagation(); dispatch(clearIncomingAlert()); }}
+                            className="text-slate-300 hover:text-slate-500 flex-shrink-0 p-1"
+                        >
+                            <X size={14} />
+                        </button>
+                    </div>
+                )}
                 {activeRoomId ? (
                     <>
                         {/* chat header */}

@@ -27,10 +27,10 @@ import {
   CalendarCheck,
   UserCircle2Icon
 } from 'lucide-react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { loginUserThunk, logoutUserThunk } from '../../features/UserSlice/UserSlice';
 import { resetChat } from "../../features/chat/chatSlice";
-import { disconnectSocket } from "../../hooks/useSocket";
+import { disconnectSocket, useSocket } from "../../hooks/useSocket";
 
 const ROLE_BASED_MENUS = {
   Admin: [
@@ -86,13 +86,18 @@ const ROLES = [
 
 
 const Sidebar = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  useSocket(); // Keep socket alive on all pages for real-time unread notifications
+
+  // Total unread chat messages for sidebar badge
+  const unreadCounts = useSelector(state => state.chat.unreadCounts);
+  const totalUnread = Object.values(unreadCounts || {}).reduce((sum, item) => sum + (item?.count || 0), 0);
 
   const currentRole = localStorage.getItem("Role") || 'Admin';
 
@@ -206,6 +211,11 @@ const Sidebar = () => {
                 >
                   <div className="shrink-0"><item.icon size={22} /></div>
                   {!isCollapsed && <span className="text-sm flex-1 whitespace-nowrap">{item.title}</span>}
+                  {item.id === "chat" && totalUnread > 0 && (
+                    <span className="bg-emerald-500 text-white text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center flex-shrink-0">
+                      {totalUnread}
+                    </span>
+                  )}
                 </NavLink>
               )}
             </div>

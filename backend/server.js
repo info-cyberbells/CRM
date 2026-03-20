@@ -84,11 +84,34 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/profile", profileRoutes);
 
 
+// Manual Schema Sync (Safe alternative to alter: true)
+async function syncCustomSchema() {
+  try {
+    const [columns] = await sequelize.query("SHOW COLUMNS FROM `messages` LIKE 'read_at'");
+    if (columns.length === 0) {
+      console.log("Adding missing 'read_at' column to 'messages' table...");
+      await sequelize.query("ALTER TABLE `messages` ADD COLUMN `read_at` DATETIME NULL DEFAULT NULL AFTER `file_name` ");
+      console.log("✅ 'read_at' column added.");
+    }
+
+    const [profileImageCol] = await sequelize.query("SHOW COLUMNS FROM `users` LIKE 'profileImage'");
+    if (profileImageCol.length === 0) {
+      console.log("Adding missing 'profileImage' column to 'users' table...");
+      await sequelize.query("ALTER TABLE `users` ADD COLUMN `profileImage` VARCHAR(255) NULL DEFAULT NULL");
+      console.log("✅ 'profileImage' column added.");
+    }
+  } catch (err) {
+    console.error("❌ Schema sync error:", err.message);
+  }
+}
+
 socketHandler(io);
 cleanupJob();
 
 // Database connection
-sequelize.sync({ alter: false }).then(() => {
+syncCustomSchema().then(() => {
+  return sequelize.sync({ alter: false });
+}).then(() => {
   console.log("✅ Database connected and all tables synced");
   const PORT = process.env.PORT || 9000;
   server.listen(PORT, () =>
