@@ -303,16 +303,10 @@ const AdminDashboard = () => {
       return () => clearInterval(interval);
     }, [clockInTime]);
 
-<<<<<<< HEAD
-  return <span>{label}: <span className={`font-black ${label === 'On Break' ? 'text-amber-500' : 'text-emerald-600'}`}>{elapsed}</span></span>;
-  };
-
-=======
     return <span>{label}: <span className={`font-black ${label === 'On Break' ? 'text-amber-500' : 'text-emerald-600'}`}>{elapsed}</span></span>;
   };
 
 
->>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
   const LoadingScreen = () => {
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-md transition-opacity duration-300">
@@ -556,14 +550,10 @@ const AdminDashboard = () => {
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">
                           {agent.name?.charAt(0)}
                         </div>
-<<<<<<< HEAD
-                        <span className="font-bold text-slate-700 hover:text-emerald-600 transition-colors">{agent.name}</span>
-=======
                         <span
                           className="font-bold text-slate-700 hover:text-emerald-600 cursor-pointer transition-colors"
                           onClick={() => navigate("/chat", { state: { openUserId: agent.id, openUserName: agent.name } })}
                         >{agent.name}</span>
->>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
                       </div>
                     </td>
                     <td className="px-8 py-3 text-slate-400 font-medium">{agent.role}</td>
@@ -581,27 +571,6 @@ const AdminDashboard = () => {
                       </span>
                     </td>
                     <td className="px-8 py-3 text-slate-500 font-mono text-xs">
-<<<<<<< HEAD
-                        {agent.status === 'ONLINE' && agent.clockInTime
-                          ? <RunningTimer clockInTime={agent.clockInTime} label="Clocked In" />
-                          : agent.status === 'OFFLINE' && agent.clockOutTime
-                          ? `Clocked Out: ${new Date(agent.clockOutTime).toLocaleTimeString()}`
-                          : agent.status === 'ON_BREAK' && agent.breakStartTime
-                          ? <RunningTimer clockInTime={agent.breakStartTime} label="On Break" />
-                          : '--'}
-                      </td>
-                      <td className="px-8 py-3 text-slate-500 font-mono text-xs ">
-                        {agent.clockInTime
-                          ? (() => {
-                              const s = agent.totalBreakSeconds || 0;
-                              const h = Math.floor(s / 3600).toString().padStart(2, '0');
-                              const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
-                              const sec = (s % 60).toString().padStart(2, '0');
-                              return <span>Break Taken: <span className="text-amber-500 font-black">{h}:{m}:{sec}</span></span>;
-                            })()
-                          : '--'}
-                      </td>
-=======
                       {agent.status === 'ONLINE' && agent.clockInTime
                         ? <RunningTimer clockInTime={agent.clockInTime} label="Clocked In" />
                         : agent.status === 'OFFLINE' && agent.clockOutTime
@@ -621,7 +590,6 @@ const AdminDashboard = () => {
                         })()
                         : '--'}
                     </td>
->>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
                   </tr>
                 ))}
               </tbody>
@@ -678,17 +646,10 @@ const AdminDashboard = () => {
                   Page {agentPage} of {agentTotalPages}
                 </span>
 
-<<<<<<< HEAD
-            <button
-              // disabled={agentPage === agentTotalPages}
-              disabled={agentPage >= agentTotalPages || agentTotalPages === 0}
-              onClick={() => handleAgentPageChange(agentPage + 1)}
-=======
                 <button
                   // disabled={agentPage === agentTotalPages}
                   disabled={agentPage >= agentTotalPages || agentTotalPages === 0}
                   onClick={() => handleAgentPageChange(agentPage + 1)}
->>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
                   className=" px-6 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 "
                 >
                   Next

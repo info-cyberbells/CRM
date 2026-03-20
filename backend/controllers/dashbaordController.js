@@ -322,14 +322,9 @@ export const getAgentsMonitor = async (req, res) => {
 
     const { rows, count } = await User.findAndCountAll({
       where: { role: roles },
-<<<<<<< HEAD
-      distinct: true, 
-      col: 'id',
-=======
       distinct: true,
       col: 'id',
 
->>>>>>> f43c39b744e89e9a945b1d978f19117cb4dc046d
       attributes: ["id", "name", "role", "status"],
 
       include: [
