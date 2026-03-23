@@ -56,7 +56,7 @@ export const getMonthlyAttendanceAdmin = async (req, res) => {
                 date: { [Op.between]: [startDate, endDate] },
             },
             include: [
-                { model: User, as: "user", attributes: ["id", "name", "email", "role"] },
+                { model: User, as: "user", attributes: ["id", "name", "email", "role", "profileImage"] },
             ],
             order: [["date", "ASC"]],
         });
@@ -121,7 +121,7 @@ export const getDailyAttendanceAdmin = async (req, res) => {
 
         const allUsers = await User.findAll({
             where: { isActive: true, role: ["Sale", "Tech"] },
-            attributes: ["id", "name", "email", "role"],
+            attributes: ["id", "name", "email", "role", "profileImage"],
         });
 
         const records = await Attendance.findAll({
@@ -139,6 +139,7 @@ export const getDailyAttendanceAdmin = async (req, res) => {
             name: u.name,
             email: u.email,
             role: u.role,
+            profileImage: u.profileImage || null,
             status: recordMap[u.id]?.status || null,
             comments: recordMap[u.id]?.comments || null,
             marked: !!recordMap[u.id],

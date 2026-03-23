@@ -819,12 +819,12 @@ export const getCaseById = async (req, res) => {
         const caseData = await Case.findOne({
             where: { caseId },
             include: [
-                { model: User, as: "saleUser", attributes: ["id", "name"] },
-                { model: User, as: "techUser", attributes: ["id", "name"] },
+                { model: User, as: "saleUser", attributes: ["id", "name", "profileImage"] },
+                { model: User, as: "techUser", attributes: ["id", "name", "profileImage"] },
                 {                      
                     model: PlanUpgrade,
                     as: "planUpgrades",
-                    include: [{ model: User, as: "addedBy", attributes: ["id", "name"] }],
+                    include: [{ model: User, as: "addedBy", attributes: ["id", "name", "profileImage"] }],
                     order: [["createdAt", "DESC"]],
                 },
             ],

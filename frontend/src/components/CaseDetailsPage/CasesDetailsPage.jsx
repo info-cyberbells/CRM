@@ -1467,8 +1467,16 @@ const handleUpgradeChange = (e) => {
             <div className="space-y-3">
               <div className="p-4 bg-slate-50 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black uppercase tracking-tighter shadow-sm">
-                    REP
+                  <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black uppercase tracking-tighter shadow-sm">
+                    {data?.saleUser?.profileImage ? (
+                                                        <img
+                                                        src={data?.saleUser?.profileImage}
+                                                        alt={data?.saleUser?.name}
+                                                        className="w-full h-full object-cover rounded-xl"
+                                                        />
+                                                    ) : (
+                                                        data?.saleUser?.name?.charAt(0)
+                                                    )}
                   </div>
                   <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
@@ -1586,8 +1594,18 @@ const handleUpgradeChange = (e) => {
                     <div className="mt-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black">
-                            {formData.techUser.name.charAt(0).toUpperCase()}
+                          <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black">
+                            {data?.techUser?.profileImage ? (
+                                                        <img
+                                                        src={data?.techUser?.profileImage}
+                                                        alt={data?.techUser?.name}
+                                                        className="w-full h-full object-cover rounded-xl"
+                                                        />
+                                                    ) : (
+                                                        data?.techUser?.name?.charAt(0)
+                                                    )}
+
+                            
                           </div>
                           <div>
                             <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
@@ -1942,7 +1960,16 @@ const handleUpgradeChange = (e) => {
                   <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-                        <User size={12} />
+                        {/* <User size={12} /> */}
+                        {upgrade.addedBy?.profileImage ? (
+                                                        <img
+                                                        src={upgrade.addedBy?.profileImage}
+                                                        alt={upgrade.addedBy?.name}
+                                                        className="w-full h-full object-cover rounded-xl"
+                                                        />
+                                                    ) : (
+                                                        upgrade.addedBy?.name?.charAt(0)
+                                                    )}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black text-slate-700 uppercase leading-none">

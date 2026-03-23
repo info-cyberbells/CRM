@@ -8,7 +8,7 @@ import sequelize from "../config/db.js";
 export async function getAllUsers(req, res) {
     try {
         const users = await User.findAll({
-            attributes: ["id", "name", "email", "role", "status"],
+            attributes: ["id", "name", "email", "role", "status", "profileImage"],
             where: { isActive: true },
             order: [["role", "ASC"], ["name", "ASC"]],
         });

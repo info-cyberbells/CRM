@@ -864,7 +864,15 @@ const Chat = () => {
                                         <div className="relative flex-shrink-0">
                                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs
                         ${user.role === "Admin" ? "bg-rose-500" : user.role === "Sale" ? "bg-emerald-500" : "bg-teal-500"}`}>
-                                                {user.name[0]}
+                                                {user.profileImage ? (
+                                                    <img
+                                                    src={user.profileImage}
+                                                    alt={user.name}
+                                                    className="w-full h-full object-cover rounded-lg"
+                                                    />
+                                                ) : (
+                                                    user.name?.charAt(0)
+                                                )}
                                             </div>
                                             <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white
                         ${user.status === "ONLINE" ? "bg-emerald-500" : user.status === "ON_BREAK" ? "bg-amber-500" : "bg-slate-300"}`} />
