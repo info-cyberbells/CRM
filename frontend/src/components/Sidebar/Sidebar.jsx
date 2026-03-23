@@ -31,6 +31,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUserThunk, logoutUserThunk } from '../../features/UserSlice/UserSlice';
 import { resetChat } from "../../features/chat/chatSlice";
 import { disconnectSocket, useSocket } from "../../hooks/useSocket";
+import { getMyProfile } from '../../features/ProfileSlice/profileSlice';
 
 const ROLE_BASED_MENUS = {
   Admin: [
@@ -91,6 +92,9 @@ const Sidebar = () => {
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  const { profile, loading } = useSelector((state) => state.profile);
+  
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   useSocket(); // Keep socket alive on all pages for real-time unread notifications
@@ -103,6 +107,10 @@ const Sidebar = () => {
 
   const profileRef = useRef(null);
   const location = useLocation();
+
+  useEffect(()=>{
+    dispatch(getMyProfile())
+  },[])
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -277,14 +285,26 @@ const Sidebar = () => {
             </button>
             <div className="relative" ref={profileRef}>
               <button onClick={() => setIsProfileOpen(!isProfileOpen)} className="flex cursor-pointer items-center gap-2 p-1.5 rounded-full border border-slate-200 hover:bg-slate-50">
-                <div className={`w-8 h-8 rounded-full ${ROLES.find(r => r.id === currentRole)?.color} flex items-center justify-center text-white font-bold text-xs`}>{currentRole.charAt(0).toUpperCase()}</div>
+                <div className={`w-8 h-8 rounded-full ${!profile?.profileImage ? ROLES.find(r => r.id === currentRole)?.color : ""} flex items-center justify-center text-white font-bold text-xs`}>
+                  {profile?.profileImage ? (
+                    <img
+                      src={profile.profileImage}
+                      alt="user"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-white font-bold text-xs">
+                      {currentRole?.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
                 <ChevronDown size={14} className={`text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
               </button>
               {isProfileOpen && (
                 <div className="absolute right-0 mt-3 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 overflow-hidden">
-                  {/* <button className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50"><UserCircle size={16} /> Profile</button>
-                  <button className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50"><Settings size={16} /> Settings</button>
-                  <div className="h-px bg-slate-100 my-1 mx-2"></div> */}
+                  <button onClick={()=>{ navigate("/my-profile"); setIsProfileOpen(false)}} className="flex w-full items-center cursor-pointer gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50"><UserCircle size={16} /> Profile</button>
+                  {/* <button className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-emerald-50"><Settings size={16} /> Settings</button> */}
+                  <div className="h-px bg-slate-100 my-1 mx-2"></div>
                   <button onClick={handleLogout} className="flex cursor-pointer w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"><LogOut size={16} /> Sign out</button>
                 </div>
               )}

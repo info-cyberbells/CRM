@@ -264,7 +264,6 @@ export const getDashboardData = async (req, res) => {
 };
 
 
-
 export const getAgentsMonitor = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -288,7 +287,6 @@ export const getAgentsMonitor = async (req, res) => {
       totalAgents: 0,
       totalTech: 0,
       totalSale: 0,
-
       online: { total: 0, tech: 0, sale: 0 },
       offline: { total: 0, tech: 0, sale: 0 },
       onBreak: { total: 0, tech: 0, sale: 0 },
@@ -300,7 +298,6 @@ export const getAgentsMonitor = async (req, res) => {
       const count = parseInt(item.count);
 
       stats.totalAgents += count;
-
       if (role === "Tech") stats.totalTech += count;
       if (role === "Sale") stats.totalSale += count;
 
@@ -308,12 +305,10 @@ export const getAgentsMonitor = async (req, res) => {
         stats.online.total += count;
         stats.online[role.toLowerCase()] += count;
       }
-
       if (status === "OFFLINE") {
         stats.offline.total += count;
         stats.offline[role.toLowerCase()] += count;
       }
-
       if (status === "ON_BREAK") {
         stats.onBreak.total += count;
         stats.onBreak[role.toLowerCase()] += count;
@@ -323,9 +318,9 @@ export const getAgentsMonitor = async (req, res) => {
     const { rows, count } = await User.findAndCountAll({
       where: { role: roles },
       distinct: true,
-      col: 'id',
+      col: "id",
 
-      attributes: ["id", "name", "role", "status"],
+      attributes: ["id", "name", "role", "status", "profileImage"],
 
       include: [
         {
@@ -337,51 +332,39 @@ export const getAgentsMonitor = async (req, res) => {
             "totalBreakSeconds",
           ],
           required: false,
-        },
-      ],
+                  where: Sequelize.literal(
+          "(`UserSessions`.`id` = (SELECT id FROM `user_sessions` AS us WHERE us.`userId` = `User`.`id` AND (CASE WHEN `User`.`status` IN ('ONLINE', 'ON_BREAK') THEN us.`clockOutTime` IS NULL ELSE us.`clockOutTime` IS NOT NULL END) ORDER BY us.`clockInTime` DESC LIMIT 1))"
+        ),
+                },
+              ],
 
-      order: [
-        [
-          Sequelize.literal(`
-      CASE 
-        WHEN status = 'ON_BREAK' THEN 1
-        WHEN status = 'ONLINE' THEN 2
-        WHEN status = 'OFFLINE' THEN 3
-      END
-    `),
-          "ASC",
+              order: [
+          [
+            Sequelize.literal(
+              "CASE WHEN `User`.`status` = 'ON_BREAK' THEN 1 WHEN `User`.`status` = 'ONLINE' THEN 2 WHEN `User`.`status` = 'OFFLINE' THEN 3 END"
+            ),
+            "ASC",
+          ],
         ],
-        [{ model: UserSession }, "clockInTime", "DESC"],
-      ],
 
       limit,
       offset,
     });
 
     const agents = rows.map((agent) => {
-      let session = null;
-
-      if (agent.status === "ONLINE" || agent.status === "ON_BREAK") {
-        session = agent.UserSessions?.find((s) => s.clockOutTime === null);
-      } else {
-        session = agent.UserSessions?.sort(
-          (a, b) => new Date(b.clockInTime) - new Date(a.clockInTime),
-        )[0];
-      }
+      const session = agent.UserSessions?.[0] || null;
 
       return {
         id: agent.id,
         name: agent.name,
         role: agent.role,
         status: agent.status,
-
+        profileImage: agent.profileImage || null,
         clockInTime: session?.clockInTime || null,
         clockOutTime: session?.clockOutTime || null,
-
         date: session?.clockInTime
           ? new Date(session.clockInTime).toISOString().split("T")[0]
           : null,
-
         breakStartTime: session?.breakStartTime || null,
         totalBreakSeconds: session?.totalBreakSeconds || 0,
       };
@@ -389,21 +372,17 @@ export const getAgentsMonitor = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-
       stats,
-
       pagination: {
         totalRecords: count,
         currentPage: page,
         totalPages: Math.ceil(count / limit),
         limit,
       },
-
       agents,
     });
   } catch (error) {
     console.error("Admin monitor error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Server error",

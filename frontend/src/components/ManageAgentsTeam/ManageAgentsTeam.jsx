@@ -61,6 +61,7 @@ const AddMemberModal = ({
         state: selectedAgent.state || "",
         country: selectedAgent.country || "",
       });
+      const profileImage = selectedAgent.profileImage || null;
     } else if (!selectedAgent && isOpen) {
       setFormData({
         name: "",
@@ -142,10 +143,26 @@ const AddMemberModal = ({
           </button>
         </div>
 
+
+
         <form
           onSubmit={handleSubmit}
           className="p-8 space-y-4 overflow-y-auto max-h-[80vh] "
         >
+          {selectedAgent?.profileImage ? (
+            <div className="flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center font-black text-slate-500">
+            
+              <img
+                src={selectedAgent.profileImage}
+                alt={selectedAgent.name}
+                className="w-full h-full object-cover"
+              />
+          </div>
+          </div>
+            ) : (
+              null
+            )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
@@ -382,10 +399,10 @@ const ManageAgentsTeam = () => {
 
   const { showToast } = useToast();
 
-  const { agents, isLoading, isError, error, pagination } = useSelector(
+  const { agents, isLoading, isError, error, agentsPagination } = useSelector(
     (state) => state.admin,
   );
-  const { currentPage, totalPages, totalCount, pageSize } = pagination;
+  const { currentPage, totalPages, totalCount, pageSize } = agentsPagination;
 
   useEffect(() => {
     dispatch(getAllAgentsThunk({ page: 1, limit: 10 }));
@@ -515,10 +532,18 @@ const ManageAgentsTeam = () => {
                   key={member.id}
                   className="hover:bg-slate-50 transition-colors"
                 >
-                  <td className="px-8 py-6">
+                  <td className="px-8 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500">
-                        {member.name?.charAt(0) || "-"}
+                      <div className="w-12 h-12 rounded-4xl bg-slate-100 flex items-center justify-center font-black text-slate-500">
+                        {member.profileImage ? (
+                                <img
+                                  src={member.profileImage}
+                                  alt={member.name}
+                                  className="w-full h-full object-cover rounded-3xl"
+                                />
+                              ) : (
+                                member.name?.charAt(0)
+                              )}
                       </div>
                       <div>
                         <p className="font-black text-slate-800 leading-none mb-1">

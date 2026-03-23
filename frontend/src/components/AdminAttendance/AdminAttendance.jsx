@@ -145,7 +145,15 @@ const MarkTab = () => {
                                     <tr key={agent.id} className={`transition-colors border-b border-slate-50 last:border-0 ${selected ? "bg-slate-50/50" : "hover:bg-slate-50/30"}`}>
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500 text-sm">{agent.name.charAt(0)}</div>
+                                                <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500 text-sm">{agent.profileImage ? (
+                                <img
+                                  src={agent.profileImage}
+                                  alt={agent.name}
+                                  className="w-full h-full object-cover rounded-3xl"
+                                />
+                              ) : (
+                                agent.name?.charAt(0)
+                              )}</div>
                                                 <div>
                                                     <p className="font-black text-slate-800 leading-none mb-1">{agent.name}</p>
                                                     <p className="text-[10px] font-bold text-slate-400">{agent.email}</p>
@@ -281,7 +289,15 @@ const DailyTab = () => {
                                     <tr key={record.userId} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors">
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500 text-sm">{record.name?.charAt(0)}</div>
+                                                <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500 text-sm">{record.profileImage ? (
+                                                        <img
+                                                        src={record.profileImage}
+                                                        alt={record.name}
+                                                        className="w-full h-full object-cover rounded-3xl"
+                                                        />
+                                                    ) : (
+                                                        record.name?.charAt(0)
+                                                    )}</div>
                                                 <div>
                                                     <p className="font-black text-slate-800 leading-none mb-1">{record.name}</p>
                                                     <p className="text-[10px] font-bold text-slate-400">{record.email}</p>
@@ -385,7 +401,15 @@ const MonthlyTab = () => {
                                     <tr className="border-b border-slate-50 hover:bg-slate-50/30 transition-colors">
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500 text-sm">{record.user.name?.charAt(0)}</div>
+                                                <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500 text-sm">{record.user?.profileImage ? (
+                                                        <img
+                                                        src={record.user?.profileImage}
+                                                        alt={record.user?.name}
+                                                        className="w-full h-full object-cover rounded-3xl"
+                                                        />
+                                                    ) : (
+                                                        record.user.name?.charAt(0)
+                                                    )}</div>
                                                 <div>
                                                     <p className="font-black text-slate-800 leading-none mb-1">{record.user.name}</p>
                                                     <p className="text-[10px] font-bold text-slate-400">{record.user.email}</p>

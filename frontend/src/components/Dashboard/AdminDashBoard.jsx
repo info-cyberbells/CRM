@@ -548,7 +548,15 @@ const AdminDashboard = () => {
                       >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-100 text-slate-600 uppercase">
-                          {agent.name?.charAt(0)}
+                           {agent.profileImage ? (
+                                <img
+                                  src={agent.profileImage}
+                                  alt={agent.name}
+                                  className="w-full h-full object-cover rounded-3xl"
+                                />
+                              ) : (
+                                agent.name?.charAt(0)
+                              )}
                         </div>
                         <span
                           className="font-bold text-slate-700 hover:text-emerald-600 cursor-pointer transition-colors"
