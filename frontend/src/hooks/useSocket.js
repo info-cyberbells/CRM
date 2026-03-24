@@ -100,6 +100,7 @@ export function useSocket() {
                 dispatch(setIncomingAlert({
                     roomId: msg.room_id,
                     senderName: msg.sender?.name || "Someone",
+                    senderImage: msg.sender?.profileImage,
                     preview: msg.content ? msg.content.slice(0, 50) : msg.file_name || "Sent a file",
                 }));
             }

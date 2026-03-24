@@ -120,7 +120,15 @@ const GroupModal = ({ users, onClose, onCreated }) => {
                                 <input type="checkbox" className="hidden" checked={selected.includes(u.id)} onChange={() => toggle(u.id)} />
                                 <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black text-white
                   ${u.role === "Admin" ? "bg-rose-500" : u.role === "Sale" ? "bg-emerald-500" : "bg-teal-500"}`}>
-                                    {u.name[0]}
+                                    {u.profileImage ? (
+                                        <img
+                                            src={u.profileImage}
+                                            alt={u.name}
+                                            className="w-full h-full object-cover rounded-xl"
+                                        />
+                                    ) : (
+                                        u.name[0]
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-slate-700 truncate">{u.name}</p>
@@ -163,12 +171,20 @@ const MessageBubble = ({ message, isOwn, showAvatar, showName }) => {
             {/* avatar — only show on last message of a group */}
             <div className="w-6 h-6 flex-shrink-0">
                 {showAvatar && (
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white
-                        ${message.sender?.role === "Admin" ? "bg-rose-400" :
-                            message.sender?.role === "Sale" ? "bg-emerald-500" :
-                                message.sender?.role === "Tech_Lead" ? "bg-amber-400" : "bg-teal-500"}`}>
-                        {message.sender?.name?.[0] || "?"}
-                    </div>
+                    message.sender?.profileImage ? (
+                        <img
+                            src={message.sender.profileImage}
+                            alt={message.sender.name}
+                            className="w-6 h-6 rounded-lg object-cover"
+                        />
+                    ) : (
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white
+                            ${message.sender?.role === "Admin" ? "bg-rose-400" :
+                                message.sender?.role === "Sale" ? "bg-emerald-500" :
+                                    message.sender?.role === "Tech_Lead" ? "bg-amber-400" : "bg-teal-500"}`}>
+                            {message.sender?.name?.[0] || "?"}
+                        </div>
+                    )
                 )}
             </div>
 
@@ -322,7 +338,7 @@ const GroupInfoPanel = ({ roomId, roomName, onClose }) => {
         }
     }
 
-    const memberIds = members.map(m => m.id);
+    const memberIds = members.filter(m => m !== null).map(m => m.id);
     const nonMembers = users.filter(u =>
         !memberIds.includes(u.id) &&
         u.id !== me.id &&
@@ -357,7 +373,15 @@ const GroupInfoPanel = ({ roomId, roomName, onClose }) => {
                                 <div key={member.id} className="flex items-center gap-3 py-2.5 border-b border-slate-50">
                                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs flex-shrink-0
                                         ${member.role === "Admin" ? "bg-rose-500" : member.role === "Sale" ? "bg-emerald-500" : "bg-teal-500"}`}>
-                                        {member.name?.[0]}
+                                        {member.profileImage ? (
+                                            <img
+                                                src={member.profileImage}
+                                                alt={member.name}
+                                                className="w-full h-full object-cover rounded-xl"
+                                            />
+                                        ) : (
+                                            member.name?.[0]
+                                        )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-bold text-slate-700 truncate">{member.name}</p>
@@ -392,7 +416,15 @@ const GroupInfoPanel = ({ roomId, roomName, onClose }) => {
                                 <div key={user.id} className="flex items-center gap-3 py-2.5 border-b border-slate-50">
                                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-xs flex-shrink-0
                                         ${user.role === "Admin" ? "bg-rose-500" : user.role === "Sale" ? "bg-emerald-500" : "bg-teal-500"}`}>
-                                        {user.name?.[0]}
+                                        {user.profileImage ? (
+                                            <img
+                                                src={user.profileImage}
+                                                alt={user.name}
+                                                className="w-full h-full object-cover rounded-xl"
+                                            />
+                                        ) : (
+                                            user.name?.[0]
+                                        )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-bold text-slate-700 truncate">{user.name}</p>
@@ -866,9 +898,9 @@ const Chat = () => {
                         ${user.role === "Admin" ? "bg-rose-500" : user.role === "Sale" ? "bg-emerald-500" : "bg-teal-500"}`}>
                                                 {user.profileImage ? (
                                                     <img
-                                                    src={user.profileImage}
-                                                    alt={user.name}
-                                                    className="w-full h-full object-cover rounded-lg"
+                                                        src={user.profileImage}
+                                                        alt={user.name}
+                                                        className="w-full h-full object-cover rounded-lg"
                                                     />
                                                 ) : (
                                                     user.name?.charAt(0)
@@ -918,9 +950,17 @@ const Chat = () => {
                         }}
                         className="absolute top-4 right-4 z-50 bg-white border border-emerald-100 shadow-2xl rounded-2xl p-3 flex items-center gap-3 cursor-pointer hover:bg-emerald-50 transition-all max-w-xs animate-fade-in"
                     >
-                        <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
-                            {incomingAlert.senderName[0]}
-                        </div>
+                        {incomingAlert.senderImage ? (
+                            <img
+                                src={incomingAlert.senderImage}
+                                alt={incomingAlert.senderName}
+                                className="w-9 h-9 rounded-xl object-cover flex-shrink-0"
+                            />
+                        ) : (
+                            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
+                                {incomingAlert.senderName[0]}
+                            </div>
+                        )}
                         <div className="min-w-0 flex-1">
                             <p className="text-xs font-black text-slate-800">{incomingAlert.senderName}</p>
                             <p className="text-[11px] text-slate-500 truncate">{incomingAlert.preview}</p>
@@ -937,12 +977,27 @@ const Chat = () => {
                     <>
                         {/* chat header */}
                         <div className="bg-white border-b border-slate-100 px-6 py-4 flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm
+                            {(() => {
+                                // For direct chats, find the other user to get their profile image
+                                const activeRoom = rooms.find(r => String(r.id) === String(activeRoomId));
+                                const otherMember = activeRoom?.members?.find(m => m.user?.id !== me.id);
+                                const headerImage = activeRoomType !== "group" ? otherMember?.user?.profileImage : null;
+
+                                return headerImage ? (
+                                    <img
+                                        src={headerImage}
+                                        alt={activeRoomName}
+                                        className="w-9 h-9 rounded-xl object-cover"
+                                    />
+                                ) : (
+                                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm
     ${activeRoomType === "group" ? "bg-emerald-600" : "bg-emerald-600"}`}>
-                                {activeRoomType === "group"
-                                    ? activeRoomName?.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase()).join("")
-                                    : activeRoomName?.[0]}
-                            </div>
+                                        {activeRoomType === "group"
+                                            ? activeRoomName?.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase()).join("")
+                                            : activeRoomName?.[0]}
+                                    </div>
+                                );
+                            })()}
                             <div className="flex items-center justify-between flex-1">
                                 <div
                                     className={`${activeRoomType === "group" ? "cursor-pointer hover:opacity-70 transition-all" : ""}`}

@@ -77,7 +77,7 @@ export default function socketHandler(io) {
             });
 
             const full = await Message.findByPk(msg.id, {
-                include: [{ model: User, as: "sender", attributes: ["id", "name", "role"] }],
+                include: [{ model: User, as: "sender", attributes: ["id", "name", "role", "profileImage"] }],
             });
 
             const payload = full.toJSON ? full.toJSON() : { ...full.dataValues };
@@ -105,7 +105,7 @@ export default function socketHandler(io) {
             });
 
             const full = await Message.findByPk(msg.id, {
-                include: [{ model: User, as: "sender", attributes: ["id", "name", "role"] }],
+                include: [{ model: User, as: "sender", attributes: ["id", "name", "role", "profileImage"] }],
             });
 
             const payload = full.toJSON ? full.toJSON() : { ...full.dataValues };

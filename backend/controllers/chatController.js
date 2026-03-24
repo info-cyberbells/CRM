@@ -40,7 +40,7 @@ export async function getMyRooms(req, res) {
                         {
                             model: User,
                             as: "user",
-                            attributes: ["id", "name", "role", "status"],
+                            attributes: ["id", "name", "role", "status", "profileImage"],
                         },
                     ],
                 },
@@ -61,7 +61,7 @@ export async function getAllRoomsAdmin(req, res) {
                 {
                     model: ChatMember,
                     as: "members",
-                    include: [{ model: User, as: "user", attributes: ["id", "name", "role"] }],
+                    include: [{ model: User, as: "user", attributes: ["id", "name", "role", "profileImage"] }],
                 },
             ],
             order: [["createdAt", "DESC"]],
@@ -88,7 +88,7 @@ export async function getMessages(req, res) {
 
         const messages = await Message.findAll({
             where: { room_id: roomId },
-            include: [{ model: User, as: "sender", attributes: ["id", "name", "role"] }],
+            include: [{ model: User, as: "sender", attributes: ["id", "name", "role", "profileImage"] }],
             order: [["sent_at", "DESC"]],   // newest first
             limit,
             offset,
@@ -209,9 +209,9 @@ export async function getRoomMembers(req, res) {
     try {
         const members = await ChatMember.findAll({
             where: { room_id: roomId },
-            include: [{ model: User, as: "user", attributes: ["id", "name", "role", "status"] }],
+            include: [{ model: User, as: "user", attributes: ["id", "name", "role", "status", "profileImage"] }],
         });
-        res.json(members.map((m) => m.user));
+        res.json(members.map((m) => m.user).filter(u => u !== null));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
