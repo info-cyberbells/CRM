@@ -36,7 +36,7 @@ export const addPlanUpgrade = async (req, res) => {
             entityType: "plan",
             entityId: caseId,
             description: `Plan "${product}" upgraded on case ${caseId} by ${req.user.name}.`,
-            metadata: { product, amount, validity },
+            metadata: `product: ${product} | amount: ${amount} | validity: ${validity}`,
         })
 
         return res.status(201).json({

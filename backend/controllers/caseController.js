@@ -827,7 +827,7 @@ if (
             entityType: "case",
             entityId: updatedCase.caseId,
             description: `Case ${updatedCase.caseId} status changed from ${oldCase.status} to ${req.body.status} by ${decoded.name} `,
-            metadata: { oldStatus: oldCase.status, newStatus: req.body.status },
+            metadata: `${oldCase.status} → ${req.body.status}`,
           });
         } else {
           // General update
