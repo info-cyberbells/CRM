@@ -7,6 +7,7 @@ import { createAdminNotice, deleteAdminNotice, getAllAdminNotices, updateAdminNo
 import { getAdminNotifications } from "../controllers/notificationController.js";
 import { addPlanUpgrade, getPlanUpgrades } from "../controllers/planUpgradeController.js";
 import { markAttendance, getMonthlyAttendanceAdmin, getDailyAttendanceAdmin } from "../controllers/attendanceController.js";
+import { getActivityLogs } from "../controllers/activitylogController.js";
 
 
 
@@ -66,5 +67,6 @@ router.post("/attendance/mark", markAttendance);
 router.get("/attendance/monthly", getMonthlyAttendanceAdmin);
 router.get("/attendance/daily", getDailyAttendanceAdmin);
 
+router.get('/activitylogs', getActivityLogs);
 
 export default router;

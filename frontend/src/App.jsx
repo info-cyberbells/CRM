@@ -20,6 +20,7 @@ import MyAttendance from "./components/MyAttendance/MyAttendance";
 import AdminAttendance from "./components/AdminAttendance/AdminAttendance";
 import Chat from "./components/Chat/Chat";
 import MyProfile from "./components/ProfilePage/MyProfile";
+import ActivityLogs from "./components/AdminActivityLogger/AdminActivityLogger";
 
 function App() {
   const dispatch = useDispatch();
@@ -63,6 +64,7 @@ function App() {
           <Route path="/attendance" element={<AdminAttendance />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/my-profile" element={<MyProfile />} />
+          <Route path="/activitylogs" element={<ActivityLogs />} />
         </Route>
       </Routes>
     </>

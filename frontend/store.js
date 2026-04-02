@@ -12,6 +12,7 @@ import attendanceReducer from "./src/features/AttendanceSlice/attendanceSlice";
 import chatReducer from "./src/features/chat/chatSlice";
 import userSessionReducer from "./src/features/UserSessionSlice/userSessionSlice";
 import profileReducer from './src/features/ProfileSlice/profileSlice';
+import activityLogsReducer from './src/features/ADMIN/activitylogsSlice';
 
 
 export const store = configureStore({
@@ -28,6 +29,7 @@ export const store = configureStore({
         attendance: attendanceReducer,
         chat: chatReducer,
         userSession: userSessionReducer,
-        profile: profileReducer
+        profile: profileReducer,
+        activityLogs: activityLogsReducer
     },
 });

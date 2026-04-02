@@ -67,6 +67,8 @@ export const USER_ENDPOINTS = {
   GET_DAILY_ATTENDANCE: `${API_BASE_URL}/admin/attendance/daily`,
   GET_MONTHLY_ATTENDANCE: `${API_BASE_URL}/admin/attendance/monthly`,
 
+  ADMIN_GET_ACTIVITY_LOGS: `${API_BASE_URL}/admin/activitylogs`,
+
   // CHAT ENDPOINTS
   CHAT_GET_USERS: `${API_BASE_URL}/chat/users`,
   CHAT_GET_MY_ROOMS: `${API_BASE_URL}/chat/rooms`,

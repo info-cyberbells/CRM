@@ -33,6 +33,7 @@ const authGuard = async (req, res, next) => {
         req.user = {
             id: user.id,
             role: decoded.role,
+            name: user.name, 
         };
 
         next();

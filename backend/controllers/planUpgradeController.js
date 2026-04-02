@@ -1,6 +1,7 @@
 import PlanUpgrade from "../models/planUpgrade.js";
 import Case from "../models/case.js";
 import User from "../models/user.js";
+import ActivityLog from "../models/activitylogs.js";
 
 // POST /api/sale/upgrade-plan/:caseId
 export const addPlanUpgrade = async (req, res) => {
@@ -27,6 +28,16 @@ export const addPlanUpgrade = async (req, res) => {
             validity,
             addedById: req.user.id, // 👈 from authGuard
         });
+
+        await ActivityLog.create({
+            userId: req.user.id,
+            userRole: req.user.role,
+            action: "PLAN_UPGRADED",
+            entityType: "plan",
+            entityId: caseId,
+            description: `Plan "${product}" upgraded on case ${caseId} by ${req.user.name}.`,
+            metadata: { product, amount, validity },
+        })
 
         return res.status(201).json({
             success: true,

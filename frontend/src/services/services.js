@@ -1011,6 +1011,22 @@ export const getAgentsMonitorService = async (page, limit) => {
   }
 };
  
+// GET ACTIVITY LOGS
+export const getActivityLogsService = async (params) => {
+  try {
+    const response = await axios.get(
+      USER_ENDPOINTS.ADMIN_GET_ACTIVITY_LOGS,
+      {
+        params,
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 
 // GET PROFILE
 export const getMyProfileService = async ()=>{
