@@ -42,6 +42,7 @@ const ROLE_BASED_MENUS = {
     { id: "notices", title: "Notices", icon: FileText, },
     { id: "sales-report", title: "Sales Report", icon: ChartNoAxesCombined, },
     { id: "chat", title: "Chat", icon: MessageSquare, },
+    { id: "activitylogs", title: "Activity Logs", icon: Settings, },
     { id: "notifications", title: "Notifications", icon: Bell, },
   ],
   Sale: [

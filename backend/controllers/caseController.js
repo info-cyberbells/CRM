@@ -7,6 +7,7 @@ import sequelize from "../config/db.js";
 import CaseCounter from "../models/caseCounter.js";
 import CaseNote from "../models/casenotes.js";
 import PlanUpgrade from "../models/planUpgrade.js";
+import ActivityLog from "../models/activitylogs.js";
 
 
 // Generate CaseID
@@ -138,6 +139,17 @@ export const createCase = async (req, res) => {
             caseId: newCase.id,
             caseDisplayId: newCase.caseId,
             actorId: decoded.id,
+        });
+
+
+        await ActivityLog.create({
+          userId: decoded.id,
+          userRole: decoded.role,
+          action: "CASE_CREATED",
+          entityType: "case",
+          entityId: newCase.caseId,
+          description: `Case ${newCase.caseId} created`,
+          metaData: `By ${decoded.name}`,
         });
 
 
@@ -804,6 +816,32 @@ if (
     }
     }
 
+    if (decoded.role !== "Admin") {
+
+      // Status changed
+        if (req.body.status && req.body.status !== oldCase.status) {
+          await ActivityLog.create({
+            userId: decoded.id,
+            userRole: decoded.role,
+            action: "CASE_STATUS_CHANGED",
+            entityType: "case",
+            entityId: updatedCase.caseId,
+            description: `Case ${updatedCase.caseId} status changed from ${oldCase.status} to ${req.body.status} by ${decoded.name} `,
+            metadata: { oldStatus: oldCase.status, newStatus: req.body.status },
+          });
+        } else {
+          // General update
+          await ActivityLog.create({
+            userId: decoded.id,
+            userRole: decoded.role,
+            action: "CASE_UPDATED",
+            entityType: "case",
+            entityId: updatedCase.caseId,
+            description: `Case ${updatedCase.caseId} details updated by ${decoded.name}.`,
+          });
+        }
+      }
+
 
         res.json({ success: true, case: parsedCase });
     } catch (error) {
@@ -1197,6 +1235,18 @@ export const addCaseNote = async (req, res) => {
       noteType,
       noteText,
     });
+
+    if (decoded.role !== "Admin") {
+      await ActivityLog.create({
+        userId: decoded.id,
+        userRole: decoded.role,
+        action: "CASE_NOTE_ADDED",
+        entityType: "case",
+        entityId: existingCase.caseId,
+        description: `${decoded.name} added a ${noteType} note on case ${existingCase.caseId} `,
+        metadata: `Note: ${noteText}`,
+      });
+    }
 
     return res.status(201).json({
       success: true,

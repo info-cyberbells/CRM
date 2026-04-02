@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import UserSession from "../models/UserSession.js";
 import { Op } from "sequelize";
+import ActivityLog from "../models/activitylogs.js";
 
 export const clockIn = async (req, res) => {
   try {
@@ -51,6 +52,14 @@ export const clockIn = async (req, res) => {
     });
 
     await User.update({ status: "ONLINE" }, { where: { id: userId } });
+
+    await ActivityLog.create({
+      userId,
+      userRole: req.user.role,
+      action: "CLOCK_IN",
+      entityType: "session",
+      description: `${req.user.name} clocked in.`,
+    });
 
     return res.status(200).json({
       status: true,
@@ -105,6 +114,14 @@ export const ClockOut = async (req, res) => {
 
     await User.update({ status: "OFFLINE" }, { where: { id: userId } });
 
+    await ActivityLog.create({
+      userId,
+      userRole: req.user.role,
+      action: "CLOCK_OUT",
+      entityType: "session",
+      description: `${req.user.name} clocked out.`,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Clock Out successful",
@@ -150,6 +167,14 @@ export const startBreak = async (req, res) => {
     });
 
     await User.update({ status: "ON_BREAK" }, { where: { id: userId } });
+
+    await ActivityLog.create({
+      userId,
+      userRole: req.user.role,
+      action: "BREAK_START",
+      entityType: "session",
+      description: `${req.user.name} started break.`,
+    });
 
     return res.status(200).json({
       success: true,
@@ -209,6 +234,15 @@ export const endBreak = async (req, res) => {
       { status: "ONLINE" },
       { where: { id: userId } }
     );
+
+    await ActivityLog.create({
+      userId,
+      userRole: req.user.role,
+      action: "BREAK_END",
+      entityType: "session",
+      description: `${req.user.name} ended break.`,
+      metadata: `Break Time: ${ breakSeconds}; Total Break Taken: ${ totalBreakSeconds }`,
+    });
 
     return res.status(200).json({
       success: true,
