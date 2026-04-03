@@ -24,12 +24,12 @@ const ActivityLog = sequelize.define("ActivityLog", {
       "LOGIN", "LOGOUT",
       "CLOCK_IN", "CLOCK_OUT", "BREAK_START", "BREAK_END",
       "CASE_CREATED", "CASE_UPDATED", "CASE_STATUS_CHANGED", "CASE_NOTE_ADDED",
-      "PLAN_UPGRADED"
+      "PLAN_UPGRADED", "PROFILE_UPDATED", "CASE_SEARCH", "CASE_VIEWED"
     ),
     allowNull: false,
   },
   entityType: {
-    type: DataTypes.ENUM("case", "session", "plan", "auth"),
+    type: DataTypes.ENUM("case", "session", "plan", "auth", "profile", "search"),
     allowNull: true,
     field: "entity_type"
   },
