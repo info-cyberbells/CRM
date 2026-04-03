@@ -1,5 +1,6 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
+import ActivityLog from "../models/activitylogs.js";
 
 export const getProfile = async (req, res) => {
     try {
@@ -44,6 +45,16 @@ export const updateProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    const oldData = {
+      name: user.name,
+      phone: user.phone,
+      address: user.address,
+      city: user.city,
+      state: user.state,
+      country: user.country,
+      profileImage: user.profileImage,
+    };
 
     const updateData = {};
 
@@ -91,6 +102,47 @@ export const updateProfile = async (req, res) => {
 
     // 🚀 UPDATE ONLY CHANGED FIELDS
     await user.update(updateData);
+
+    const changes = [];
+
+    if (updateData.name && updateData.name !== oldData.name)
+      changes.push(`name: ${oldData.name} → ${updateData.name}`);
+
+    if (updateData.phone !== undefined && updateData.phone !== oldData.phone)
+      changes.push(`phone: ${oldData.phone || "empty"} → ${updateData.phone || "empty"}`);
+
+    if (updateData.address !== undefined && updateData.address !== oldData.address)
+      changes.push(`address: ${oldData.address || "empty"} → ${updateData.address || "empty"}`);
+
+    if (updateData.city !== undefined && updateData.city !== oldData.city)
+      changes.push(`city: ${oldData.city || "empty"} → ${updateData.city || "empty"}`);
+
+    if (updateData.state !== undefined && updateData.state !== oldData.state)
+      changes.push(`state: ${oldData.state || "empty"} → ${updateData.state || "empty"}`);
+
+    if (updateData.country !== undefined && updateData.country !== oldData.country)
+      changes.push(`country: ${oldData.country || "empty"} → ${updateData.country || "empty"}`);
+
+    if (updateData.profileImage) {
+      changes.push(
+        oldData.profileImage
+          ? `profile picture: changed to new picture`
+          : `profile picture: added`
+      );
+    }
+
+    if (updateData.password) changes.push(`password: changed`);
+
+    if (changes.length > 0) {
+      await ActivityLog.create({
+        userId,
+        userRole: req.user.role,
+        action: "PROFILE_UPDATED",
+        entityType: "user",
+        description: `${user.name} updated their profile`,
+        metadata: changes.join(" | "),
+      });
+    }
 
     return res.status(200).json({
       success: true,

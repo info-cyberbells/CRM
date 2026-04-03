@@ -419,6 +419,25 @@ export const getMyCases = async (req, res) => {
             order: [["createdAt", "DESC"]],
         });
 
+        if (search || customerName || customerID || email || phone) {
+          await ActivityLog.create({
+            userId,
+            userRole: decoded.role,
+            action: "CASE_SEARCH",
+            entityType: "search",
+            entityId: null,
+            description: `${decoded.name || decoded.role} searched their cases`,
+            metadata: JSON.stringify([
+                search       && `search: ${search}`,
+                customerName && `customerName: ${customerName}`,
+                customerID   && `customerID: ${customerID}`,
+                email        && `email: ${email}`,
+                phone        && `phone: ${phone}`,
+                `results: ${cases.length} case(s) found`,
+              ].filter(Boolean).join(" | ")),
+          });
+        }
+
 
         const formattedCases = cases.map((c) => ({
             id: c.id,
@@ -558,6 +577,25 @@ export const getAssignedCases = async (req, res)=>{
             offset,
             order: [["createdAt", "DESC"]],
         });
+
+        if (search || customerName || customerID || email || phone) {
+          await ActivityLog.create({
+            userId,
+            userRole: decoded.role,
+            action: "CASE_SEARCH",
+            entityType: "search",
+            entityId: null,
+            description: `${decoded.name || "Tech user"} searched cases.`,
+            metadata: JSON.stringify([
+              search       && `search: ${search}`,
+              customerName && `customerName: ${customerName}`,
+              customerID   && `customerID: ${customerID}`,
+              email        && `email: ${email}`,
+              phone        && `phone: ${phone}`,
+              `results: ${cases.length} case(s) found`,
+            ].filter(Boolean).join(" | ")),
+          });
+        }
 
         const formattedCases = cases.map((c)=>({
             id: c.id,
@@ -853,6 +891,13 @@ if (
 // Get case by ID
 export const getCaseById = async (req, res) => {
     try {
+
+      const token =
+      req.cookies?.authToken ||
+      req.headers.authorization?.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
         const { caseId } = req.params;
         const caseData = await Case.findOne({
             where: { caseId },
@@ -873,6 +918,18 @@ export const getCaseById = async (req, res) => {
                 ? caseData.remoteAccess
                 : [];
  
+
+         if (decoded.role !== "Admin") {
+            await ActivityLog.create({
+              userId: decoded.id,
+              userRole: decoded.role,
+              action: "CASE_VIEWED",
+              entityType: "case",
+              entityId: caseId,
+              description: `${decoded.name || decoded.role} viewed case ${caseId}`,
+              metadata: null,
+            });
+          }       
         res.json({ success: true, case: { ...caseData.toJSON(), remoteAccess } });
     } catch (error) {
         res.status(500).json({ success: false, message: "Failed to fetch case", error });
